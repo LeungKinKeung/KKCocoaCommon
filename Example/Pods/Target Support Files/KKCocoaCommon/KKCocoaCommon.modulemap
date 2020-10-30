@@ -1,0 +1,6 @@
+framework module KKCocoaCommon {
+  umbrella header "KKCocoaCommon-umbrella.h"
+
+  export *
+  module * { export * }
+}

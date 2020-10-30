@@ -1,0 +1,7 @@
+use_frameworks!
+platform :osx, '10.10'
+
+target 'KKCocoaCommon_Example' do
+  pod 'KKCocoaCommon', :path => '../'
+
+end
