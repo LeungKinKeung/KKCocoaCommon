@@ -11,11 +11,16 @@
 #import <objc/runtime.h>
 
 static NSString *kEffectiveAppearanceKey = @"effectiveAppearance";
-NSNotificationName const KKAppearanceDidChangeNotification = @"KKAppearanceDidChangeNotification";
+NSNotificationName const KKAppAppearanceDidChangeNotification = @"KKAppAppearanceDidChangeNotification";
 
-BOOL KKCurrentAppearanceIsLight(void)
+BOOL KKAppAppearanceIsLight(void)
 {
     return [KKAppearanceManager manager].style == KKAppearanceStyleLight;
+}
+
+BOOL KKViewAppearanceIsLight(NSView *view)
+{
+    return [view.effectiveAppearance.name isEqualToString:NSAppearanceNameAqua];
 }
 
 @interface KKAppearanceManager()
@@ -24,6 +29,7 @@ BOOL KKCurrentAppearanceIsLight(void)
 }
 
 @property (nonatomic, readonly) NSApplication *app;
+@property (nonatomic, strong) NSMutableDictionary *blocks;
 
 @end
 
@@ -37,8 +43,10 @@ BOOL KKCurrentAppearanceIsLight(void)
     } else {
         return;
     }
+    self.blocks = [NSMutableDictionary dictionary];
     [self updateAppearanceStyle];
     [self.app addObserver:self forKeyPath:kEffectiveAppearanceKey options:NSKeyValueObservingOptionNew context:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(systemColorsDidChange:) name:NSSystemColorsDidChangeNotification object:nil];
 }
 
 - (void)setStyle:(KKAppearanceStyle)style
@@ -61,11 +69,18 @@ BOOL KKCurrentAppearanceIsLight(void)
 - (void)updateAppearanceStyle
 {
     if (@available(macOS 10.14, *)) {
-        if ([self.appearance.name isEqualToString:NSAppearanceNameAqua]) {
-            _style  = KKAppearanceStyleLight;
-        } else {
-            _style  = KKAppearanceStyleDark;
+        
+        KKAppearanceStyle style =
+        [self.appearance.name isEqualToString:NSAppearanceNameAqua] ?
+        KKAppearanceStyleLight :
+        KKAppearanceStyleDark;
+        
+        if (_style == style) {
+            return;
         }
+        _style = style;
+        [self performBlocks];
+        [[NSNotificationCenter defaultCenter] postNotificationName:KKAppAppearanceDidChangeNotification object:self];
     }
 }
 
@@ -76,8 +91,12 @@ BOOL KKCurrentAppearanceIsLight(void)
 {
     if ([keyPath isEqualToString:kEffectiveAppearanceKey]) {
         [self updateAppearanceStyle];
-        [[NSNotificationCenter defaultCenter] postNotificationName:KKAppearanceDidChangeNotification object:self];
     }
+}
+
+- (void)systemColorsDidChange:(NSNotification *)noti
+{
+    [self performBlocks];
 }
 
 - (NSApplication *)app
@@ -90,10 +109,46 @@ BOOL KKCurrentAppearanceIsLight(void)
     return [NSApplication sharedApplication].effectiveAppearance;
 }
 
-- (void)dealloc
+- (void)addAppearanceObserver:(NSObject *)observer block:(KKAppearanceBlock)block
 {
+    if (block == nil) {
+        return;
+    }
     if (@available(macOS 10.14, *))
     {
+        NSString *key           = [NSString stringWithFormat:@"%lu",observer.hash];
+        NSMutableArray *array   = [self.blocks valueForKey:key];
+        if (array == nil) {
+            array               = [NSMutableArray array];
+            [self.blocks setValue:array forKey:key];
+        }
+        [array addObject:block];
+    }
+    block(_style == KKAppearanceStyleLight);
+}
+
+- (void)removeAppearanceObserver:(NSObject *)observer
+{
+    NSString *key           = [NSString stringWithFormat:@"%lu",observer.hash];
+    NSMutableArray *array   = [self.blocks valueForKey:key];
+    if (array) {
+        [array removeAllObjects];
+    }
+}
+
+- (void)performBlocks
+{
+    NSArray *allValues = self.blocks.allValues;
+    for (NSArray *blocks in allValues) {
+        for (KKAppearanceBlock block in blocks) {
+            block(_style == KKAppearanceStyleLight);
+        }
+    }
+}
+
+- (void)dealloc
+{
+    if (@available(macOS 10.14, *)) {
         [self.app removeObserver:self forKeyPath:kEffectiveAppearanceKey];
     }
 }
@@ -119,6 +174,19 @@ BOOL KKCurrentAppearanceIsLight(void)
 
 @end
 
+@implementation NSObject (KKAppearanceManager)
+
+- (void)appearanceBlock:(KKAppearanceBlock)block
+{
+    [[KKAppearanceManager manager] addAppearanceObserver:self block:block];
+}
+
+- (void)removeAppearanceBlocks
+{
+    [[KKAppearanceManager manager] removeAppearanceObserver:self];
+}
+
+@end
 
 @implementation NSColor (KKAppearanceManager)
 
@@ -134,14 +202,7 @@ BOOL KKCurrentAppearanceIsLight(void)
 
 + (NSColor *)systemHighlightColor
 {
-    return [self highlightColor];
-}
-
-+ (NSColor *)colorWithDynamicProvider:(NSColor * (^)(KKAppearanceStyle style))dynamicProvider
-{
-    
-    
-    return nil;
+    return [self selectedTextBackgroundColor];
 }
 
 @end

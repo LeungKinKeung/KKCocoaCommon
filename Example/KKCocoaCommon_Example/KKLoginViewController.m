@@ -8,6 +8,7 @@
 
 #import "KKLoginViewController.h"
 #import <KKCocoaCommon/KKCocoaCommon.h>
+#import "KKMainViewController.h"
 
 @interface KKLoginViewController ()<KKTextFieldDelegate>
 @property (nonatomic, strong) NSVisualEffectView *blurView;
@@ -21,14 +22,22 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.view.layerBackgroundColor = NSColor.windowBackgroundColor;
-    {
-        NSVisualEffectView *view    = [NSVisualEffectView new];
-        view.state                  = NSVisualEffectStateActive;
-        view.blendingMode           = NSVisualEffectBlendingModeBehindWindow;
-        self.blurView               = view;
-        [self.view addSubview:view];
-    }
+    self.view.layerBackgroundColor = NSColor.clearColor;
+    __weak typeof(self) weakSelf = self;
+    [self appearanceBlock:^(BOOL isLight) {
+        NSArray *colors =
+        isLight ?
+        @[[NSColor colorWithWhite:1 alpha:1],[NSColor colorWithWhite:0.85 alpha:1]] :
+        @[[NSColor colorWithWhite:0.2 alpha:1],[NSColor colorWithWhite:0 alpha:1]];
+        [weakSelf setGradientLayerColors:colors];
+    }];
+//    {
+//        NSVisualEffectView *view    = [NSVisualEffectView new];
+//        view.state                  = NSVisualEffectStateActive;
+//        view.blendingMode           = NSVisualEffectBlendingModeBehindWindow;
+//        self.blurView               = view;
+//        [self.view addSubview:view];
+//    }
     {
         KKTextField *textField  = [KKTextField new];
         textField.placeholder   = @"Account";
@@ -77,12 +86,12 @@
 
 - (void)loginButtonClick:(NSButton *)sender
 {
-    KKProgressHUD *hud = [KKProgressHUD showHUDAddedTo:sender.window mode:KKProgressHUDModeIndeterminate title:@"登录中..." animated:YES];
-    [hud hideAnimated:YES afterDelay:5];
-    //[KKProgressHUD showTextHUDAddedTo:sender.window title:@"登录中..." hideAfterDelay:5 animated:YES];
+    KKProgressHUD *hud = [KKProgressHUD showLoadingTextHUDAddedTo:self.view title:@"登录中..." animated:YES];
+    [hud hideAnimated:YES afterDelay:3];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        hud.label.text = @"登录中...请稍等...请稍等...请稍等...请稍等...请稍等...请稍等...请稍等";
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        
+        [self.navigationView pushViewController:[KKMainViewController new] animated:YES];
     });
 }
 
@@ -104,6 +113,11 @@
     
     self.loginButton.frame =
     CGRectMake(spacing, CGRectGetMinY(self.passwordTextField.frame) - 15 - height, width, height);
+}
+
+- (void)dealloc
+{
+    [self removeAppearanceBlocks];
 }
 
 @end

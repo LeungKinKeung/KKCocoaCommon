@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1889273B254F04BE00E364FB /* KKMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1889273A254F04BE00E364FB /* KKMainViewController.m */; };
 		3876A39C254AA4AC00FEDD5B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A39B254AA4AC00FEDD5B /* AppDelegate.m */; };
 		3876A39F254AA4AC00FEDD5B /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A39E254AA4AC00FEDD5B /* ViewController.m */; };
 		3876A3A1254AA4AD00FEDD5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3876A3A0254AA4AD00FEDD5B /* Assets.xcassets */; };
@@ -19,6 +20,8 @@
 
 /* Begin PBXFileReference section */
 		105DBE7C9EE867033B4E26B7 /* Pods-KKCocoaCommon_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KKCocoaCommon_Example.debug.xcconfig"; path = "Target Support Files/Pods-KKCocoaCommon_Example/Pods-KKCocoaCommon_Example.debug.xcconfig"; sourceTree = "<group>"; };
+		18892739254F04BE00E364FB /* KKMainViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKMainViewController.h; sourceTree = "<group>"; };
+		1889273A254F04BE00E364FB /* KKMainViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKMainViewController.m; sourceTree = "<group>"; };
 		3876A397254AA4AC00FEDD5B /* KKCocoaCommon_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KKCocoaCommon_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3876A39A254AA4AC00FEDD5B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		3876A39B254AA4AC00FEDD5B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -76,6 +79,8 @@
 				3876A39E254AA4AC00FEDD5B /* ViewController.m */,
 				3876A405254AB77D00FEDD5B /* KKLoginViewController.h */,
 				3876A406254AB77D00FEDD5B /* KKLoginViewController.m */,
+				18892739254F04BE00E364FB /* KKMainViewController.h */,
+				1889273A254F04BE00E364FB /* KKMainViewController.m */,
 				3876A57F254C0C3000FEDD5B /* KKWindow.h */,
 				3876A580254C0C3000FEDD5B /* KKWindow.m */,
 				3876A3A0254AA4AD00FEDD5B /* Assets.xcassets */,
@@ -221,6 +226,7 @@
 				3876A407254AB77D00FEDD5B /* KKLoginViewController.m in Sources */,
 				3876A581254C0C3000FEDD5B /* KKWindow.m in Sources */,
 				3876A39F254AA4AC00FEDD5B /* ViewController.m in Sources */,
+				1889273B254F04BE00E364FB /* KKMainViewController.m in Sources */,
 				3876A3A7254AA4AD00FEDD5B /* main.m in Sources */,
 				3876A39C254AA4AC00FEDD5B /* AppDelegate.m in Sources */,
 			);

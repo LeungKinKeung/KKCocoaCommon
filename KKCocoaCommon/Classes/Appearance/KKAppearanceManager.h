@@ -9,9 +9,13 @@
 #import <Cocoa/Cocoa.h>
 
 /// 系统外观更改通知
-OBJC_EXTERN NSNotificationName const KKAppearanceDidChangeNotification;
-/// 当前外观样式是白色
-OBJC_EXTERN BOOL KKCurrentAppearanceIsLight(void);
+OBJC_EXTERN NSNotificationName const KKAppAppearanceDidChangeNotification;
+/// 当前App外观样式是白色的
+OBJC_EXTERN BOOL KKAppAppearanceIsLight(void);
+/// 此视图的外观样式是白色的
+OBJC_EXTERN BOOL KKViewAppearanceIsLight(NSView *view);
+
+typedef void(^KKAppearanceBlock)(BOOL isLight);
 
 /// 外观样式枚举
 typedef NS_ENUM(NSUInteger, KKAppearanceStyle) {
@@ -29,6 +33,23 @@ typedef NS_ENUM(NSUInteger, KKAppearanceStyle) {
 
 /// 当前APP的外观
 @property (nonatomic, readonly) NSAppearance *appearance;
+
+/// 在里面设置颜色，外观更改时也会调用
+- (void)addAppearanceObserver:(NSObject *)observer block:(KKAppearanceBlock)block;
+
+/// 移除此observer的所有block
+- (void)removeAppearanceObserver:(NSObject *)observer;
+
+@end
+
+
+@interface NSObject (KKAppearanceManager)
+
+/// 在里面设置颜色，外观更改时也会调用
+- (void)appearanceBlock:(KKAppearanceBlock)block;
+
+/// 移除此observer的所有block
+- (void)removeAppearanceBlocks;
 
 @end
 

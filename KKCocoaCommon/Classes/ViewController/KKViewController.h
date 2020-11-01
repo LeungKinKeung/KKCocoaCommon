@@ -14,4 +14,7 @@
 /// 背景渐变图层（如需要，直接[self gradientLayer]）
 @property (nonatomic, strong) CAGradientLayer *gradientLayer;
 
+/// 背景渐变色
+- (void)setGradientLayerColors:(NSArray <NSColor *>*)colors;
+
 @end

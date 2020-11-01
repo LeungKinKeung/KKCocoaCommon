@@ -19,6 +19,7 @@
 #import "NSMenu+KK.h"
 #import "KKCollectionViewCell.h"
 #import "KKCornerCollectionViewCell.h"
+#import "KKTextCollectionViewCell.h"
 #import "KKDisplayLink.h"
 #import "KKProgressHUD.h"
 #import "KKLoopRotateImageView.h"

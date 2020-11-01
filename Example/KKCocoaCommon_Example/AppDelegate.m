@@ -19,7 +19,19 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     // Insert code here to initialize your application
     
+    //[NSApplication sharedApplication].appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
+    
+    [KKAppearanceManager manager];
+    
     [NSApplication sharedApplication].mainWindow.contentView.rootViewController = [KKLoginViewController new];
+}
+
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag
+{
+    if (!flag) {
+        [[NSApplication sharedApplication].windows.firstObject makeKeyAndOrderFront:nil];
+    }
+    return YES;
 }
 
 

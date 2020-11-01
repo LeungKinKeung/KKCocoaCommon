@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger, KKProgressHUDMode) {
     /// Loading，NSProgressIndicator(indeterminate:YES, style:NSProgressIndicatorStyleSpinning)
     KKProgressHUDModeIndeterminate,
+    /// Loading，NSProgressIndicator(indeterminate:YES, style:NSProgressIndicatorStyleSpinning,controlSize:NSControlSizeSmall)，进度指示器在左边，文本在右边
+    KKProgressHUDModeLoadingText,
     /// 圆形进度，NSProgressIndicator(indeterminate:NO, style:NSProgressIndicatorStyleSpinning)
     KKProgressHUDModeDeterminate,
     /// 横条进度，NSProgressIndicator(indeterminate:NO, style:NSProgressIndicatorStyleBar)
@@ -25,9 +27,16 @@ typedef NS_ENUM(NSInteger, KKProgressHUDMode) {
     KKProgressHUDModeText
 };
 
+typedef NS_ENUM(NSUInteger, KKProgressHUDBackgroundStyle) {
+    /// 模糊，假如底下已存在NSVisualEffectView视图，会出现bug（设置为黑色hud.appearance = [NSAppearance appearanceNamed:NSAppearanceNameVibrantDark];）
+    KKProgressHUDBackgroundStyleBlur,
+    /// 纯色，假如不设置背景就使用0.95的白色或黑色
+    KKProgressHUDBackgroundStyleSolidColor,
+};
+
 @interface KKProgressHUD : NSView
 
-/// 添加并显示HUD（设置为黑色.appearance = [NSAppearance appearanceNamed:NSAppearanceNameVibrantDark];）
+/// 添加并显示HUD
 /// @param target 视图(NSView)、视图控制器(NSViewController)、窗口(NSWindow)或屏幕（NSScreen或传nil即可）
 /// @param mode 模式
 /// @param title 标题
@@ -36,6 +45,9 @@ typedef NS_ENUM(NSInteger, KKProgressHUDMode) {
 
 /// 添加并显示文本HUD
 + (instancetype)showTextHUDAddedTo:(_Nullable id)target title:(NSString *)title hideAfterDelay:(NSTimeInterval)delay animated:(BOOL)animated;
+
+/// 添加并显示Loading和文本HUD
++ (instancetype)showLoadingTextHUDAddedTo:(_Nullable id)target title:(NSString *)title animated:(BOOL)animated;
 
 /// 添加并显示HUD
 + (instancetype)showHUDAddedTo:(_Nullable id)target animated:(BOOL)animated;
@@ -56,8 +68,10 @@ typedef NS_ENUM(NSInteger, KKProgressHUDMode) {
 
 /// 模式
 @property (nonatomic, assign) KKProgressHUDMode mode;
-/// 约束视图
-@property (nonatomic, strong) NSVisualEffectView *blurView;
+/// 背景样式
+@property (nonatomic, assign) KKProgressHUDBackgroundStyle style;
+/// 背景色
+@property (nonatomic, strong) NSColor *backgroundColor;
 /// 进度指示器
 @property (nonatomic, strong) NSProgressIndicator *progressIndicator;
 /// 自定义视图，如果不是NSControl子类且frame为空，就会被强制设为37*37大小
@@ -71,13 +85,21 @@ typedef NS_ENUM(NSInteger, KKProgressHUDMode) {
 /// 中心偏移，默认：{0,0}
 @property (nonatomic, assign) CGPoint centerOffset;
 /// 子视图之间的行距，默认：10
-@property (nonatomic, assign) CGFloat lineSpacing;
+@property (nonatomic, assign) CGFloat subviewsSpacing;
 /// 约束视图最大宽度，默认：296
 @property (nonatomic, assign) CGFloat maxLayoutWidth;
 /// 如果可以的话，约束宽度和高度一致
 @property (nonatomic, assign, getter = isSquare) BOOL square;
 /// 进度（0 ~ 1.0）
 @property (nonatomic, readwrite) double progress;
+/// 显示动画的时长，默认：0.2
+@property (nonatomic, class) CGFloat showAnimationDuration;
+/// 缩放动画的时长，默认：0.1
+@property (nonatomic, class) CGFloat scaleAnimationDuration;
+/// 默认的背景样式
+@property (nonatomic, class) KKProgressHUDBackgroundStyle defaultStyle;
+/// 默认的背景色
+@property (nonatomic, class) NSColor *defaultBackgroundColor;
 
 /// 默认实例
 + (instancetype)hud;

@@ -44,6 +44,21 @@
     return _gradientLayer;
 }
 
+- (void)setGradientLayerColors:(NSArray<NSColor *> *)colors
+{
+    NSMutableArray *cgcolors = [NSMutableArray array];
+    for (NSColor *color in colors) {
+        id value = (__bridge id)color.CGColor;
+        if (value) {
+            [cgcolors addObject:value];
+        }
+    }
+    if (cgcolors.count == 0) {
+        return;
+    }
+    self.gradientLayer.colors = cgcolors;
+}
+
 - (void)viewDidLayout
 {
     [super viewDidLayout];

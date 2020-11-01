@@ -33,4 +33,7 @@ FOUNDATION_EXPORT const unsigned char PacketProcessorVersionString[];
 #import "KKProgressHUD.h"
 #import "KKViewController.h"
 #import "KKCornerCollectionViewCell.h"
+#import "KKTextCollectionViewCell.h"
 #import "KKUserNotificationCenter.h"
+#import "KKDisplayLink.h"
+#import "KKAppearanceManager.h"
