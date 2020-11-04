@@ -30,7 +30,7 @@ typedef NS_ENUM(NSInteger, KKProgressHUDMode) {
 typedef NS_ENUM(NSUInteger, KKProgressHUDBackgroundStyle) {
     /// 模糊，假如底下已存在NSVisualEffectView视图，会出现bug（设置为黑色hud.appearance = [NSAppearance appearanceNamed:NSAppearanceNameVibrantDark];）
     KKProgressHUDBackgroundStyleBlur,
-    /// 纯色，假如不设置背景就使用0.95的白色或黑色
+    /// 纯色，假如不设置背景色就使用0.95的白色或0.9的黑色
     KKProgressHUDBackgroundStyleSolidColor,
 };
 
@@ -85,7 +85,7 @@ typedef NS_ENUM(NSUInteger, KKProgressHUDBackgroundStyle) {
 /// 中心偏移，默认：{0,0}
 @property (nonatomic, assign) CGPoint centerOffset;
 /// 子视图之间的行距，默认：10
-@property (nonatomic, assign) CGFloat subviewsSpacing;
+@property (nonatomic, assign) CGFloat interitemSpacing;
 /// 约束视图最大宽度，默认：296
 @property (nonatomic, assign) CGFloat maxLayoutWidth;
 /// 如果可以的话，约束宽度和高度一致
@@ -100,6 +100,10 @@ typedef NS_ENUM(NSUInteger, KKProgressHUDBackgroundStyle) {
 @property (nonatomic, class) KKProgressHUDBackgroundStyle defaultStyle;
 /// 默认的背景色
 @property (nonatomic, class) NSColor *defaultBackgroundColor;
+/// Label默认的字体
+@property (nonatomic, class) NSFont *defaultLabelFont;
+/// DetailLabel默认的字体
+@property (nonatomic, class) NSFont *defaultDetailLabelFont;
 
 /// 默认实例
 + (instancetype)hud;

@@ -86,11 +86,11 @@
 
 - (void)loginButtonClick:(NSButton *)sender
 {
-    KKProgressHUD *hud = [KKProgressHUD showLoadingTextHUDAddedTo:self.view title:@"登录中..." animated:YES];
-    [hud hideAnimated:YES afterDelay:3];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        
+    KKProgressHUD *hud = [KKProgressHUD showLoadingTextHUDAddedTo:self.view title:@"Login..." animated:YES];
+    [hud hideAnimated:YES afterDelay:1];
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+
         [self.navigationView pushViewController:[KKMainViewController new] animated:YES];
     });
 }

@@ -17,6 +17,7 @@
 #import "NSColor+KK.h"
 #import "NSImage+KK.h"
 #import "NSMenu+KK.h"
+#import "NSTask+KK.h"
 #import "KKCollectionViewCell.h"
 #import "KKCornerCollectionViewCell.h"
 #import "KKTextCollectionViewCell.h"

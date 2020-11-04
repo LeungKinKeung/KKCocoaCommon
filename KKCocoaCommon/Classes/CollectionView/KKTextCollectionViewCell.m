@@ -19,8 +19,8 @@
     [super viewDidLoad];
     
     self.view.wantsLayer            = YES;
-    self.view.layer.backgroundColor = NSColor.whiteColor.CGColor;
-    
+    self.view.layer.backgroundColor = [self getBackgroundColor].CGColor;
+    self.masksToCorners             = YES;
     {
         NSTextField *label  = [NSTextField label];
         label.text          = @"";
@@ -42,12 +42,25 @@
 
 - (NSArray *)observableKeypaths
 {
-    return @[@"titleLabel.stringValue", @"titleLabel.attributedStringValue", @"titleLabel.font", @"accessoryImageView.image"];
+    return @[@"titleLabel.stringValue", @"titleLabel.attributedStringValue", @"titleLabel.font", @"accessoryImageView.image", @"view.effectiveAppearance"];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
 {
-    [self.view setNeedsLayout:YES];
+    if ([keyPath isEqualToString:@"view.effectiveAppearance"]) {
+        self.view.layer.backgroundColor = [self getBackgroundColor].CGColor;
+    } else {
+        [self.view setNeedsLayout:YES];
+    }
+}
+
+- (NSColor *)getBackgroundColor
+{
+    if ([self.view.effectiveAppearance.name isEqualToString:NSAppearanceNameAqua]) {
+        return NSColor.whiteColor;
+    } else {
+        return NSColor.blackColor;
+    }
 }
 
 - (void)viewDidLayout

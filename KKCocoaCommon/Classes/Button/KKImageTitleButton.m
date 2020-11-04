@@ -218,6 +218,7 @@
     _contentSpacing = contentSpacing;
     [self buttonCell].contentSpacing = contentSpacing;
     [self sizeToFit];
+    //[self invalidateIntrinsicContentSize];
 }
 
 - (void)setEdgeInset:(NSEdgeInsets)edgeInset
@@ -225,6 +226,7 @@
     _edgeInset = edgeInset;
     [self buttonCell].edgeInset = edgeInset;
     [self sizeToFit];
+    //[self invalidateIntrinsicContentSize];
 }
 
 + (instancetype)buttonWithImage:(NSImage *)image title:(NSString *)title

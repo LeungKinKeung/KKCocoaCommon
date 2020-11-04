@@ -109,31 +109,31 @@ double CircularEaseIn(double p)
 
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint completionBlock:(KKAnimationCompletionBlock)completionBlock
 {
-    return [self addCAAnimationWithDuration:duration fromPoint:fromPoint toPoint:toPoint forKey:nil completionBlock:completionBlock];
+    return [self addCAAnimationWithDuration:duration fromPoint:fromPoint toPoint:toPoint forKey:nil removedOnCompletion:NO completionBlock:completionBlock];
 }
 
-- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint forKey:(NSString *)key completionBlock:(KKAnimationCompletionBlock)completionBlock
+- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock
 {
-    CAAnimationGroup *animation =
+    CAAnimationGroup *animation     =
     [CAAnimationGroup animationGroupWithDuration:duration fromPoint:fromPoint toPoint:toPoint completionBlock:completionBlock];
-    
-    self.wantsLayer = YES;
-    [self.layer addAnimation:animation forKey:nil];
+    animation.removedOnCompletion   = removedOnCompletion;
+    self.wantsLayer                 = YES;
+    [self.layer addAnimation:animation forKey:key];
     
     return animation;
 }
 
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity completionBlock:(KKAnimationCompletionBlock)completionBlock
 {
-    return [self addCAAnimationWithDuration:duration fromPoint:fromPoint toPoint:toPoint fromOpacity:fromOpacity toOpacity:toOpacity forKey:nil completionBlock:completionBlock];
+    return [self addCAAnimationWithDuration:duration fromPoint:fromPoint toPoint:toPoint fromOpacity:fromOpacity toOpacity:toOpacity forKey:nil removedOnCompletion:NO completionBlock:completionBlock];
 }
 
-- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key completionBlock:(KKAnimationCompletionBlock)completionBlock
+- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock
 {
-    CAAnimationGroup *animation =
+    CAAnimationGroup *animation     =
     [CAAnimationGroup animationGroupWithDuration:duration fromPoint:fromPoint toPoint:toPoint fromOpacity:fromOpacity toOpacity:toOpacity completionBlock:completionBlock];
-    
-    self.wantsLayer = YES;
+    animation.removedOnCompletion   = removedOnCompletion;
+    self.wantsLayer                 = YES;
     [self.layer addAnimation:animation forKey:key];
     
     return animation;

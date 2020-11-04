@@ -11,6 +11,7 @@
 
 @interface AppDelegate ()
 
+@property (nonatomic, strong) NSWindowController *mainWindowController;
 
 @end
 
@@ -23,7 +24,16 @@
     
     [KKAppearanceManager manager];
     
-    [NSApplication sharedApplication].mainWindow.contentView.rootViewController = [KKLoginViewController new];
+    // 主窗口
+    NSString *mainStoryboardFileName    =
+    [[NSBundle mainBundle].infoDictionary valueForKey:@"NSMainStoryboardFile"];
+    NSStoryboard *mainStoryboard        =
+    [NSStoryboard storyboardWithName:mainStoryboardFileName bundle:[NSBundle mainBundle]];
+    NSWindowController *controller      = [mainStoryboard instantiateControllerWithIdentifier:@"Main"];
+    self.mainWindowController           = controller;
+    [controller.window makeKeyWindow];
+    [controller showWindow:nil];
+    controller.window.contentView.rootViewController = [KKLoginViewController new];
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag

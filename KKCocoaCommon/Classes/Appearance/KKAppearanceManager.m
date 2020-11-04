@@ -7,7 +7,6 @@
 //
 
 #import "KKAppearanceManager.h"
-#import "NSColor+KK.h"
 #import <objc/runtime.h>
 
 static NSString *kEffectiveAppearanceKey = @"effectiveAppearance";

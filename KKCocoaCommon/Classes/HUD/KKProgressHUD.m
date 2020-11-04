@@ -10,14 +10,13 @@
 #import "NSView+KKAnimation.h"
 
 static NSString *kEffectiveAppearanceKey = @"effectiveAppearance";
-static NSString *kStringValueKey = @"stringValue";
-static NSString *kFontKey = @"font";
-static NSString *kAttributedStringValueKey = @"attributedStringValue";
 
-static CGFloat _showAnimationDuration = 0.2;
-static CGFloat _scaleAnimationDuration = 0.1;
+static CGFloat _showAnimationDuration   = 0.2;
+static CGFloat _scaleAnimationDuration  = 0.1;
 static KKProgressHUDBackgroundStyle _defaultStyle = KKProgressHUDBackgroundStyleBlur;
 static NSColor *_defaultBackgroundColor = nil;
+static NSFont *_defaultLabelFont        = nil;
+static NSFont *_defaultDetailLabelFont  = nil;
 
 @interface KKHUDFlippedVisualEffectView : NSVisualEffectView
 
@@ -67,12 +66,19 @@ static NSColor *_defaultBackgroundColor = nil;
 @property (nonatomic, weak) NSScreen *currentScreen;
 @property (nonatomic, strong) NSWindowController *windowController;
 @property (nonatomic, strong) NSVisualEffectView *blurView;
-@property (nonatomic, strong) NSView *containerView;
+@property (nonatomic, strong) NSView *solidColorView;
+@property (nonatomic, readonly) NSView *containerView;
 @property (nonatomic, assign) BOOL viewDidDraw;
 
 @end
 
 @implementation KKProgressHUD
+
++ (void)initialize
+{
+    _defaultLabelFont       = [NSFont systemFontOfSize:16];
+    _defaultDetailLabelFont = [NSFont systemFontOfSize:14];;
+}
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -96,11 +102,14 @@ static NSColor *_defaultBackgroundColor = nil;
 {
     self.layerBackgroundColor   = NSColor.clearColor;
     _margin             = 24;
-    _subviewsSpacing    = 10;
+    _interitemSpacing   = 10;
     _maxLayoutWidth     = 296;
     _square             = YES;
     _mode               = KKProgressHUDModeIndeterminate;
-    [self addObserver:self forKeyPath:kEffectiveAppearanceKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
+    
+    for (NSString *keypath in [self observableKeypaths]) {
+        [self addObserver:self forKeyPath:keypath options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
+    }
 }
 
 + (instancetype)showHUDAddedTo:(id)target mode:(KKProgressHUDMode)mode title:(NSString *)title animated:(BOOL)animated
@@ -123,10 +132,9 @@ static NSColor *_defaultBackgroundColor = nil;
 
 + (instancetype)showLoadingTextHUDAddedTo:(_Nullable id)target title:(NSString *)title animated:(BOOL)animated
 {
-    KKProgressHUD *hud  = [self showHUDAddedTo:target mode:KKProgressHUDModeLoadingText title:title animated:animated];
-    hud.margin          = 10;
-    hud.subviewsSpacing = 5;
-    hud.label.font      = [NSFont systemFontOfSize:16];
+    KKProgressHUD *hud      = [self showHUDAddedTo:target mode:KKProgressHUDModeLoadingText title:title animated:animated];
+    hud.margin              = 10;
+    hud.interitemSpacing    = 5;
     return hud;
 }
 
@@ -223,9 +231,6 @@ static NSColor *_defaultBackgroundColor = nil;
     // 停止所有的编辑（editing）和聚焦（focus）
     [view.window makeFirstResponder:nil];
     
-    self.containerView.wantsLayer            = YES;
-    self.containerView.layer.cornerRadius    = 6.0;
-    self.containerView.layer.masksToBounds   = YES;
     self.blurView.blendingMode  = NSVisualEffectBlendingModeWithinWindow;
     self.style              = _defaultStyle;
     
@@ -300,20 +305,25 @@ static NSColor *_defaultBackgroundColor = nil;
     if (_blurView == nil) {
         _blurView = [KKHUDFlippedVisualEffectView new];
         _blurView.state = NSVisualEffectStateActive;
+        [self addSubview:_blurView];
     }
     return _blurView;
 }
 
+- (NSView *)solidColorView
+{
+    if (_solidColorView == nil) {
+        _solidColorView = [KKHUDFlippedBackgroundView new];
+        _solidColorView.wantsLayer = YES;
+        _solidColorView.layer.backgroundColor = NSColor.clearColor.CGColor;
+        [self addSubview:_solidColorView];
+    }
+    return _solidColorView;
+}
+
 - (NSView *)containerView
 {
-    if (_containerView == nil) {
-        _containerView = [KKHUDFlippedBackgroundView new];
-        _containerView.wantsLayer = YES;
-        _containerView.layer.backgroundColor = NSColor.clearColor.CGColor;
-        [self addSubview:_containerView];
-        [_containerView addSubview:self.blurView];
-    }
-    return _containerView;
+    return self.style == KKProgressHUDBackgroundStyleBlur ? self.blurView : self.solidColorView;
 }
 
 - (NSProgressIndicator *)progressIndicator
@@ -333,12 +343,9 @@ static NSColor *_defaultBackgroundColor = nil;
     if (_label == nil) {
         _label              = [NSTextField label];
         _label.alignment    = NSTextAlignmentCenter;
-        _label.font         = [NSFont systemFontOfSize:18];
+        _label.font         = _defaultLabelFont;
         _label.lineBreakMode= NSLineBreakByWordWrapping;
         [self.containerView addSubview:_label];
-        [_label addObserver:self forKeyPath:kStringValueKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
-        [_label addObserver:self forKeyPath:kAttributedStringValueKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
-        [_label addObserver:self forKeyPath:kFontKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
     }
     return _label;
 }
@@ -348,15 +355,21 @@ static NSColor *_defaultBackgroundColor = nil;
     if (_detailsLabel == nil) {
         _detailsLabel           = [NSTextField label];
         _detailsLabel.alignment = NSTextAlignmentCenter;
-        _detailsLabel.font      = [NSFont systemFontOfSize:14];
+        _detailsLabel.font      = _defaultDetailLabelFont;
         _detailsLabel.alphaValue= 0.8;
         _detailsLabel.lineBreakMode = NSLineBreakByWordWrapping;
-        [_detailsLabel addObserver:self forKeyPath:kStringValueKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
-        [_detailsLabel addObserver:self forKeyPath:kAttributedStringValueKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
-        [_detailsLabel addObserver:self forKeyPath:kFontKey options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
         [self.containerView addSubview:_detailsLabel];
     }
     return _detailsLabel;
+}
+
+- (NSArray *)observableKeypaths
+{
+    static NSArray *observableKeypaths = nil;
+    if (observableKeypaths == nil) {
+        observableKeypaths = @[@"label.stringValue", @"label.attributedStringValue", @"label.font", @"detailsLabel.stringValue", @"detailsLabel.attributedStringValue", @"detailsLabel.font", kEffectiveAppearanceKey];
+    }
+    return observableKeypaths;
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
@@ -400,7 +413,7 @@ static NSColor *_defaultBackgroundColor = nil;
     CGFloat maxLayoutWidth  = self.maxLayoutWidth;
     CGFloat maxSubviewWidth = 0;
     CGFloat margin          = self.margin;
-    CGFloat subviewsSpacing = self.subviewsSpacing;
+    CGFloat subviewsSpacing = self.interitemSpacing;
     CGFloat topSpacing      = margin - subviewsSpacing;
     BOOL isSquare           = self.isSquare;
     if (self.windowController == nil && self.superview && self.superview.frame.size.width < maxLayoutWidth) {
@@ -472,6 +485,7 @@ static NSColor *_defaultBackgroundColor = nil;
     }
     if (_label != nil &&
         _label.superview != nil &&
+        _label.stringValue.length > 0 &&
         _label.isHidden == NO) {
         
         if (self.mode == KKProgressHUDModeLoadingText) {
@@ -490,6 +504,7 @@ static NSColor *_defaultBackgroundColor = nil;
     if (self.mode != KKProgressHUDModeLoadingText &&
         _detailsLabel != nil &&
         _detailsLabel.superview != nil &&
+        _detailsLabel.stringValue.length > 0 &&
         _detailsLabel.isHidden == NO) {
         CGSize size             = [_detailsLabel sizeThatFits:CGSizeMake(maxLayoutWidth - margin * 2, FLT_MAX)];
         detailsLabelFrame       = CGRectMake(0, topSpacing + subviewsSpacing, size.width, size.height);
@@ -541,7 +556,6 @@ static NSColor *_defaultBackgroundColor = nil;
     (selfSize.height - containerViewSize.height) * 0.5 + self.centerOffset.y;
     self.containerView.frame    =
     CGRectMake(containerViewX, containerViewY, containerViewSize.width, containerViewSize.height);
-    self.blurView.frame         = self.containerView.bounds;
 }
 
 - (void)layout
@@ -563,11 +577,33 @@ static NSColor *_defaultBackgroundColor = nil;
     
     self.blurView.hidden =
     KKProgressHUDBackgroundStyleBlur != style;
+    self.solidColorView.hidden =
+    KKProgressHUDBackgroundStyleSolidColor != style;
+    self.solidColorView.layerBackgroundColor = [self getBackgroundColor];
     
-    self.containerView.layerBackgroundColor =
-    KKProgressHUDBackgroundStyleBlur == style ?
-    NSColor.clearColor :
-    [self getBackgroundColor];
+    if (self.windowController == nil) {
+        self.containerView.wantsLayer            = YES;
+        self.containerView.layer.cornerRadius    = 6.0;
+        self.containerView.layer.masksToBounds   = YES;
+    }
+    
+    if (_progressIndicator.superview != self.containerView) {
+        [_progressIndicator removeFromSuperview];
+        [self.containerView addSubview:_progressIndicator];
+    }
+    if (_label.superview != self.containerView) {
+        [_label removeFromSuperview];
+        [self.containerView addSubview:_label];
+    }
+    if (_detailsLabel.superview != self.containerView) {
+        [_detailsLabel removeFromSuperview];
+        [self.containerView addSubview:_detailsLabel];
+    }
+    if (_customView.superview != self.containerView) {
+        [_customView removeFromSuperview];
+        [self.containerView addSubview:_customView];
+    }
+    [self setNeedsLayout:YES];
 }
 
 - (void)setBackgroundColor:(NSColor *)backgroundColor
@@ -582,9 +618,9 @@ static NSColor *_defaultBackgroundColor = nil;
     [self setNeedsLayout:YES];
 }
 
-- (void)setSubviewsSpacing:(CGFloat)subviewsSpacing
+- (void)setInteritemSpacing:(CGFloat)interitemSpacing
 {
-    _subviewsSpacing = subviewsSpacing;
+    _interitemSpacing = interitemSpacing;
     [self setNeedsLayout:YES];
 }
 
@@ -650,6 +686,26 @@ static NSColor *_defaultBackgroundColor = nil;
     return _defaultBackgroundColor;
 }
 
++ (void)setDefaultLabelFont:(NSFont *)defaultLabelFont
+{
+    _defaultLabelFont = defaultLabelFont;
+}
+
++ (NSFont *)defaultLabelFont
+{
+    return _defaultLabelFont;
+}
+
++ (void)setDefaultDetailLabelFont:(NSFont *)defaultDetailLabelFont
+{
+    _defaultDetailLabelFont = defaultDetailLabelFont;
+}
+
++ (NSFont *)defaultDetailLabelFont
+{
+    return _defaultDetailLabelFont;
+}
+
 - (NSColor *)getBackgroundColor
 {
     if (_backgroundColor) {
@@ -697,18 +753,9 @@ static NSColor *_defaultBackgroundColor = nil;
 
 - (void)dealloc
 {
-    if (_label) {
-        [_label removeObserver:self forKeyPath:kStringValueKey];
-        [_label removeObserver:self forKeyPath:kAttributedStringValueKey];
-        [_label removeObserver:self forKeyPath:kFontKey];
+    for (NSString *keypath in [self observableKeypaths]) {
+        [self removeObserver:self forKeyPath:keypath];
     }
-    if (_detailsLabel) {
-        [_detailsLabel removeObserver:self forKeyPath:kStringValueKey];
-        [_detailsLabel removeObserver:self forKeyPath:kAttributedStringValueKey];
-        [_detailsLabel removeObserver:self forKeyPath:kFontKey];
-    }
-    [self removeObserver:self forKeyPath:kEffectiveAppearanceKey];
-    
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 

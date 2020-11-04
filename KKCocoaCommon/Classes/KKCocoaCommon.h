@@ -28,6 +28,7 @@ FOUNDATION_EXPORT const unsigned char PacketProcessorVersionString[];
 #import "NSColor+KK.h"
 #import "NSImage+KK.h"
 #import "NSMenu+KK.h"
+#import "NSTask+KK.h"
 
 #import "KKLoopRotateImageView.h"
 #import "KKProgressHUD.h"

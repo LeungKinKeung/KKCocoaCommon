@@ -47,21 +47,35 @@
         view.borderType         = NSNoBorder;
         view.backgroundColor    = NSColor.clearColor;
         view.drawsBackground    = NO;
-        view.appearance         = [NSAppearance appearanceNamed:NSAppearanceNameVibrantLight];
         view.scrollerStyle      = NSScrollerStyleOverlay;
         self.scrollView         = view;
         [self.view addSubview:view];
         view.frame              = self.view.bounds;
         view.autoresizingMask   = NSViewHeightSizable | NSViewWidthSizable;
     }
+    self.navigationBar.titleLabel.text = @"Choice Item";
+    
+//    NSButton *button = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
+//    button.image = [NSImage imageNamed:NSImageNameShareTemplate];
+//    
+//    NSButton *button2 = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
+//    button2.image = [NSImage imageNamed:NSImageNameAddTemplate];
+//    self.navigationBar.rightBarButtonItems = @[button,button2];
+//    
+//    NSButton *button3 = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
+//    button3.image = [NSImage imageNamed:NSImageNameHomeTemplate];
+//    self.navigationBar.leftBarButtonItems = @[button3];
 }
 
 - (void)viewDidLayout
 {
     [super viewDidLayout];
     
+    CGFloat barHeigth = self.navigationBar.frame.size.height;
     self.scrollView.frame =
-    CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height - 50);
+    CGRectMake(0, self.view.isFlipped ? barHeigth : 0, self.view.bounds.size.width, self.view.bounds.size.height - barHeigth);
+    
+    [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
 #pragma mark - NSCollectionViewDataSource
@@ -90,7 +104,7 @@
 #pragma mark NSCollectionViewDelegate
 - (NSSize)collectionView:(NSCollectionView *)collectionView layout:(NSCollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    return CGSizeMake(collectionView.bounds.size.width - 10 * 2, 80);;
+    return CGSizeMake(collectionView.bounds.size.width - 10 * 2, 50);;
 }
 
 - (CGFloat)collectionView:(NSCollectionView *)collectionView layout:(NSCollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section
@@ -101,6 +115,11 @@
 - (CGFloat)collectionView:(NSCollectionView *)collectionView layout:(NSCollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section
 {
     return 0;
+}
+
+- (void)dealloc
+{
+    [self removeAppearanceBlocks];
 }
 
 @end

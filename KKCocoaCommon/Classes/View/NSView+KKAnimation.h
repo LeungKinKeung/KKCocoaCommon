@@ -48,12 +48,12 @@ typedef void (^KKAnimationCompletionBlock)(BOOL animationFinished);
 /// 添加并执行位置移动动画
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint completionBlock:(KKAnimationCompletionBlock)completionBlock;
 
-- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint forKey:(NSString *)key completionBlock:(KKAnimationCompletionBlock)completionBlock;
+- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock;
 
 /// 添加并执行位置移动+透明度渐变动画
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity completionBlock:(KKAnimationCompletionBlock)completionBlock;
 
-- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key completionBlock:(KKAnimationCompletionBlock)completionBlock;
+- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock;
 
 /// 添加渐变动画
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key completionBlock:(KKAnimationCompletionBlock)completionBlock;

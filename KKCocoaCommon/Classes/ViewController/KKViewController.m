@@ -63,9 +63,13 @@
 {
     [super viewDidLayout];
     
+    [NSAnimationContext beginGrouping];
+    NSAnimationContext *ctx = [NSAnimationContext currentContext];
+    ctx.duration            = 0;
     if (_gradientLayer) {
         _gradientLayer.frame = self.view.layer.bounds;
     }
+    [NSAnimationContext endGrouping];
 }
 
 
