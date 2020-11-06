@@ -57,11 +57,11 @@
     
 //    NSButton *button = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
 //    button.image = [NSImage imageNamed:NSImageNameShareTemplate];
-//    
+//
 //    NSButton *button2 = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
 //    button2.image = [NSImage imageNamed:NSImageNameAddTemplate];
 //    self.navigationBar.rightBarButtonItems = @[button,button2];
-//    
+//
 //    NSButton *button3 = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
 //    button3.image = [NSImage imageNamed:NSImageNameHomeTemplate];
 //    self.navigationBar.leftBarButtonItems = @[button3];

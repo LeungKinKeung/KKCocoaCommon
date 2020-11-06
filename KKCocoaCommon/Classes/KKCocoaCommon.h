@@ -24,6 +24,9 @@ FOUNDATION_EXPORT const unsigned char PacketProcessorVersionString[];
 #import "KKImageTitleButton.h"
 #import "NSButton+KK.h"
 
+#import "KKClipView.h"
+#import "NSScrollView+KK.h"
+
 #import "NSBezierPath+KK.h"
 #import "NSColor+KK.h"
 #import "NSImage+KK.h"
@@ -35,6 +38,7 @@ FOUNDATION_EXPORT const unsigned char PacketProcessorVersionString[];
 #import "KKViewController.h"
 #import "KKCornerCollectionViewCell.h"
 #import "KKTextCollectionViewCell.h"
+#import "KKTableView.h"
 #import "KKUserNotificationCenter.h"
 #import "KKDisplayLink.h"
 #import "KKAppearanceManager.h"

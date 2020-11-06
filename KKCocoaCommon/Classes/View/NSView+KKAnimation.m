@@ -55,9 +55,29 @@
 
 @implementation CAAnimationGroup (KKAnimation)
 
-double CircularEaseIn(double p)
+double KKCircularEaseIn(double p)
 {
     return sqrt((2 - p) * p);
+}
+
+double KKBounceEaseOut(double p)
+{
+    if(p < 4/11.0)
+    {
+        return (121 * p * p)/16.0;
+    }
+    else if(p < 8/11.0)
+    {
+        return (363/40.0 * p * p) - (99/10.0 * p) + 17/5.0;
+    }
+    else if(p < 9/10.0)
+    {
+        return (4356/361.0 * p * p) - (35442/1805.0 * p) + 16061/1805.0;
+    }
+    else
+    {
+        return (54/5.0 * p * p) - (513/25.0 * p) + 268/25.0;
+    }
 }
 
 + (NSArray *)calculateFrameFromPoint:(CGPoint)fromPoint toPoint:(CGPoint)toPoint frameCount:(size_t)frameCount
@@ -66,9 +86,21 @@ double CircularEaseIn(double p)
     CGFloat t = 0.0;
     CGFloat dt = 1.0 / (frameCount - 1);
     for(size_t frame = 0; frame < frameCount; ++frame, t += dt) {
-        CGFloat x = fromPoint.x + CircularEaseIn(t) * (toPoint.x - fromPoint.x);
-        CGFloat y = fromPoint.y + CircularEaseIn(t) * (toPoint.y - fromPoint.y);
+        CGFloat x = fromPoint.x + KKCircularEaseIn(t) * (toPoint.x - fromPoint.x);
+        CGFloat y = fromPoint.y + KKCircularEaseIn(t) * (toPoint.y - fromPoint.y);
         [values addObject:[NSValue valueWithPoint:NSMakePoint(x, y)]];
+    }
+    return values;
+}
+
++ (NSArray *)calculateScaleFromValue:(CGFloat)fromValue toValue:(CGFloat)toValue frameCount:(size_t)frameCount
+{
+    NSMutableArray *values  = [NSMutableArray arrayWithCapacity:frameCount];
+    CGFloat t = 0.0;
+    CGFloat dt = 1.0 / (frameCount - 1);
+    for(size_t frame = 0; frame < frameCount; ++frame, t += dt) {
+        CGFloat value = fromValue + KKBounceEaseOut(t) * (toValue - fromValue);;
+        [values addObject:[NSNumber numberWithFloat:(float)value]];
     }
     return values;
 }
@@ -94,6 +126,36 @@ double CircularEaseIn(double p)
 + (instancetype)animationGroupWithDuration:(NSTimeInterval)duration fromPoint:(NSPoint)fromPoint toPoint:(NSPoint)toPoint fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity completionBlock:(KKAnimationCompletionBlock)completionBlock
 {
     CAAnimationGroup *group     = [CAAnimationGroup animationGroupWithDuration:duration fromPoint:fromPoint toPoint:toPoint completionBlock:completionBlock];
+    NSMutableArray *animations  = group.animations.mutableCopy;
+    CABasicAnimation *opacity   = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    opacity.fromValue           = [NSNumber numberWithFloat:fromOpacity];
+    opacity.toValue             = [NSNumber numberWithFloat:toOpacity];
+    [animations addObject:opacity];
+    group.animations            = animations;
+    return group;
+}
+
++ (instancetype)animationGroupWithDuration:(NSTimeInterval)duration fromScale:(CGFloat)fromScale toScale:(CGFloat)toScale completionBlock:(KKAnimationCompletionBlock)completionBlock
+{
+    CAAnimationGroup *group         = [CAAnimationGroup animation];
+    CAKeyframeAnimation *position   = [CAKeyframeAnimation animation];
+    position.keyPath                = @"transform.scale";
+    position.values                 = [self calculateScaleFromValue:fromScale toValue:toScale frameCount:30];
+    NSMutableArray *animations      = [NSMutableArray array];
+    [animations addObject:position];
+    group.animations                = animations;
+    group.duration                  = duration;
+    group.fillMode                  = kCAFillModeForwards;
+    group.removedOnCompletion       = NO;
+    if (completionBlock) {
+        group.delegate              = [KKCAAnimationDelegate delegateWithCompletionBlock:completionBlock];
+    }
+    return group;
+}
+
++ (instancetype)animationGroupWithDuration:(NSTimeInterval)duration fromScale:(CGFloat)fromScale toScale:(CGFloat)toScale fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity completionBlock:(KKAnimationCompletionBlock)completionBlock
+{
+    CAAnimationGroup *group     = [CAAnimationGroup animationGroupWithDuration:duration fromScale:fromScale toScale:toScale completionBlock:completionBlock];
     NSMutableArray *animations  = group.animations.mutableCopy;
     CABasicAnimation *opacity   = [CABasicAnimation animationWithKeyPath:@"opacity"];
     opacity.fromValue           = [NSNumber numberWithFloat:fromOpacity];
@@ -161,13 +223,25 @@ double CircularEaseIn(double p)
     self.wantsLayer             = YES;
     self.layer.position         = CGPointMake(CGRectGetMidX(self.frame) , CGRectGetMidY(self.frame));
     self.layer.anchorPoint      = CGPointMake(0.5, 0.5);
-    [self.layer addAnimation:animation forKey:nil];
+    [self.layer addAnimation:animation forKey:key];
     return animation;
 }
 
 - (CAAnimation *)addLoopRotateAnimationForKey:(NSString *)key
 {
     return [self addRotateAnimationWithDuration:1 startAngle:M_PI*2 endAngle:0 repeat:YES forKey:key];
+}
+
+- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromScale:(CGFloat)fromScale toScale:(CGFloat)toScale fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock
+{
+    CAAnimationGroup *animation     =
+    [CAAnimationGroup animationGroupWithDuration:duration fromScale:fromScale toScale:toScale fromOpacity:fromOpacity toOpacity:toOpacity completionBlock:completionBlock];
+    animation.removedOnCompletion   = removedOnCompletion;
+    self.wantsLayer                 = YES;
+    self.layer.position             = CGPointMake(CGRectGetMidX(self.frame) , CGRectGetMidY(self.frame));
+    self.layer.anchorPoint          = CGPointMake(0.5, 0.5);
+    [self.layer addAnimation:animation forKey:key];
+    return animation;
 }
 
 - (void)removeAllCAAnimations

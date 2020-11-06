@@ -21,7 +21,7 @@
 + (instancetype)buttonWithImage:(NSImage *)image title:(NSString *)title;
 
 /// 上下左右的间隔（使用Masonry布局后再设置无法生效）
-@property (nonatomic, assign) NSEdgeInsets edgeInset;
+@property (nonatomic, assign) NSEdgeInsets margin;
 
 /// 图片和标题的间隔，默认：7（使用Masonry布局后再设置无法生效）
 @property (nonatomic, assign) CGFloat contentSpacing;

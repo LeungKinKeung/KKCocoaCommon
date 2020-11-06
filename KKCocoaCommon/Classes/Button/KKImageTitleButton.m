@@ -10,7 +10,7 @@
 
 @interface KKImageTitleButtonCell : NSButtonCell
 
-@property (nonatomic, assign) NSEdgeInsets edgeInset;
+@property (nonatomic, assign) NSEdgeInsets margin;
 @property (nonatomic, assign) CGFloat contentSpacing;
 
 @end
@@ -36,16 +36,16 @@
         case NSImageRight:
         {
             // 图片在左侧/右侧
-            width   = titleSize.width + imageSize.width + self.edgeInset.left + self.edgeInset.right + self.contentSpacing;
-            height  = MAX(imageSize.height, titleSize.height) + self.edgeInset.top + self.edgeInset.bottom;
+            width   = titleSize.width + imageSize.width + self.margin.left + self.margin.right + self.contentSpacing;
+            height  = MAX(imageSize.height, titleSize.height) + self.margin.top + self.margin.bottom;
             break;
         }
         case NSImageAbove:
         case NSImageBelow:
         {
             // 图片在上侧/下侧
-            width   = MAX(titleSize.width, imageSize.width) + self.edgeInset.left + self.edgeInset.right;
-            height  = imageSize.height + titleSize.height + self.edgeInset.top + self.edgeInset.bottom + self.contentSpacing;
+            width   = MAX(titleSize.width, imageSize.width) + self.margin.left + self.margin.right;
+            height  = imageSize.height + titleSize.height + self.margin.top + self.margin.bottom + self.contentSpacing;
             break;
         }
         default:
@@ -66,7 +66,7 @@
     }
     CGSize titleSize    = self.attributedTitle.size;
     CGSize imageSize    = self.image.size;
-    NSEdgeInsets inset  = self.edgeInset;
+    NSEdgeInsets margin = self.margin;
     CGFloat rectX       = 0;
     CGFloat rectY       = 0;
     switch (self.imagePosition)
@@ -75,40 +75,40 @@
         {
             // 图片在左侧
             CGFloat contentWidth = titleSize.width + imageSize.width + self.contentSpacing;
-            CGFloat unusedWidth = rect.size.width - inset.left - inset.right - contentWidth;
+            CGFloat unusedWidth = rect.size.width - margin.left - margin.right - contentWidth;
             CGFloat alignmentSpacing = unusedWidth * 0.5;
-            rectX = inset.left + alignmentSpacing + imageSize.width + self.contentSpacing;
-            rectY = (rect.size.height - inset.top - inset.bottom - titleSize.height) * 0.5 + inset.top;
+            rectX = margin.left + alignmentSpacing + imageSize.width + self.contentSpacing;
+            rectY = (rect.size.height - margin.top - margin.bottom - titleSize.height) * 0.5 + margin.top;
             break;
         }
         case NSImageRight:
         {
             // 图片在右侧
             CGFloat contentWidth = titleSize.width + imageSize.width + self.contentSpacing;
-            CGFloat unusedWidth = rect.size.width - inset.left - inset.right - contentWidth;
+            CGFloat unusedWidth = rect.size.width - margin.left - margin.right - contentWidth;
             CGFloat alignmentSpacing = unusedWidth * 0.5;
-            rectX = inset.left + alignmentSpacing;
-            rectY = (rect.size.height - inset.top - inset.bottom - titleSize.height) * 0.5 + inset.top;
+            rectX = margin.left + alignmentSpacing;
+            rectY = (rect.size.height - margin.top - margin.bottom - titleSize.height) * 0.5 + margin.top;
             break;
         }
         case NSImageAbove:
         {
             // 图片在上侧
             CGFloat contentHeight = titleSize.height + imageSize.height + self.contentSpacing;
-            CGFloat unusedHeight = rect.size.height - inset.top - inset.bottom - contentHeight;
+            CGFloat unusedHeight = rect.size.height - margin.top - margin.bottom - contentHeight;
             CGFloat alignmentSpacing = unusedHeight * 0.5;
-            rectX = (rect.size.width - inset.left - inset.right - titleSize.width) * 0.5 + inset.left;
-            rectY = inset.top + alignmentSpacing + imageSize.height + self.contentSpacing;
+            rectX = (rect.size.width - margin.left - margin.right - titleSize.width) * 0.5 + margin.left;
+            rectY = margin.top + alignmentSpacing + imageSize.height + self.contentSpacing;
             break;
         }
         case NSImageBelow:
         {
             // 图片在下侧
             CGFloat contentHeight = titleSize.height + imageSize.height + self.contentSpacing;
-            CGFloat unusedHeight = rect.size.height - inset.top - inset.bottom - contentHeight;
+            CGFloat unusedHeight = rect.size.height - margin.top - margin.bottom - contentHeight;
             CGFloat alignmentSpacing = unusedHeight * 0.5;
-            rectX = (rect.size.width - inset.left - inset.right - titleSize.width) * 0.5 + inset.left;
-            rectY = inset.top + alignmentSpacing;
+            rectX = (rect.size.width - margin.left - margin.right - titleSize.width) * 0.5 + margin.left;
+            rectY = margin.top + alignmentSpacing;
             break;
         }
         default:
@@ -129,7 +129,7 @@
     }
     CGSize titleSize    = self.attributedTitle.size;
     CGSize imageSize    = self.image.size;
-    NSEdgeInsets inset  = self.edgeInset;
+    NSEdgeInsets margin = self.margin;
     CGFloat rectX       = 0;
     CGFloat rectY       = 0;
     switch (self.imagePosition)
@@ -138,40 +138,40 @@
         {
             // 图片在左侧
             CGFloat contentWidth = titleSize.width + imageSize.width + self.contentSpacing;
-            CGFloat unusedWidth = rect.size.width - inset.left - inset.right - contentWidth;
+            CGFloat unusedWidth = rect.size.width - margin.left - margin.right - contentWidth;
             CGFloat alignmentSpacing = unusedWidth * 0.5;
-            rectX = inset.left + alignmentSpacing;
-            rectY = (rect.size.height - inset.top - inset.bottom - imageSize.height) * 0.5 + inset.top;
+            rectX = margin.left + alignmentSpacing;
+            rectY = (rect.size.height - margin.top - margin.bottom - imageSize.height) * 0.5 + margin.top;
             break;
         }
         case NSImageRight:
         {
             // 图片在右侧
             CGFloat contentWidth = titleSize.width + imageSize.width + self.contentSpacing;
-            CGFloat unusedWidth = rect.size.width - inset.left - inset.right - contentWidth;
+            CGFloat unusedWidth = rect.size.width - margin.left - margin.right - contentWidth;
             CGFloat alignmentSpacing = unusedWidth * 0.5;
-            rectX = inset.left + alignmentSpacing + titleSize.width + self.contentSpacing;
-            rectY = (rect.size.height - inset.top - inset.bottom - imageSize.height) * 0.5 + inset.top;
+            rectX = margin.left + alignmentSpacing + titleSize.width + self.contentSpacing;
+            rectY = (rect.size.height - margin.top - margin.bottom - imageSize.height) * 0.5 + margin.top;
             break;
         }
         case NSImageAbove:
         {
             // 图片在上侧
             CGFloat contentHeight = titleSize.height + imageSize.height + self.contentSpacing;
-            CGFloat unusedHeight = rect.size.height - inset.top - inset.bottom - contentHeight;
+            CGFloat unusedHeight = rect.size.height - margin.top - margin.bottom - contentHeight;
             CGFloat alignmentSpacing = unusedHeight * 0.5;
-            rectX = (rect.size.width - inset.left - inset.right - imageSize.width) * 0.5 + inset.left;
-            rectY = inset.top + alignmentSpacing;
+            rectX = (rect.size.width - margin.left - margin.right - imageSize.width) * 0.5 + margin.left;
+            rectY = margin.top + alignmentSpacing;
             break;
         }
         case NSImageBelow:
         {
             // 图片在下侧
             CGFloat contentHeight = titleSize.height + imageSize.height + self.contentSpacing;
-            CGFloat unusedHeight = rect.size.height - inset.top - inset.bottom - contentHeight;
+            CGFloat unusedHeight = rect.size.height - margin.top - margin.bottom - contentHeight;
             CGFloat alignmentSpacing = unusedHeight * 0.5;
-            rectX = (rect.size.width - inset.left - inset.right - imageSize.width) * 0.5 + inset.left;
-            rectY = inset.top + alignmentSpacing + titleSize.height + self.contentSpacing;
+            rectX = (rect.size.width - margin.left - margin.right - imageSize.width) * 0.5 + margin.left;
+            rectY = margin.top + alignmentSpacing + titleSize.height + self.contentSpacing;
             break;
         }
         default:
@@ -217,16 +217,14 @@
 {
     _contentSpacing = contentSpacing;
     [self buttonCell].contentSpacing = contentSpacing;
-    [self sizeToFit];
-    //[self invalidateIntrinsicContentSize];
+    [self invalidateIntrinsicContentSize];
 }
 
-- (void)setEdgeInset:(NSEdgeInsets)edgeInset
+- (void)setMargin:(NSEdgeInsets)margin
 {
-    _edgeInset = edgeInset;
-    [self buttonCell].edgeInset = edgeInset;
-    [self sizeToFit];
-    //[self invalidateIntrinsicContentSize];
+    _margin = margin;
+    [self buttonCell].margin = margin;
+    [self invalidateIntrinsicContentSize];
 }
 
 + (instancetype)buttonWithImage:(NSImage *)image title:(NSString *)title

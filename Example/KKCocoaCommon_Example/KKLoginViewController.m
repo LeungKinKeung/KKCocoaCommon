@@ -9,6 +9,7 @@
 #import "KKLoginViewController.h"
 #import <KKCocoaCommon/KKCocoaCommon.h>
 #import "KKMainViewController.h"
+#import "KKTabelViewController.h"
 
 @interface KKLoginViewController ()<KKTextFieldDelegate>
 @property (nonatomic, strong) NSVisualEffectView *blurView;
@@ -86,12 +87,15 @@
 
 - (void)loginButtonClick:(NSButton *)sender
 {
+    [sender addCAAnimationWithDuration:0.5 fromScale:0.95 toScale:1 fromOpacity:1 toOpacity:1 forKey:nil removedOnCompletion:YES completionBlock:nil];
+    
     KKProgressHUD *hud = [KKProgressHUD showLoadingTextHUDAddedTo:self.view title:@"Login..." animated:YES];
     [hud hideAnimated:YES afterDelay:1];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 
-        [self.navigationView pushViewController:[KKMainViewController new] animated:YES];
+        [self.navigationView pushViewController:[KKTabelViewController new] animated:YES];
+        //[self.navigationView pushViewController:[KKMainViewController new] animated:YES];
     });
 }
 

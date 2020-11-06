@@ -97,7 +97,7 @@ static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
         [self addSubview:addedView];
     }
     addedView.translatesAutoresizingMaskIntoConstraints   = NO;
-    addedView.autoresizingMask    = NSViewWidthSizable | NSViewHeightSizable;
+    addedView.autoresizingMask      = NSViewWidthSizable | NSViewHeightSizable;
     
     KKNavigationBar *bar            = viewController.navigationBar;
     if (bar) {
@@ -614,10 +614,8 @@ static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
         if (button.isHidden || button.superview != self.containerView) {
             continue;;
         }
-        CGSize size     = button.frame.size;
-        if ([button isKindOfClass:[NSControl class]]) {
-            size        = [button intrinsicContentSize];
-        } else if (CGSizeEqualToSize(size, CGSizeZero)) {
+        CGSize size     = [button intrinsicContentSize];
+        if (CGSizeEqualToSize(size, CGSizeZero)) {
             size        = CGSizeMake(containerSize.height, containerSize.height);
         }
         button.frame    = CGRectMake(leftButtonX, (containerSize.height - size.height) * 0.5, size.width, size.height);
@@ -643,7 +641,7 @@ static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
     CGSize titleViewSize    = titleView.frame.size;
     if ([titleView isKindOfClass:[NSTextField class]]) {
         titleViewSize       = [titleView sizeThatFits:CGSizeMake(FLT_MAX, FLT_MAX)];
-    } else if ([titleView isKindOfClass:[NSControl class]]) {
+    } else {
         titleViewSize       = [titleView intrinsicContentSize];
     }
     CGFloat maxTitleViewWidth = rightButtonMaxX - self.interitemSpacing * 2 - leftButtonX;

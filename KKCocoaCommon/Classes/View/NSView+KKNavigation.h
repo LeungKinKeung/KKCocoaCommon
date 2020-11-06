@@ -53,11 +53,11 @@ typedef NS_ENUM(NSUInteger, KKNavigationBarStyle) {
 @property (nonatomic, readonly) NSView *backgroundView;
 /// 约束视图
 @property (nonatomic, strong) NSView *containerView;
-/// 左边的按钮，建议为NSControl的子类
+/// 左边的按钮
 @property (nonatomic, copy) NSArray *leftBarButtonItems;
-/// 右边的按钮，建议为NSControl的子类
+/// 右边的按钮
 @property (nonatomic, copy) NSArray *rightBarButtonItems;
-/// 中间标题的视图，建议为NSControl的子类
+/// 中间标题的视图
 @property (nonatomic, strong) NSView *titleView;
 /// 标题标签
 @property (nonatomic, strong) NSTextField *titleLabel;
@@ -76,8 +76,6 @@ typedef NS_ENUM(NSUInteger, KKNavigationBarStyle) {
 - (void)layoutBarSubviews;
 /// 返回
 - (void)backButtonClick:(NSButton *)sender;
-/// 大小
-- (NSSize)intrinsicContentSize;
 
 @end
 
