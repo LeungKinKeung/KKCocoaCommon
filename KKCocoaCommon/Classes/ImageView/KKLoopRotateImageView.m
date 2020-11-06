@@ -57,7 +57,9 @@
 - (void)viewWillDraw
 {
     [super viewWillDraw];
-    [self.imageView addLoopRotateAnimationForKey:nil];
+    static NSString *key = @"LoopRotate";
+    [self.imageView removeCAAnimationForKey:key];
+    [self.imageView addLoopRotateAnimationForKey:key];
 }
 
 - (void)layout

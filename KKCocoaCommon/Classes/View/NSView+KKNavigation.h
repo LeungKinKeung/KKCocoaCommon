@@ -57,6 +57,10 @@ typedef NS_ENUM(NSUInteger, KKNavigationBarStyle) {
 @property (nonatomic, copy) NSArray *leftBarButtonItems;
 /// 右边的按钮
 @property (nonatomic, copy) NSArray *rightBarButtonItems;
+/// 左边的按钮
+@property (nonatomic, readwrite) NSView *leftBarButtonItem;
+/// 右边的按钮
+@property (nonatomic, readwrite) NSView *rightBarButtonItem;
 /// 中间标题的视图
 @property (nonatomic, strong) NSView *titleView;
 /// 标题标签

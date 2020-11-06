@@ -10,42 +10,36 @@
 
 @implementation KKDisplayLink
 
-+ (instancetype)displayLinkWithFPS:(NSInteger)fps
-                             block:(KKDisplayLinkBlock)block
++ (instancetype)displayLinkWithFPS:(NSInteger)fps block:(KKDisplayLinkBlock)block
 {
-    if (block == nil)
-    {
+    if (block == nil) {
         NSLog(@"%@ create failed: block == nil",NSStringFromClass([self class]));
         return nil;
     }
     CGDirectDisplayID displayID     = CGMainDisplayID();
     CVDisplayLinkRef displayLink    = NULL;
-    CVReturn error                  =
-    CVDisplayLinkCreateWithCGDisplay(displayID,
-                                     &displayLink);
-    if (error != kCVReturnSuccess)
-    {
-        NSLog(@"ERROR:CVDisplayLinkCreateWithCGDisplay() Failed");
+    CVReturn result                 =
+    CVDisplayLinkCreateWithCGDisplay(displayID, &displayLink);
+    
+    if (result != kCVReturnSuccess) {
+        NSLog(@"Error:CVDisplayLinkCreateWithCGDisplay() Failed");
         return nil;
     }
     
-    KKDisplayLink *obj  = [self new];
-    obj.block           = block;
-    obj.fps             = fps;
+    KKDisplayLink *link = [self new];
+    link.block          = block;
+    link.fps            = fps;
     
-    CVDisplayLinkSetOutputCallback(displayLink,
-                                   renderCallback,
-                                   (__bridge void *)obj);
+    result              =
+    CVDisplayLinkSetOutputCallback(displayLink, renderCallback, (__bridge void *)link);
     
-    if (error != kCVReturnSuccess)
-    {
-        NSLog(@"ERROR:CVDisplayLinkSetOutputCallback() Failed");
+    if (result != kCVReturnSuccess) {
+        NSLog(@"Error:CVDisplayLinkSetOutputCallback() Failed");
         return nil;
     }
+    link->_displayLink = displayLink;
     
-    obj->_displayLink = displayLink;
-    
-    return obj;
+    return link;
 }
 
 static CVReturn renderCallback(CVDisplayLinkRef displayLink,
@@ -70,22 +64,14 @@ static CVReturn renderCallback(CVDisplayLinkRef displayLink,
     // 间隔 (next videoTime - videoTime) / videoTimeScale = (1/60)
     // 间隔 5481920 / 328920000 = 0.016666423446431 (1/60)
     
-    NSTimeInterval secondInterval =
-    (double)(videoTime - _lastVideoTime) / videoTimeScale;
-    
-    if (secondInterval >= _frameSecondInterval)
-    {
+    NSTimeInterval secondInterval = (double)(videoTime - _lastVideoTime) / videoTimeScale;
+    if (secondInterval >= _frameSecondInterval) {
         _lastVideoTime = videoTime;
-    }
-    else
-    {
+    } else {
         return;
     }
-    
     dispatch_async(dispatch_get_main_queue(), ^{
-
-        if (self.isRunning && self.block)
-        {
+        if (self.isRunning && self.block) {
             self.block();
         }
     });
@@ -94,24 +80,20 @@ static CVReturn renderCallback(CVDisplayLinkRef displayLink,
 - (void)setFps:(NSInteger)fps
 {
     _fps = MAX(fps, 0);
-    
     _frameSecondInterval = (1.0 / _fps);
 }
 
 - (void)start
 {
-    if (_displayLink)
-    {
-        CVDisplayLinkStart(_displayLink);
+    if (_displayLink) {
+        NSLog(@"Start %@ result:%d",NSStringFromClass([self class]),CVDisplayLinkStart(_displayLink));
     }
 }
 
 - (void)stop
 {
-    if (_displayLink &&
-        CVDisplayLinkIsRunning(_displayLink))
-    {
-        NSLog(@"KKDisplayLink Stop:%d",CVDisplayLinkStop(_displayLink));
+    if (_displayLink && CVDisplayLinkIsRunning(_displayLink)) {
+        NSLog(@"Stop %@ result:%d",NSStringFromClass([self class]),CVDisplayLinkStop(_displayLink));
     }
 }
 
@@ -123,7 +105,6 @@ static CVReturn renderCallback(CVDisplayLinkRef displayLink,
 - (void)dealloc
 {
     [self stop];
-    
     NSLog(@"%@ dealloc",NSStringFromClass([self class]));
 }
 

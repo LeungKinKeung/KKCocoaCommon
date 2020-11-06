@@ -10,6 +10,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, KKScrollViewScrollPosition) {
+    KKScrollViewScrollPositionNone,
+    KKScrollViewScrollPositionTop,
+    KKScrollViewScrollPositionMiddle,
+    KKScrollViewScrollPositionBottom
+};
+
 @interface NSScrollView (KK)
 
 /// 向上滚动
@@ -24,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)adjustVerticalScroller;
 /// 调整视图位置
 - (void)adjustsContentViewBounds;
+/// 滚动到指定位置（目前仅垂直方向有效）
+- (void)scrollToRect:(CGRect)rect atScrollPosition:(KKScrollViewScrollPosition)scrollPosition animated:(BOOL)animated;
 
 @end
 

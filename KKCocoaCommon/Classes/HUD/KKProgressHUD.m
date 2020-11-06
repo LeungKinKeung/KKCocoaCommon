@@ -68,7 +68,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
 @property (nonatomic, strong) NSVisualEffectView *blurView;
 @property (nonatomic, strong) NSView *solidColorView;
 @property (nonatomic, readonly) NSView *containerView;
-@property (nonatomic, assign) BOOL viewDidDraw;
+@property (nonatomic, assign, getter=isViewAppeared) BOOL viewAppeared;
 
 @end
 
@@ -202,7 +202,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
     } else {
         [self setNeedsLayout:YES];
     }
-    self.viewDidDraw = YES;
+    self.viewAppeared = YES;
 }
 
 - (void)updateWindowFrame
@@ -382,7 +382,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
         if (self.windowController != nil) {
             [self updateWindowFrame];
         } else {
-            CGFloat duration = self.viewDidDraw ? _scaleAnimationDuration : 0;
+            CGFloat duration = self.isViewAppeared ? _scaleAnimationDuration : 0;
             [NSView animateWithDuration:duration animations:^{
                 [self layoutContainerViewSubviews];
                 [self layoutContainerView];

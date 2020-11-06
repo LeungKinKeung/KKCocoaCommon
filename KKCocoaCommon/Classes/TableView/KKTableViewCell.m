@@ -451,6 +451,10 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
                 textLabelFrame.origin.y     = insets.bottom + detailLabelFrame.size.height + lineSpacing;
             }
         } else {
+            if (totalHeight > rowHeight) {
+                lineSpacing         = MAX(0, rowHeight - (totalHeight - lineSpacing));
+                totalHeight         = textLabelFrame.size.height + detailLabelFrame.size.height + lineSpacing;
+            }
             CGFloat beginY                  = (rowHeight - totalHeight) * 0.5;
             if (self.isFlipped) {
                 textLabelFrame.origin.y     = beginY;

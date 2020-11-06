@@ -68,11 +68,12 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 @property (nonatomic, assign) BOOL usesAutomaticRowHeights;
 @property (nonatomic, assign) BOOL usesAutomaticHeaderHeights;
 @property (nonatomic, assign) BOOL usesAutomaticFooterHeights;
-@property (nonatomic, assign, getter=isViewDidAppear) BOOL viewDidAppear;
-
+@property (nonatomic, assign, getter=isViewAppeared) BOOL viewAppeared;
+@property (nonatomic, assign) BOOL hasUncommittedUpdates;
 @property (nonatomic, strong) NSMutableArray <NSMutableArray <KKTableViewRowModel *>*>*sections;
 @property (nonatomic, strong) NSMutableDictionary <NSString *,Class>*cellClassMap;
 @property (nonatomic, strong) NSIndexPath *lastSelectedIndexPath;
+@property (nonatomic, strong) NSIndexSet *columnIndexSet;
 
 @end
 
@@ -81,12 +82,7 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 #pragma mark - 初始化
 - (instancetype)initWithStyle:(KKTableViewStyle)style
 {
-    self = [super init];
-    if (self) {
-        self.style = style;
-        [self tableView];
-    }
-    return self;
+    return [self initWithFrame:CGRectZero style:style];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame style:(KKTableViewStyle)style
@@ -97,6 +93,12 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         [self tableView];
     }
     return self;
+}
+
+- (void)awakeFromNib
+{
+    [super awakeFromNib];
+    [self tableView];
 }
 
 - (NSTableView *)tableView
@@ -113,6 +115,10 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         tableView.headerView        = nil;
         tableView.delegate          = self;
         tableView.dataSource        = self;
+        tableView.doubleAction      = @selector(tableViewCellDoubleClicked:);
+        tableView.target            = self;
+        tableView.floatsGroupRows   = self.style == KKTableViewStylePlain;
+        tableView.allowsEmptySelection      = YES;
         tableView.selectionHighlightStyle   = NSTableViewSelectionHighlightStyleRegular;
         
         self.hasVerticalScroller    = YES;
@@ -127,12 +133,15 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         self.estimatedRowHeight             =
         self.estimatedSectionHeaderHeight   =
         self.estimatedSectionFooterHeight   = KKTableViewAutomaticDimension;
+        self.columnIndexSet                 = [NSIndexSet indexSetWithIndex:0];
+        _allowsSelection                    = YES;
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tableViewCellHeightDidChange:) name:KKTableViewCellHeightDidChangeNotification object:nil];
     }
     return _tableView;
 }
 
+#pragma mark Cell的高度已更改
 - (void)tableViewCellHeightDidChange:(NSNotification *)noti
 {
     NSView *view    = noti.object;
@@ -146,13 +155,33 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
     [self.tableView noteHeightOfRowsWithIndexesChanged:set];
 }
 
+#pragma mark 双击
+- (void)tableViewCellDoubleClicked:(NSTableView *)sender
+{
+    NSIndexPath *indexPath = [self indexPathForRow:sender.clickedRow];
+    if ([self isHeaderForIndexPath:indexPath]) {
+        if ([self.delegate respondsToSelector:@selector(tableView:didDoubleClickHeaderAtSection:)]) {
+            [self.delegate tableView:self didDoubleClickHeaderAtSection:indexPath.section];
+        }
+    } else if ([self isFooterForIndexPath:indexPath]) {
+        if ([self.delegate respondsToSelector:@selector(tableView:didDoubleClickFooterAtSection:)]) {
+            [self.delegate tableView:self didDoubleClickFooterAtSection:indexPath.section];
+        }
+    } else {
+        if ([self.delegate respondsToSelector:@selector(tableView:didDoubleClickRowAtIndexPath:)]) {
+            [self.delegate tableView:self didDoubleClickRowAtIndexPath:indexPath];
+        }
+    }
+}
+
+#pragma mark 将要绘制（重绘）
 - (void)viewWillDraw
 {
     [super viewWillDraw];
-    if (self.isViewDidAppear) {
+    if (self.isViewAppeared) {
         return;
     }
-    self.viewDidAppear = YES;
+    self.viewAppeared = YES;
     [self reloadData];
 }
 
@@ -348,12 +377,15 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
     if (self.style == KKTableViewStyleGrouped) {
         return NO;
     }
-    bool isHeader = [self isHeaderForRow:row];
-    return isHeader;
+    return [self isHeaderForRow:row];
 }
 
+#pragma mark 选择
 - (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)row
 {
+    if (self.allowsSelection == NO) {
+        return NO;
+    }
     self.lastSelectedIndexPath  = nil;
     NSIndexPath *indexPath      = [self indexPathForRow:row];
     if ([self isHeaderForIndexPath:indexPath]) {
@@ -368,16 +400,26 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         }
         return NO;
     }
-    BOOL isSelected = YES;
+    NSIndexPath *selectedIndexPath = nil;
     if ([self.delegate respondsToSelector:@selector(tableView:willSelectRowAtIndexPath:)]) {
-        isSelected  = [self.delegate tableView:self willSelectRowAtIndexPath:indexPath];
+        selectedIndexPath = [self.delegate tableView:self willSelectRowAtIndexPath:indexPath];
+        if (selectedIndexPath == nil) {
+            return NO;
+        }
+        // 改选
+        if (selectedIndexPath.section != indexPath.section ||
+            selectedIndexPath.row != indexPath.row) {
+            [self selectRowAtIndexPath:selectedIndexPath];
+            return NO;
+        }
     }
-    if (isSelected) {
+    if (selectedIndexPath == nil) {
        self.lastSelectedIndexPath  = indexPath;
     }
     return YES;
 }
 
+#pragma mark 选择已更改
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
     if (notification.object != self.tableView) {
@@ -390,7 +432,7 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
     }
 }
 
-
+#pragma mark 索引
 - (BOOL)isHeaderForRow:(NSInteger)row
 {
     return [self isHeaderForIndexPath:[self indexPathForRow:row]];
@@ -440,14 +482,16 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 #pragma mark 取出Cell
 - (__kindof NSView *)cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return [self cellForRowAtIndexPath:indexPath makeIfNecessary:YES];
+    NSInteger row   = [self rowForIndexPath:indexPath];
+    NSView *cell    = [self.tableView viewAtColumn:0 row:row makeIfNecessary:YES];
+    return cell;
 }
 
-- (__kindof NSView *)cellForRowAtIndexPath:(NSIndexPath *)indexPath makeIfNecessary:(BOOL)makeIfNecessary
+- (NSTableRowView *)rowViewForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSInteger row   = [self rowForIndexPath:indexPath];
-    NSView *cell    = [self.tableView viewAtColumn:0 row:row makeIfNecessary:makeIfNecessary];
-    return cell;
+    NSInteger row           = [self rowForIndexPath:indexPath];
+    NSTableRowView *view    = [self.tableView rowViewAtRow:row makeIfNecessary:YES];
+    return view;
 }
 
 - (NSIndexPath *)indexPathForCell:(NSView *)cell
@@ -462,22 +506,236 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 #pragma mark - 关联方法
 - (void)reloadData
 {
-    if (self.isViewDidAppear == NO) {
+    if (self.viewAppeared == NO) {
         return;
     }
     [self.tableView reloadData];
 }
+
 - (void)beginUpdates
 {
+    _hasUncommittedUpdates = YES;
     [self.tableView beginUpdates];
 }
+
 - (void)endUpdates
 {
+    _hasUncommittedUpdates = NO;
     [self.tableView endUpdates];
 }
 
+- (BOOL)hasUncommittedUpdates
+{
+    return _hasUncommittedUpdates;
+}
 
+#pragma mark 插入Sections
+- (void)insertSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    [sections enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSInteger begin = [self rowForSection:idx];
+         
+        NSMutableArray *rowModels   = [NSMutableArray array];
+        if ([self hasHeaderInSection:idx]) {
+            [rowModels addObject:[KKTableViewRowModel header]];
+        }
+        NSInteger numberOfRows =
+        [self.dataSource tableView:self numberOfRowsInSection:idx];
+        
+        for (NSInteger row = 0; row < numberOfRows; row++) {
+            [rowModels addObject:[KKTableViewRowModel row]];
+        }
+        if ([self hasFooterInSection:idx]) {
+            [rowModels addObject:[KKTableViewRowModel footer]];
+        }
+        [self.sections insertObject:rowModels atIndex:idx];
+        
+        NSRange range           = NSMakeRange(begin, rowModels.count);
+        NSIndexSet *indexSet    = [NSIndexSet indexSetWithIndexesInRange:range];
+        [self.tableView insertRowsAtIndexes:indexSet withAnimation:animation];
+    }];
+}
 
+#pragma mark 移除Sections
+- (void)deleteSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    [sections enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSMutableArray *models  = [self.sections objectAtIndex:idx];
+        NSInteger begin         = [self rowForSection:idx];
+        NSRange range           = NSMakeRange(begin, models.count);
+        NSIndexSet *indexSet    = [NSIndexSet indexSetWithIndexesInRange:range];
+        [self.tableView removeRowsAtIndexes:indexSet withAnimation:animation];
+    }];
+    [self.sections removeObjectsAtIndexes:sections];
+}
+
+- (void)reloadSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    [sections enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        NSMutableArray *models  = [self.sections objectAtIndex:idx];
+        NSInteger begin         = [self rowForSection:idx];
+        NSRange range           = NSMakeRange(begin, models.count);
+        NSIndexSet *indexSet    = [NSIndexSet indexSetWithIndexesInRange:range];
+        [self.tableView reloadDataForRowIndexes:indexSet columnIndexes:self.columnIndexSet];
+    }];
+}
+
+- (void)moveSection:(NSInteger)section toSection:(NSInteger)newSection
+{
+    NSArray *fromSection    = [self.sections objectAtIndex:section];
+    NSArray *toSection      = [self.sections objectAtIndex:newSection];
+    NSInteger begin         = 0;
+    NSRange range           = NSMakeRange(0, 0);
+    NSIndexSet *indexSet    = nil;
+    NSTableViewAnimationOptions opt = NSTableViewAnimationEffectNone;
+    {
+        // 移除
+        begin               = [self rowForSection:section];
+        range               = NSMakeRange(begin, fromSection.count);
+        indexSet            = [NSIndexSet indexSetWithIndexesInRange:range];
+        [self.tableView removeRowsAtIndexes:indexSet withAnimation:opt];
+        
+        // 插入
+        [self.sections insertObject:toSection atIndex:section];
+        range               = NSMakeRange(begin, toSection.count);
+        indexSet            = [NSIndexSet indexSetWithIndexesInRange:range];
+        [self.tableView insertRowsAtIndexes:indexSet withAnimation:opt];
+    }
+    {
+        // 移除
+        begin               = [self rowForSection:newSection];
+        range               = NSMakeRange(begin, toSection.count);
+        indexSet            = [NSIndexSet indexSetWithIndexesInRange:range];
+        [self.tableView removeRowsAtIndexes:indexSet withAnimation:opt];
+        
+        // 插入
+        [self.sections insertObject:fromSection atIndex:newSection];
+        range               = NSMakeRange(begin, fromSection.count);
+        indexSet            = [NSIndexSet indexSetWithIndexesInRange:range];
+        [self.tableView insertRowsAtIndexes:indexSet withAnimation:opt];
+    }
+}
+
+- (void)insertRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    for (NSIndexPath *indexPath in indexPaths) {
+        
+        NSMutableArray <KKTableViewRowModel *>*section =
+        [self.sections objectAtIndex:indexPath.section];
+        
+        [section insertObject:[KKTableViewRowModel row] atIndex:(section.firstObject.isHeader ? 1 : 0)];
+        
+        NSInteger row = [self rowForIndexPath:indexPath];
+        
+        [self.tableView insertRowsAtIndexes:[NSIndexSet indexSetWithIndex:row] withAnimation:animation];
+    }
+}
+
+- (void)deleteRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    for (NSIndexPath *indexPath in indexPaths) {
+        
+        NSMutableArray <KKTableViewRowModel *>*section =
+        [self.sections objectAtIndex:indexPath.section];
+        
+        NSInteger row = [self rowForIndexPath:indexPath];
+        
+        [section removeObjectAtIndex:(section.firstObject.isHeader ? 1 : 0)];
+        
+        [self.tableView removeRowsAtIndexes:[NSIndexSet indexSetWithIndex:row] withAnimation:animation];
+    }
+}
+
+- (void)reloadRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    for (NSIndexPath *indexPath in indexPaths) {
+        
+        NSInteger row = [self rowForIndexPath:indexPath];
+        
+        [self.tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:row] columnIndexes:self.columnIndexSet];
+    }
+}
+
+- (void)moveRowAtIndexPath:(NSIndexPath *)indexPath toIndexPath:(NSIndexPath *)newIndexPath
+{
+    NSInteger row       = [self rowForIndexPath:indexPath];
+    NSInteger newRow    = [self rowForIndexPath:newIndexPath];
+    
+    NSMutableArray <KKTableViewRowModel *>*section =
+    [self.sections objectAtIndex:indexPath.section];
+    [section removeObjectAtIndex:(section.firstObject.isHeader ? 1 : 0)];
+    
+    NSMutableArray <KKTableViewRowModel *>*newSection =
+    [self.sections objectAtIndex:newIndexPath.section];
+    [newSection insertObject:[KKTableViewRowModel row] atIndex:(newSection.firstObject.isHeader ? 1 : 0)];
+    
+    [self.tableView moveRowAtIndex:row toIndex:newRow];
+}
+
+- (void)insertSection:(NSInteger)section withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    [self insertSections:[NSIndexSet indexSetWithIndex:section] withRowAnimation:animation];
+}
+
+- (void)deleteSection:(NSInteger)section withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    [self deleteSections:[NSIndexSet indexSetWithIndex:section] withRowAnimation:animation];
+}
+
+- (void)reloadSection:(NSInteger)section withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    [self reloadSections:[NSIndexSet indexSetWithIndex:section] withRowAnimation:animation];
+}
+
+- (void)insertRowsAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    if (indexPath == nil) {
+        return;
+    }
+    [self insertRowsAtIndexPaths:@[indexPath] withRowAnimation:animation];
+}
+
+- (void)deleteRowsAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    if (indexPath == nil) {
+        return;
+    }
+    [self deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:animation];
+}
+
+- (void)reloadRowsAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation
+{
+    if (indexPath == nil) {
+        return;
+    }
+    [self reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:animation];
+}
+
+- (void)noteHeightOfRowWithIndexPathChanged:(NSIndexPath *)indexPath
+{
+    NSInteger row           = [self rowForIndexPath:indexPath];
+    NSIndexSet *indexSet    = [NSIndexSet indexSetWithIndex:row];
+    [self.tableView noteHeightOfRowsWithIndexesChanged:indexSet];
+}
+
+- (void)noteHeightOfHeaderWithSectionChanged:(NSInteger)section
+{
+    NSIndexPath *indexPath  = [NSIndexPath indexPathForRow:KKTableViewHeaderTag inSection:section];
+    NSInteger row           = [self rowForIndexPath:indexPath];
+    NSIndexSet *indexSet    = [NSIndexSet indexSetWithIndex:row];
+    [self.tableView noteHeightOfRowsWithIndexesChanged:indexSet];
+}
+
+- (void)noteHeightOfFooterWithSectionChanged:(NSInteger)section
+{
+    NSIndexPath *indexPath  = [NSIndexPath indexPathForRow:KKTableViewFooterTag inSection:section];
+    NSInteger row           = [self rowForIndexPath:indexPath];
+    NSIndexSet *indexSet    = [NSIndexSet indexSetWithIndex:row];
+    [self.tableView noteHeightOfRowsWithIndexesChanged:indexSet];
+}
 
 #pragma mark 注册Class
 - (void)registerClass:(Class)cellClass forIdentifier:(NSString *)identifier
@@ -520,9 +778,26 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
     return nil;
 }
 
+#pragma mark 获取此Section的起始行
+- (NSInteger)rowForSection:(NSInteger)section
+{
+    if (section <= 0) {
+        return 0;
+    }
+    NSInteger row = 0;
+    for (NSInteger i = 0; i < section; i++) {
+        NSArray *rows = [self.sections objectAtIndex:i];
+        row = row + rows.count;
+    }
+    return row;
+}
+
 #pragma mark 获取此IndexPath在NSTableView上的row
 - (NSInteger)rowForIndexPath:(NSIndexPath *)indexPath
 {
+    if (indexPath.section < 0 || indexPath.section >= self.sections.count) {
+        return NSNotFound;
+    }
     NSInteger row = indexPath.row;
     for (NSInteger section = 0;section < indexPath.section; section++) {
         row = row + [self.sections objectAtIndex:section].count;
@@ -625,6 +900,86 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         }
     }
     return list;
+}
+
+- (void)setAllowsSelection:(BOOL)allowsSelection
+{
+    _allowsSelection = allowsSelection;
+    if (self.tableView.numberOfSelectedRows > 0) {
+        [self.tableView deselectAll:nil];
+    }
+}
+
+- (void)setAllowsEmptySelection:(BOOL)allowsEmptySelection
+{
+    self.tableView.allowsEmptySelection = allowsEmptySelection;
+}
+
+- (BOOL)allowsEmptySelection
+{
+    return self.tableView.allowsEmptySelection;
+}
+
+- (void)setAllowsMultipleSelection:(BOOL)allowsMultipleSelection
+{
+    self.tableView.allowsMultipleSelection = allowsMultipleSelection;
+}
+
+- (BOOL)allowsMultipleSelection
+{
+    return self.tableView.allowsMultipleSelection;
+}
+
+- (NSInteger)numberOfSelectedRows
+{
+    return self.tableView.numberOfSelectedRows;
+}
+
+- (NSIndexPath *)indexPathForSelectedRow
+{
+    if (self.numberOfSelectedRows == 0) {
+        return nil;
+    }
+    return [self indexPathForRow:self.tableView.selectedRow];
+}
+
+- (NSArray<NSIndexPath *> *)indexPathsForSelectedRows
+{
+    if (self.numberOfSelectedRows == 0) {
+        return nil;
+    }
+    NSIndexSet *indexSet = self.tableView.selectedRowIndexes;
+    NSMutableArray *indexPaths = NSMutableArray.new;
+    [indexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+        [indexPaths addObject:[self indexPathForRow:idx]];
+    }];
+    return indexPaths;
+}
+
+- (void)selectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSInteger index         = [self rowForIndexPath:indexPath];
+    NSIndexSet *indexSet    = [NSIndexSet indexSetWithIndex:index];
+    [self.tableView selectRowIndexes:indexSet byExtendingSelection:NO];
+}
+
+- (void)selectRowAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(KKScrollViewScrollPosition)scrollPosition
+{
+    [self selectRowAtIndexPath:indexPath];
+    [self scrollToRowAtIndexPath:indexPath atScrollPosition:scrollPosition animated:animated];
+}
+
+- (void)scrollToRowAtIndexPath:(NSIndexPath *)indexPath atScrollPosition:(KKScrollViewScrollPosition)scrollPosition animated:(BOOL)animated
+{
+    [self cellForRowAtIndexPath:indexPath];
+    NSTableRowView *view = [self rowViewForRowAtIndexPath:indexPath];
+    [self scrollToRect:view.frame atScrollPosition:scrollPosition animated:animated];
+}
+
+- (void)deselectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSInteger index = [self rowForIndexPath:indexPath];
+    [self.tableView deselectRow:index];
 }
 
 #pragma mark - 列表、字典

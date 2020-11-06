@@ -16,8 +16,8 @@ typedef NS_ENUM(NSUInteger, KKTableViewCellStyle) {
     KKTableViewCellStyleValue1,     // 图像，左对齐文本，右对齐文本
     KKTableViewCellStyleValue2,     // 右对齐文本，左对齐文本
     KKTableViewCellStyleSubtitle,   // 图像，上文本，下文本
-    KKTableViewCellStyleHeader,     // 文本，背景色为不透明
-    KKTableViewCellStyleFooter,     // 文本，背景色为透明
+    KKTableViewCellStyleHeader,     // 图像，文本
+    KKTableViewCellStyleFooter,     // 图像，文本
 };
 
 typedef NS_ENUM(NSInteger, KKTableViewCellSeparatorStyle) {

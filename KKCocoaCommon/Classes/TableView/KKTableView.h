@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #import "KKTableViewCell.h"
 #import "NSIndexPath+KK.h"
+#import "NSScrollView+KK.h"
 
 @class KKTableView;
 
@@ -34,10 +35,13 @@ OBJC_EXTERN const CGFloat KKTableViewAutomaticDimension;
 
 @optional
 - (CGFloat)tableView:(KKTableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
-- (BOOL)tableView:(KKTableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+- (NSIndexPath *)tableView:(KKTableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 - (void)tableView:(KKTableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 - (void)tableView:(KKTableView *)tableView didClickHeaderAtSection:(NSInteger)section;
 - (void)tableView:(KKTableView *)tableView didClickFooterAtSection:(NSInteger)section;
+- (void)tableView:(KKTableView *)tableView didDoubleClickRowAtIndexPath:(NSIndexPath *)indexPath;
+- (void)tableView:(KKTableView *)tableView didDoubleClickHeaderAtSection:(NSInteger)section;
+- (void)tableView:(KKTableView *)tableView didDoubleClickFooterAtSection:(NSInteger)section;
 - (NSView *)tableView:(KKTableView *)tableView viewForHeaderInSection:(NSInteger)section;
 - (NSView *)tableView:(KKTableView *)tableView viewForFooterInSection:(NSInteger)section;
 - (CGFloat)tableView:(KKTableView *)tableView heightForHeaderInSection:(NSInteger)section;
@@ -82,19 +86,62 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 /// 估算的页尾高度，默认：KKTableViewAutomaticDimension，设为0禁用
 @property (nonatomic) CGFloat estimatedSectionFooterHeight;
 
+/// 允许选择，默认：YES
+@property (nonatomic, assign) BOOL allowsSelection;
+/// 允许不选，默认：YES
+@property (nonatomic, readwrite) BOOL allowsEmptySelection;
+/// 允许多选，默认：NO
+@property (nonatomic, readwrite) BOOL allowsMultipleSelection;
+/// 已选行数
+@property (nonatomic, readonly) NSInteger numberOfSelectedRows;
+/// 已选的索引
+@property (nonatomic, readonly) NSIndexPath *indexPathForSelectedRow;
+/// 已选的索引列表
+@property (nonatomic, readonly) NSArray<NSIndexPath *> *indexPathsForSelectedRows;
+/// 有未提交的更新
+@property (nonatomic, readonly) BOOL hasUncommittedUpdates;
+
 /// 重用Cell
 - (__kindof NSView *)dequeueReusableCellWithIdentifier:(NSString *)identifier;
 /// 取出Cell
 - (__kindof NSView *)cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 /// 获取此Cell的索引
 - (NSIndexPath *)indexPathForCell:(NSView *)cell;
-
+/// 选择
+- (void)selectRowAtIndexPath:(NSIndexPath *)indexPath;
+/// 选择并滚动
+- (void)selectRowAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(KKScrollViewScrollPosition)scrollPosition;
+/// 反选
+- (void)deselectRowAtIndexPath:(NSIndexPath *)indexPath;
+/// 滚动
+- (void)scrollToRowAtIndexPath:(NSIndexPath *)indexPath atScrollPosition:(KKScrollViewScrollPosition)scrollPosition animated:(BOOL)animated;
 /// 重新加载
 - (void)reloadData;
 /// 开始更新
 - (void)beginUpdates;
 /// 提交更新
 - (void)endUpdates;
+
+- (void)insertSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)deleteSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)reloadSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)moveSection:(NSInteger)section toSection:(NSInteger)newSection;
+
+- (void)insertRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)deleteRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)reloadRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)moveRowAtIndexPath:(NSIndexPath *)indexPath toIndexPath:(NSIndexPath *)newIndexPath;
+
+- (void)insertSection:(NSInteger)section withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)deleteSection:(NSInteger)section withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)reloadSection:(NSInteger)section withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)insertRowsAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)deleteRowsAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)reloadRowsAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation;
+
+- (void)noteHeightOfRowWithIndexPathChanged:(NSIndexPath *)indexPath;
+- (void)noteHeightOfHeaderWithSectionChanged:(NSInteger)section;
+- (void)noteHeightOfFooterWithSectionChanged:(NSInteger)section;
 
 /// 注册Nib
 - (void)registerNib:(NSNib *)nib forIdentifier:(NSString *)identifier;

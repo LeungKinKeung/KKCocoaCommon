@@ -545,6 +545,27 @@ static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
     [self setNeedsLayout:YES];
 }
 
+- (void)setLeftBarButtonItem:(NSView *)leftBarButtonItem
+{
+    self.leftBarButtonItems = nil;
+    if (leftBarButtonItem) {
+        self.leftBarButtonItems = @[leftBarButtonItem];
+    }
+}
+
+- (NSView *)leftBarButtonItem
+{
+    return self.leftBarButtonItems.firstObject;
+}
+
+- (void)setRightBarButtonItem:(NSView *)rightBarButtonItem
+{
+    self.rightBarButtonItems = nil;
+    if (rightBarButtonItem) {
+        self.rightBarButtonItems = @[rightBarButtonItem];
+    }
+}
+
 - (void)setBarStyle:(KKNavigationBarStyle)barStyle
 {
     _barStyle = barStyle;

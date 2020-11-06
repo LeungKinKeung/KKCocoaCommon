@@ -19,10 +19,27 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.tableView = [[KKTableView alloc] initWithFrame:CGRectZero style:KKTableViewStylePlain];
-    self.tableView.delegate = self;
-    self.tableView.dataSource = self;
+    self.tableView  = [[KKTableView alloc] initWithFrame:CGRectZero
+                                                   style:KKTableViewStylePlain];
+    self.tableView.delegate     = self;
+    self.tableView.dataSource   = self;
+    
+    [self.tableView registerClass:[KKTableViewCell class]
+                    forIdentifier:@"KKTableViewCell"];
+    
+    [self.tableView registerClass:[KKTableViewCell class]
+                    forIdentifier:@"Header"];
+    
     [self.view addSubview:self.tableView];
+    
+    if (@available(macOS 10.12, *)) {
+        self.navigationBar.rightBarButtonItem = [NSButton buttonWithImage:[NSImage imageNamed:NSImageNameRefreshTemplate] target:self action:@selector(rightBarButtonItemClick)];
+    }
+}
+
+- (void)rightBarButtonItemClick
+{
+    [self.tableView scrollToRowAtIndexPath:self.tableView.indexPathForSelectedRow atScrollPosition:KKScrollViewScrollPositionNone animated:NO];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(KKTableView *)tableView
@@ -38,9 +55,11 @@
 - (NSView *)tableView:(KKTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     KKTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"KKTableViewCell"];
+    /*
     if (cell == nil) {
-        cell = [[KKTableViewCell alloc] initWithStyle:KKTableViewCellStyleValue1 reuseIdentifier:@"KKTableViewCell"];
+        cell = [[KKTableViewCell alloc] initWithStyle:KKTableViewCellStyleSubtitle reuseIdentifier:@"KKTableViewCell"];
     }
+     */
     cell.imageView.image        = [NSImage imageNamed:NSImageNameInfo];
     cell.accessoryType          = KKTableViewCellAccessoryDisclosureIndicator;
     cell.textLabel.text         = [NSString stringWithFormat:@"Title section:%ld row:%ld",indexPath.section,indexPath.row];
@@ -49,21 +68,36 @@
     return cell;
 }
 
+- (NSView *)tableView:(KKTableView *)tableView viewForHeaderInSection:(NSInteger)section
+{
+    KKTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Header"];
+    /*
+    if (cell == nil) {
+        cell = [[KKTableViewCell alloc] initWithStyle:KKTableViewCellStyleSubtitle reuseIdentifier:@"Header"];
+    }
+     */
+    cell.textLabel.text = [NSString stringWithFormat:@"Header title:%ld",section];
+    return cell;
+}
+
+/*
 - (NSString *)tableView:(KKTableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
     return [NSString stringWithFormat:@"Header title:%ld",section];
 }
+ */
 
 - (NSString *)tableView:(KKTableView *)tableView titleForFooterInSection:(NSInteger)section
 {
     return [NSString stringWithFormat:@"Footer title:%ld",section];
 }
 
-//- (CGFloat)tableView:(KKTableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-//{
-//    return 30;
-//}
-
+/*
+- (CGFloat)tableView:(KKTableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 60;
+}
+*/
 
 - (void)viewDidLayout
 {
