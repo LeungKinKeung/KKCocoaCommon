@@ -9,6 +9,11 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate>
 
+/// 顶部状态栏按钮
+@property (nonatomic, strong) NSStatusItem *statusBarItem;
+/// 主窗口
+@property (nonatomic, strong) NSWindowController *mainWindowController;
+
 
 @end
 

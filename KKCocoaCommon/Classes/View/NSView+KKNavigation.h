@@ -41,7 +41,7 @@ typedef NS_ENUM(NSUInteger, KKNavigationBarStyle) {
 @property (nonatomic, assign) NSEdgeInsets margin;
 /// 高度，默认：37
 @property (nonatomic, assign) CGFloat barHeight;
-/// 按钮、标签之间的间距，默认：6
+/// 按钮、标签之间的间距，默认：15
 @property (nonatomic, assign) CGFloat interitemSpacing;
 /// 模糊底图
 @property (nonatomic, strong) NSVisualEffectView *blurView;

@@ -351,7 +351,7 @@ static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
     [self setTitleView:[self titleLabel]];
     _margin             = NSEdgeInsetsMake(22, 16, 0, 16);
     _barHeight          = 37.0;
-    _interitemSpacing   = 10.0;
+    _interitemSpacing   = 15.0;
     self.barStyle       = KKNavigationBarStyleSolidColor;
     
     for (NSString *keypath in [self observableKeypaths]) {

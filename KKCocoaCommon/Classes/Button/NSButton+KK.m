@@ -28,6 +28,16 @@
     return button;
 }
 
++ (instancetype)imageButtonWithImage:(NSImage *)image target:(id)target action:(SEL)action
+{
+    NSButton *button        = [self buttonWithType:NSButtonTypeMomentaryPushIn];
+    button.imagePosition    = NSImageOnly;
+    button.image            = image;
+    button.target           = target;
+    button.action           = action;
+    return button;
+}
+
 - (void)setTitle:(NSString *)title color:(NSColor *)color font:(NSFont *)font
 {
     [self setTitle:title color:color font:font alignment:NSTextAlignmentCenter lineBreakMode:NSLineBreakByTruncatingTail];

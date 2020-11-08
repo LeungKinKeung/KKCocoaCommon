@@ -125,7 +125,6 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 - (void)insertSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation;
 - (void)deleteSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation;
 - (void)reloadSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation;
-- (void)moveSection:(NSInteger)section toSection:(NSInteger)newSection;
 
 - (void)insertRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation;
 - (void)deleteRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation;
@@ -135,9 +134,9 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 - (void)insertSection:(NSInteger)section withRowAnimation:(NSTableViewAnimationOptions)animation;
 - (void)deleteSection:(NSInteger)section withRowAnimation:(NSTableViewAnimationOptions)animation;
 - (void)reloadSection:(NSInteger)section withRowAnimation:(NSTableViewAnimationOptions)animation;
-- (void)insertRowsAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation;
-- (void)deleteRowsAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation;
-- (void)reloadRowsAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)insertRowAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)deleteRowAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)reloadRowAtIndexPath:(NSIndexPath *)indexPath withRowAnimation:(NSTableViewAnimationOptions)animation;
 
 - (void)noteHeightOfRowWithIndexPathChanged:(NSIndexPath *)indexPath;
 - (void)noteHeightOfHeaderWithSectionChanged:(NSInteger)section;

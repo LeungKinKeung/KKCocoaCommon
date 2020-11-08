@@ -20,6 +20,9 @@
 /// @param bordered 边框
 + (instancetype)buttonWithType:(NSButtonType)type bezelStyle:(NSBezelStyle)bezelStyle bordered:(BOOL)bordered;
 
+/// 创建无背景的图像按钮
++ (instancetype)imageButtonWithImage:(NSImage *)image target:(id)target action:(SEL)action;
+
 /// 设置标题（居中对齐）
 /// @param title 标题
 /// @param color 颜色

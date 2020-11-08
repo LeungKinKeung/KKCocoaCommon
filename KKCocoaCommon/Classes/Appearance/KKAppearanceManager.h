@@ -10,17 +10,17 @@
 
 /// 系统外观更改通知
 OBJC_EXTERN NSNotificationName const KKAppAppearanceDidChangeNotification;
-/// 当前App外观样式是白色的
+/// 当前App外观是浅色的
 OBJC_EXTERN BOOL KKAppAppearanceIsLight(void);
-/// 此视图的外观样式是白色的
+/// 此视图的外观是浅色的
 OBJC_EXTERN BOOL KKViewAppearanceIsLight(NSView *view);
 
 typedef void(^KKAppearanceBlock)(BOOL isLight);
 
 /// 外观样式枚举
 typedef NS_ENUM(NSUInteger, KKAppearanceStyle) {
-    KKAppearanceStyleLight,  /// 默认，白色
-    KKAppearanceStyleDark,   /// 黑色
+    KKAppearanceStyleLight,  /// 默认，浅色主题
+    KKAppearanceStyleDark,   /// 深色主题
 };
 
 @interface KKAppearanceManager : NSObject
@@ -28,7 +28,7 @@ typedef NS_ENUM(NSUInteger, KKAppearanceStyle) {
 /// 单例
 + (instancetype)manager;
 
-/// 当前的外观样式：默认（亮）、黑夜模式，设置则锁定外观样式
+/// 当前的外观样式：浅色、深色，设置则锁定外观样式
 @property (nonatomic, readwrite) KKAppearanceStyle style;
 
 /// 当前APP的外观

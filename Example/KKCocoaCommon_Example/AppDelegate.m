@@ -11,8 +11,6 @@
 
 @interface AppDelegate ()
 
-@property (nonatomic, strong) NSWindowController *mainWindowController;
-
 @end
 
 @implementation AppDelegate
@@ -20,9 +18,20 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     // Insert code here to initialize your application
     
+    // 锁定为深色主题
     //[NSApplication sharedApplication].appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
     
     [KKAppearanceManager manager];
+    
+    // 屏幕顶部状态栏图标(22*22pt)
+    NSStatusItem *item  =
+    [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
+    self.statusBarItem  = item;
+    item.button.action  = @selector(statusBarItemClicked:);
+    item.button.target  = self;
+    item.button.toolTip = [[NSBundle mainBundle].infoDictionary valueForKey:(__bridge NSString *)kCFBundleNameKey];
+    item.button.imageScaling = NSImageScaleNone;
+    item.button.image   = [NSImage imageNamed:NSImageNameSmartBadgeTemplate];
     
     // 主窗口
     NSString *mainStoryboardFileName    =
@@ -44,9 +53,28 @@
     return YES;
 }
 
+- (void)statusBarItemClicked:(NSStatusItem *)sender
+{
+    NSApplication *app = [NSApplication sharedApplication];
+    if (app.isHidden) {
+        [app unhide:sender];
+    }
+    if (app.isActive == NO) {
+        [app activateIgnoringOtherApps:YES];
+    }
+    NSWindow *window = self.mainWindowController.window;
+    [window makeKeyAndOrderFront:sender];
+    [window becomeFirstResponder];
+}
 
-- (void)applicationWillTerminate:(NSNotification *)aNotification {
-    // Insert code here to tear down your application
+- (void)applicationWillTerminate:(NSNotification *)aNotification
+{
+    /*
+     info.plist需要添加
+     <key>NSSupportsAutomaticTermination</key>
+     <true/>
+     才能生效
+     */
 }
 
 
