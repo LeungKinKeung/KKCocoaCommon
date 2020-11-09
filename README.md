@@ -21,7 +21,7 @@ pod 'KKCocoaCommon'
 
 ## Author
 
-LeungKinKeung, LeungKinKeung@tencent.com
+LeungKinKeung, leungkinkeung@qq.com
 
 ## License
 
