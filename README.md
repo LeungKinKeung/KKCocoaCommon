@@ -1,9 +1,8 @@
 # KKCocoaCommon
 
-[![CI Status](https://img.shields.io/travis/LeungKinKeung/KKCocoaCommon.svg?style=flat)](https://travis-ci.org/LeungKinKeung/KKCocoaCommon)
-[![Version](https://img.shields.io/cocoapods/v/KKCocoaCommon.svg?style=flat)](https://cocoapods.org/pods/KKCocoaCommon)
-[![License](https://img.shields.io/cocoapods/l/KKCocoaCommon.svg?style=flat)](https://cocoapods.org/pods/KKCocoaCommon)
-[![Platform](https://img.shields.io/cocoapods/p/KKCocoaCommon.svg?style=flat)](https://cocoapods.org/pods/KKCocoaCommon)
+[![Version](https://img.shields.io/badge/pod-v1.0-blue)](https://cocoapods.org/pods/KKCocoaCommon)
+[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://cocoapods.org/pods/KKCocoaCommon)
+[![Platform](https://img.shields.io/badge/platform-osx-lightgrey)](https://cocoapods.org/pods/KKCocoaCommon)
 
 ## Example
 
