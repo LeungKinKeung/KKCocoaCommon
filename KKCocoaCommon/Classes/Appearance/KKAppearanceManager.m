@@ -192,15 +192,17 @@ BOOL KKViewAppearanceIsLight(NSView *view)
 + (NSColor *)systemAccentColor
 {
     if (@available(macOS 10.14, *)) {
+        // NSColor.selectedContentBackgroundColor
         return [NSColor controlAccentColor];
     }
     else {
-        return [NSColor colorWithDeviceRed:0 green:122/255.0 blue:1 alpha:1];
+        return [NSColor alternateSelectedControlColor];
     }
 }
 
 + (NSColor *)systemHighlightColor
 {
+    // NSColor.selectedControlColor
     return [self selectedTextBackgroundColor];
 }
 

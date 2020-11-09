@@ -16,8 +16,8 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 @property (nonatomic, strong) NSImageView *accessoryImageView;
 @property (nonatomic, assign) CGFloat rowHeight;
 @property (nonatomic, assign) BOOL usesCustomSeparatorInset;
-@property (nonatomic, readonly) NSTableView *tableView;
-
+@property (nonatomic, readonly) KKTableView *kktableView;
+@property (nonatomic, readonly) NSTableRowView *tableRowView;
 @end
 
 @implementation KKTableViewCell
@@ -61,12 +61,19 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 {
     self.wantsLayer     = YES;
     _separatorStyle     = KKTableViewCellSeparatorStyleSingleLine;
-    _separatorColor     = [NSColor colorWithWhite:0.5 alpha:0.2];
+    _separatorColor     = [NSColor colorWithWhite:0.5 alpha:0.5];
     _separatorInset     = NSEdgeInsetsMake(0, 0, 0, 0);
     _separatorLineWidth = 1;
     _interitemSpacing   = 10;
     _lineSpacing        = 5;
     _contentInsets      = NSEdgeInsetsMake(10, 10, 10, 10);
+}
+
+- (void)enableObserveRowView:(BOOL)enable
+{
+    for (NSString *keypath in @[@"superview.selected"]) {
+        [self addObserver:self forKeyPath:keypath options:0 context:nil];
+    }
 }
 
 - (void)enableObserveImageView:(BOOL)enable
@@ -99,10 +106,14 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
 {
-    CGFloat rowHeight = self.rowHeight;
-    [self layoutCellSubviews];
-    if (rowHeight != self.rowHeight) {
-        [self noteHeightChanged];
+    if ([keyPath isEqualToString:@"superview.selected"]) {
+        [self selectionDidChange];
+    } else {
+        CGFloat rowHeight = self.rowHeight;
+        [self layoutCellSubviews];
+        if (rowHeight != self.rowHeight) {
+            [self noteHeightChanged];
+        }
     }
 }
 
@@ -126,27 +137,26 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     }
 }
 
-//- (void)awakeFromNib
-//{
-//    [super awakeFromNib];
-//
-//    if (_textLabel == nil) {
-//        _textLabel = [super textField];
-//    }
-//    if (_imageView == nil) {
-//        _imageView = [super imageView];
-//    }
-//    [self setNeedsLayout:YES];
-//}
-
-- (void)setTextField:(NSTextField *)textField
+- (void)viewDidMoveToSuperview
 {
-    [self setTextLabel:textField];
+    [super viewDidMoveToSuperview];
+    [self enableObserveRowView:YES];
 }
 
-- (NSTextField *)textField
+- (void)removeFromSuperview
 {
-    return [self textLabel];
+    [self enableObserveRowView:NO];
+    [super removeFromSuperview];
+}
+
+- (void)awakeFromNib
+{
+    [super awakeFromNib];
+
+    if (_textLabel == nil) {
+        _textLabel = [super textField];
+    }
+    [self setNeedsLayout:YES];
 }
 
 - (void)setImageView:(NSImageView *)imageView
@@ -322,6 +332,14 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
         case KKTableViewCellStyleSubtitle: {
             self.detailTextLabel.alphaValue = 1;
             self.detailTextLabel.font       = [NSFont systemFontOfSize:14];
+            break;
+        }
+        case KKTableViewCellStylePlain: {
+            self.textLabel.font             = [NSFont boldSystemFontOfSize:16];
+            break;
+        }
+        case KKTableViewCellStyleGrouped: {
+            self.textLabel.alphaValue       = 0.8;
             break;
         }
         default: {
@@ -548,17 +566,81 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     return self.identifier;
 }
 
-- (NSTableView *)tableView
+//- (void)setBackgroundStyle:(NSBackgroundStyle)backgroundStyle
+//{
+//
+//}
+//
+//- (void)setBackgroundColor:(NSColor *)backgroundColor
+//{
+//    if (self.layer == nil) {
+//        self.wantsLayer = YES;
+//    }
+//    self.layer.backgroundColor = backgroundColor.CGColor;
+//}
+//
+//- (NSColor *)backgroundColor
+//{
+//    if (self.layer.backgroundColor == NULL) {
+//        return nil;
+//    }
+//    return [NSColor colorWithCGColor:self.layer.backgroundColor];
+//}
+
+- (void)setSelected:(BOOL)selected
 {
-    NSView *rowView = self.superview;
-    if ([rowView isKindOfClass:[NSTableRowView class]] == NO) {
-        return nil;
+    [self.tableRowView setSelected:selected];
+}
+
+- (BOOL)isSelected
+{
+    return self.tableRowView.isSelected;
+}
+
+- (void)setPreviousRowSelected:(BOOL)previousRowSelected
+{
+    [self.tableRowView setPreviousRowSelected:previousRowSelected];
+}
+
+- (BOOL)isPreviousRowSelected
+{
+    return self.tableRowView.isPreviousRowSelected;
+}
+
+- (void)setNextRowSelected:(BOOL)nextRowSelected
+{
+    [self.tableRowView setNextRowSelected:nextRowSelected];
+}
+
+- (BOOL)isNextRowSelected
+{
+    return self.tableRowView.isNextRowSelected;
+}
+
+- (void)selectionDidChange
+{
+    [self setNeedsDisplay:YES];
+}
+
+- (KKTableView *)kktableView
+{
+    NSView *view = self.superview;
+    for (NSInteger i = 0; i < 50; i++) {
+        view = view.superview;
+        if ([view isKindOfClass:[KKTableView class]]) {
+            return (KKTableView *)view;
+        }
     }
-    NSView *tableView = rowView.superview;
-    if ([tableView isKindOfClass:[NSTableView class]] == NO) {
-        return nil;
+    return nil;
+}
+
+- (NSTableRowView *)tableRowView
+{
+    NSTableRowView *rowView = (NSTableRowView *)self.superview;
+    if ([rowView isKindOfClass:[NSTableRowView class]]) {
+        return rowView;
     }
-    return (NSTableView *)tableView;
+    return nil;
 }
 
 - (void)noteHeightChanged
@@ -569,6 +651,55 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     [[NSNotificationCenter defaultCenter] postNotificationName:KKTableViewCellHeightDidChangeNotification object:self];
 }
 
+- (BOOL)isHeader
+{
+    KKTableView *tableView  = self.kktableView;
+    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
+    return (indexPath.row == KKTableViewHeaderTag);
+}
+
+- (BOOL)isFirstRow
+{
+    KKTableView *tableView  = self.kktableView;
+    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
+    return (indexPath.row == 0);
+}
+
+- (BOOL)isLastRow
+{
+    KKTableView *tableView  = self.kktableView;
+    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
+    NSInteger numberOfRows  = [tableView numberOfRowsInSection:indexPath.section];
+    return indexPath.row == numberOfRows - 1;
+}
+
+- (BOOL)isRow
+{
+    KKTableView *tableView  = self.kktableView;
+    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
+    return indexPath.row >= 0;
+}
+
+- (BOOL)isFooter
+{
+    KKTableView *tableView  = self.kktableView;
+    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
+    return (indexPath.row == KKTableViewFooterTag);
+}
+
+- (BOOL)usesAutomaticRowHeights
+{
+    KKTableView *tableView  = self.kktableView;
+    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
+    if (indexPath.row == KKTableViewHeaderTag) {
+        return tableView.usesAutomaticHeaderHeights;
+    } else if (indexPath.row == KKTableViewFooterTag) {
+        return tableView.usesAutomaticFooterHeights;
+    } else {
+        return tableView.usesAutomaticRowHeights;
+    }
+}
+
 - (void)drawRect:(NSRect)dirtyRect
 {
     [super drawRect:dirtyRect];
@@ -577,21 +708,46 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 
 - (void)drawSeparatorInRect:(NSRect)dirtyRect
 {
-    if (self.style == KKTableViewCellStyleFooter ||
-        self.style == KKTableViewCellStyleHeader) {
-        return;
-    }
     if (self.separatorStyle == KKTableViewCellSeparatorStyleNone) {
         return;
     }
     if (self.separatorColor == nil) {
         return;
     }
+    if (self.isSelected) {
+        return;
+    }
+    KKTableView *tableView  = self.kktableView;
+    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
+    if (indexPath.row < 0) {
+        return;
+    }
     // 画线
+    KKTableViewStyle isGrouped  = tableView.style == KKTableViewStyleGrouped;
+    KKTableViewStyle isPlain    = isGrouped == NO;
+    BOOL isFirstRow             = indexPath.row == 0;
+    if (isGrouped && isFirstRow) {
+        NSBezierPath *path  = [NSBezierPath bezierPath];
+        CGFloat lineWidth   = self.separatorLineWidth;
+        CGFloat lineY       = self.isFlipped ? 0 : dirtyRect.size.height;
+        NSPoint beginPoint  = NSMakePoint(0, lineY);
+        NSPoint endPoint    = NSMakePoint(dirtyRect.size.width - self.separatorInset.right, lineY);
+        
+        [path moveToPoint:beginPoint];
+        [path lineToPoint:endPoint];
+        [path setLineWidth:lineWidth];
+        [self.separatorColor setStroke];
+        [path stroke];
+    }
+    
+    BOOL isLastRow = [tableView numberOfRowsInSection:indexPath.section] - 1 == indexPath.row;
+    if (isPlain && isLastRow) {
+        return;
+    }
     NSBezierPath *path  = [NSBezierPath bezierPath];
     CGFloat lineWidth   = self.separatorLineWidth;
     CGFloat lineY       = self.isFlipped ? dirtyRect.size.height : 0;
-    NSPoint beginPoint  = NSMakePoint(self.separatorInset.left, lineY);
+    NSPoint beginPoint  = NSMakePoint(isGrouped && isLastRow? 0 : self.separatorInset.left, lineY);
     NSPoint endPoint    = NSMakePoint(dirtyRect.size.width - self.separatorInset.right, lineY);
     
     [path moveToPoint:beginPoint];
@@ -614,6 +770,9 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     }
     if (_accessoryImageView) {
         [self enableObserveAccessoryImageView:NO];
+    }
+    if (self.superview) {
+        [self enableObserveRowView:NO];
     }
 }
 

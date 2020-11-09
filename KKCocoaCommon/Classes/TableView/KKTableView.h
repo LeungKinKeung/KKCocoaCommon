@@ -15,6 +15,8 @@
 
 /// 默认高度：25.0
 OBJC_EXTERN const CGFloat KKTableViewAutomaticDimension;
+OBJC_EXTERN const NSInteger KKTableViewHeaderTag;
+OBJC_EXTERN const NSInteger KKTableViewFooterTag;
 
 /********************* 数据源 ******************************/
 @protocol KKTableViewDataSource<NSObject>
@@ -69,22 +71,38 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 @property (nonatomic, readonly) NSTableView *tableView;
 /// 样式
 @property (nonatomic, readonly) KKTableViewStyle style;
+/// 半透明的（模糊背景）
+@property (nonatomic, assign, getter=isTranslucent) BOOL translucent;
+/// 选中时的背景色
+@property (nonatomic, strong) NSColor *selectionBackgroundColor;
+/// 选中时的背景渐变色
+@property (nonatomic, copy) NSArray <NSColor *>*selectionBackgroundColors;
+/// 选中时的背景图片
+@property (nonatomic, strong) NSImage *selectionBackgroundImage;
 /// 可见的Cell
 @property (nonatomic, readonly) NSArray <__kindof NSView *>*visibleCells;
 /// 可见的Cell索引
 @property (nonatomic, readonly) NSArray <NSIndexPath *> *indexPathsForVisibleRows;
+/// Section数
+@property (nonatomic, readonly) NSInteger numberOfSections;
 /// 默认行高，默认：KKTableViewAutomaticDimension
-@property (nonatomic) CGFloat rowHeight;
+@property (nonatomic, assign) CGFloat rowHeight;
 /// 默认页眉高度，默认：KKTableViewAutomaticDimension
-@property (nonatomic) CGFloat sectionHeaderHeight;
+@property (nonatomic, assign) CGFloat sectionHeaderHeight;
 /// 默认页尾高度，默认：KKTableViewAutomaticDimension
-@property (nonatomic) CGFloat sectionFooterHeight;
+@property (nonatomic, assign) CGFloat sectionFooterHeight;
 /// 估算的行高，默认：KKTableViewAutomaticDimension，设为0禁用
-@property (nonatomic) CGFloat estimatedRowHeight;
+@property (nonatomic, assign) CGFloat estimatedRowHeight;
 /// 估算的页眉高度，默认：KKTableViewAutomaticDimension，设为0禁用
-@property (nonatomic) CGFloat estimatedSectionHeaderHeight;
+@property (nonatomic, assign) CGFloat estimatedSectionHeaderHeight;
 /// 估算的页尾高度，默认：KKTableViewAutomaticDimension，设为0禁用
-@property (nonatomic) CGFloat estimatedSectionFooterHeight;
+@property (nonatomic, assign) CGFloat estimatedSectionFooterHeight;
+/// 行使用自动高度
+@property (nonatomic, readonly) BOOL usesAutomaticRowHeights;
+/// 页眉使用自动高度
+@property (nonatomic, readonly) BOOL usesAutomaticHeaderHeights;
+/// 页尾使用自动高度
+@property (nonatomic, readonly) BOOL usesAutomaticFooterHeights;
 
 /// 允许选择，默认：YES
 @property (nonatomic, assign) BOOL allowsSelection;
@@ -107,6 +125,8 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 - (__kindof NSView *)cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 /// 获取此Cell的索引
 - (NSIndexPath *)indexPathForCell:(NSView *)cell;
+/// 此Section的行数
+- (NSInteger)numberOfRowsInSection:(NSInteger)section;
 /// 选择
 - (void)selectRowAtIndexPath:(NSIndexPath *)indexPath;
 /// 选择并滚动

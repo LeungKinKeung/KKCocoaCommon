@@ -9,8 +9,8 @@
 #import "KKTableView.h"
 
 const CGFloat KKTableViewAutomaticDimension     = 25.0;
-static NSInteger KKTableViewHeaderTag           = -1;
-static NSInteger KKTableViewFooterTag           = -2;
+const NSInteger KKTableViewHeaderTag            = -1;
+const NSInteger KKTableViewFooterTag            = -2;
 
 static NSString *KKTableRowViewIdentifier       = @"KKTableRowViewIdentifier";
 static NSString *KKTableViewHeaderIdentifier    = @"KKTableViewHeaderIdentifier";
@@ -21,7 +21,6 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 @property (nonatomic, assign) BOOL isHeader;
 @property (nonatomic, assign) BOOL isFooter;
 @property (nonatomic, assign) CGFloat height;
-@property (nonatomic, assign, getter=isSelected) BOOL selected;
 @end
 @implementation KKTableViewRowModel
 + (instancetype)header
@@ -45,6 +44,10 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 
 #pragma mark - KKTableRowView
 @interface KKTableRowView : NSTableRowView
+@property (nonatomic, assign, getter=isFloatingRowStyle) BOOL floatingRowStyle;
+@property (nonatomic, strong) NSColor *selectionBackgroundColor;
+@property (nonatomic, strong) NSArray *selectionBackgroundColors;
+@property (nonatomic, strong) NSImage *selectionBackgroundImage;
 @end
 @implementation KKTableRowView
 - (void)layout
@@ -58,6 +61,55 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         }
     }
 }
+
+- (BOOL)isGroupRowStyle
+{
+    return self.isFloating || self.isFloatingRowStyle;
+}
+
+- (void)drawSelectionInRect:(NSRect)dirtyRect
+{
+    if (self.selectionHighlightStyle == NSTableViewSelectionHighlightStyleNone) {
+        return;
+    }
+    if (self.selectionBackgroundColor == nil &&
+        self.selectionBackgroundColors == nil &&
+        self.selectionBackgroundImage == nil) {
+        [[self defaultBackgroundColor] setFill];
+        NSBezierPath *path = [NSBezierPath bezierPathWithRect:dirtyRect];
+        [path fill];
+        return;
+    }
+    if (self.selectionBackgroundColor) {
+        [self.selectionBackgroundColor setFill];
+        NSBezierPath *path = [NSBezierPath bezierPathWithRect:dirtyRect];
+        [path fill];
+    } else if (self.selectionBackgroundImage) {
+        NSImageRep *imageRep    = self.selectionBackgroundImage.representations.firstObject;
+        NSRect fromRect         = NSMakeRect(0, 0, imageRep.size.width, imageRep.size.height);
+        [imageRep drawInRect:dirtyRect fromRect:fromRect operation:NSCompositingOperationSourceOver fraction:1.0 respectFlipped:self.isFlipped hints:nil];
+    } else {
+        
+    }
+}
+
+- (NSColor *)defaultBackgroundColor
+{
+    if (@available(macOS 10.14, *)) {
+        if (self.window.isKeyWindow) {
+            return NSColor.selectedContentBackgroundColor;
+        } else {
+            return NSColor.unemphasizedSelectedContentBackgroundColor;
+        }
+    } else {
+        if (self.window.isKeyWindow) {
+            return NSColor.alternateSelectedControlColor;
+        } else {
+            return NSColor.secondarySelectedControlColor;
+        }
+    }
+}
+
 @end
 
 #pragma mark - KKTableView
@@ -119,7 +171,6 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         tableView.target            = self;
         tableView.floatsGroupRows   = self.style == KKTableViewStylePlain;
         tableView.allowsEmptySelection      = YES;
-        tableView.selectionHighlightStyle   = NSTableViewSelectionHighlightStyleRegular;
         
         self.hasVerticalScroller    = YES;
         self.hasHorizontalScroller  = NO;
@@ -139,6 +190,17 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tableViewCellHeightDidChange:) name:KKTableViewCellHeightDidChangeNotification object:nil];
     }
     return _tableView;
+}
+
+- (void)setTranslucent:(BOOL)translucent
+{
+    _translucent = translucent;
+    if (self.isViewAppeared) {
+        self.tableView.selectionHighlightStyle =
+        translucent ?
+        NSTableViewSelectionHighlightStyleSourceList :
+        NSTableViewSelectionHighlightStyleRegular;
+    }
 }
 
 #pragma mark Cell的高度已更改
@@ -182,6 +244,11 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         return;
     }
     self.viewAppeared = YES;
+    self.tableView.selectionHighlightStyle =
+    self.isTranslucent ?
+    NSTableViewSelectionHighlightStyleSourceList :
+    NSTableViewSelectionHighlightStyleRegular;
+    
     [self reloadData];
 }
 
@@ -204,6 +271,45 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
     _dataSource = dataSource;
     
     [self reloadData];
+}
+
+- (void)setSelectionBackgroundColor:(NSColor *)selectionBackgroundColor
+{
+    _selectionBackgroundColor = selectionBackgroundColor;
+    
+    [self.tableView enumerateAvailableRowViewsUsingBlock:^(__kindof NSTableRowView * _Nonnull rowView, NSInteger row) {
+        KKTableRowView *view            = (KKTableRowView *)rowView;
+        view.selectionBackgroundColor   = selectionBackgroundColor;
+        if (view.isSelected) {
+            [view setNeedsDisplay:YES];
+        }
+    }];
+}
+
+- (void)setSelectionBackgroundColors:(NSArray<NSColor *> *)selectionBackgroundColors
+{
+    _selectionBackgroundColors = selectionBackgroundColors;
+    
+    [self.tableView enumerateAvailableRowViewsUsingBlock:^(__kindof NSTableRowView * _Nonnull rowView, NSInteger row) {
+        KKTableRowView *view            = (KKTableRowView *)rowView;
+        view.selectionBackgroundColors  = selectionBackgroundColors;
+        if (view.isSelected) {
+            [view setNeedsDisplay:YES];
+        }
+    }];
+}
+
+- (void)setSelectionBackgroundImage:(NSImage *)selectionBackgroundImage
+{
+    _selectionBackgroundImage = selectionBackgroundImage;
+    
+    [self.tableView enumerateAvailableRowViewsUsingBlock:^(__kindof NSTableRowView * _Nonnull rowView, NSInteger row) {
+        KKTableRowView *view            = (KKTableRowView *)rowView;
+        view.selectionBackgroundImage   = selectionBackgroundImage;
+        if (view.isSelected) {
+            [view setNeedsDisplay:YES];
+        }
+    }];
 }
 
 #pragma mark - NSTableViewDataSource
@@ -255,6 +361,10 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         view.identifier     = KKTableRowViewIdentifier;
         view.groupRowStyle  = NO;
     }
+    if (self.style == KKTableViewStylePlain) {
+        view.floatingRowStyle   = [self isHeaderForRow:row] || [self isFooterForRow:row];
+    }
+    view.selectionBackgroundColor = self.selectionBackgroundColor;
     return view;
 }
 
@@ -287,9 +397,6 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
             cell = [self dequeueReusableCellWithIdentifier:KKTableViewHeaderIdentifier];
             cell.textLabel.stringValue = title ? title : @"";
         }
-        if ([cell isKindOfClass:[KKTableViewCell class]]) {
-            cell.usesAutomaticRowHeights = self.usesAutomaticHeaderHeights;
-        }
         
     } else if ([self isFooterForIndexPath:indexPath]) {
         // Footer
@@ -315,15 +422,9 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
             cell = [self dequeueReusableCellWithIdentifier:KKTableViewFooterIdentifier];
             cell.textLabel.stringValue = title ? title : @"";
         }
-        if ([cell isKindOfClass:[KKTableViewCell class]]) {
-            cell.usesAutomaticRowHeights = self.usesAutomaticFooterHeights;
-        }
         
     } else if ([self.dataSource respondsToSelector:@selector(tableView:cellForRowAtIndexPath:)]) {
         cell = (KKTableViewCell *)[self.dataSource tableView:self cellForRowAtIndexPath:indexPath];
-        if ([cell isKindOfClass:[KKTableViewCell class]]) {
-            cell.usesAutomaticRowHeights = self.usesAutomaticRowHeights;
-        }
     }
     return cell;
 }
@@ -464,10 +565,13 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         return cell;
     }
     // 如果为预设的Cell
-    if ([KKTableViewHeaderIdentifier isEqualToString:identifier]) {
-        return [[KKTableViewCell alloc] initWithStyle:KKTableViewCellStyleHeader reuseIdentifier:identifier];
-    } else if ([KKTableViewFooterIdentifier isEqualToString:identifier]) {
-        return [[KKTableViewCell alloc] initWithStyle:KKTableViewCellStyleFooter reuseIdentifier:identifier];
+    if ([KKTableViewHeaderIdentifier isEqualToString:identifier] ||
+        [KKTableViewFooterIdentifier isEqualToString:identifier]) {
+        KKTableViewCellStyle style =
+        self.style == KKTableViewStylePlain ?
+        KKTableViewCellStylePlain :
+        KKTableViewCellStyleGrouped;
+        return [[KKTableViewCell alloc] initWithStyle:style reuseIdentifier:identifier];
     }
     
     Class cellClass = [self.cellClassMap valueForKey:identifier];
@@ -501,6 +605,24 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         return nil;
     }
     return [self indexPathForRow:row];
+}
+
+- (NSInteger)numberOfSections
+{
+    return self.sections.count;
+}
+
+- (NSInteger)numberOfRowsInSection:(NSInteger)section
+{
+    NSArray <KKTableViewRowModel *>*rows = [self.sections objectAtIndex:section];
+    NSInteger count = rows.count;
+    if (rows.firstObject.isHeader) {
+        count--;
+    }
+    if (rows.lastObject.isFooter) {
+        count--;
+    }
+    return count;
 }
 
 #pragma mark - 关联方法

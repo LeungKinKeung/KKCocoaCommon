@@ -44,12 +44,16 @@
                                                    style:KKTableViewStylePlain];
     self.tableView.delegate     = self;
     self.tableView.dataSource   = self;
+//    self.tableView.translucent  = YES;
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        self.tableView.selectionBackgroundColor = NSColor.redColor;
+//    });
     
     [self.tableView registerClass:[KKTableViewCell class]
                     forIdentifier:@"KKTableViewCell"];
     
-    [self.tableView registerClass:[KKTableViewCell class]
-                    forIdentifier:@"Header"];
+//    [self.tableView registerClass:[KKTableViewCell class]
+//                    forIdentifier:@"Header"];
     
     [self.view addSubview:self.tableView];
     
@@ -102,28 +106,24 @@
     return cell;
 }
 
+/*
 - (NSView *)tableView:(KKTableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
     KKTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Header"];
-    /*
-    if (cell == nil) {
-        cell = [[KKTableViewCell alloc] initWithStyle:KKTableViewCellStyleSubtitle reuseIdentifier:@"Header"];
-    }
-     */
-    cell.textLabel.text = [NSString stringWithFormat:@"Header title:%ld",section];
+    
+    cell.textLabel.text = [NSString stringWithFormat:@"HEADER:%ld",section];
     return cell;
 }
+*/
 
-/*
 - (NSString *)tableView:(KKTableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-    return [NSString stringWithFormat:@"Header title:%ld",section];
+    return [NSString stringWithFormat:@"HEADER:%ld",section];
 }
- */
 
 - (NSString *)tableView:(KKTableView *)tableView titleForFooterInSection:(NSInteger)section
 {
-    return [NSString stringWithFormat:@"Footer title:%ld",section];
+    return [NSString stringWithFormat:@"footer:%ld",section];
 }
 
 /*
