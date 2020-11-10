@@ -22,7 +22,8 @@
   "osx": {
     "frameworks": [
       "AppKit",
-      "QuartzCore"
+      "QuartzCore",
+      "CoreGraphics"
     ]
   }
 }

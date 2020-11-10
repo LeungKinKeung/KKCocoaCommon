@@ -566,27 +566,6 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     return self.identifier;
 }
 
-//- (void)setBackgroundStyle:(NSBackgroundStyle)backgroundStyle
-//{
-//
-//}
-//
-//- (void)setBackgroundColor:(NSColor *)backgroundColor
-//{
-//    if (self.layer == nil) {
-//        self.wantsLayer = YES;
-//    }
-//    self.layer.backgroundColor = backgroundColor.CGColor;
-//}
-//
-//- (NSColor *)backgroundColor
-//{
-//    if (self.layer.backgroundColor == NULL) {
-//        return nil;
-//    }
-//    return [NSColor colorWithCGColor:self.layer.backgroundColor];
-//}
-
 - (void)setSelected:(BOOL)selected
 {
     [self.tableRowView setSelected:selected];
@@ -697,6 +676,18 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
         return tableView.usesAutomaticFooterHeights;
     } else {
         return tableView.usesAutomaticRowHeights;
+    }
+}
+
+- (void)setBackgroundStyle:(NSBackgroundStyle)backgroundStyle
+{
+    if (self.tableRowView.isEmphasized &&
+        self.tableRowView.isSelected &&
+        backgroundStyle == NSBackgroundStyleNormal &&
+        self.backgroundStyle == NSBackgroundStyleEmphasized) {
+        // 忽略更改
+    } else {
+        [super setBackgroundStyle:backgroundStyle];
     }
 }
 

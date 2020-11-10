@@ -71,14 +71,16 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 @property (nonatomic, readonly) NSTableView *tableView;
 /// 样式
 @property (nonatomic, readonly) KKTableViewStyle style;
-/// 半透明的（模糊背景）
+/// 半透明的（模糊背景），为YES时不能自定义选中背景色
 @property (nonatomic, assign, getter=isTranslucent) BOOL translucent;
 /// 选中时的背景色
 @property (nonatomic, strong) NSColor *selectionBackgroundColor;
 /// 选中时的背景渐变色
-@property (nonatomic, copy) NSArray <NSColor *>*selectionBackgroundColors;
+@property (nonatomic, strong) NSArray <NSColor *>*selectionBackgroundColors;
 /// 选中时的背景图片
 @property (nonatomic, strong) NSImage *selectionBackgroundImage;
+/// 假如为NO，选中的背景色会在视图失去焦点时变为灰色
+@property (nonatomic, assign) BOOL alwaysEmphasizedSelectionBackground;
 /// 可见的Cell
 @property (nonatomic, readonly) NSArray <__kindof NSView *>*visibleCells;
 /// 可见的Cell索引

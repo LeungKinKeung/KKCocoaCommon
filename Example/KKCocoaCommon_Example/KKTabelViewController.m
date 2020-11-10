@@ -44,10 +44,9 @@
                                                    style:KKTableViewStylePlain];
     self.tableView.delegate     = self;
     self.tableView.dataSource   = self;
-//    self.tableView.translucent  = YES;
-//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//        self.tableView.selectionBackgroundColor = NSColor.redColor;
-//    });
+    //self.tableView.translucent  = YES;
+    self.tableView.selectionBackgroundColors = @[NSColor.cyanColor,NSColor.blueColor];
+    self.tableView.alwaysEmphasizedSelectionBackground  = YES;
     
     [self.tableView registerClass:[KKTableViewCell class]
                     forIdentifier:@"KKTableViewCell"];
@@ -98,7 +97,7 @@
         cell = [[KKTableViewCell alloc] initWithStyle:KKTableViewCellStyleSubtitle reuseIdentifier:@"KKTableViewCell"];
     }
      */
-    cell.imageView.image        = [NSImage imageNamed:NSImageNameInfo];
+    cell.imageView.image        = [NSImage imageNamed:NSImageNameFontPanel];
     cell.accessoryType          = KKTableViewCellAccessoryDisclosureIndicator;
     cell.textLabel.text         = self.datas[indexPath.section][indexPath.row];
     cell.detailTextLabel.text   = [NSString stringWithFormat:@"Detail section:%ld row:%ld",indexPath.section,indexPath.row];

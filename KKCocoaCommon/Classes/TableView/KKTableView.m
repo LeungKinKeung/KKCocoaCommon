@@ -7,6 +7,7 @@
 //
 
 #import "KKTableView.h"
+#import <CoreGraphics/CoreGraphics.h>
 
 const CGFloat KKTableViewAutomaticDimension     = 25.0;
 const NSInteger KKTableViewHeaderTag            = -1;
@@ -46,8 +47,9 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 @interface KKTableRowView : NSTableRowView
 @property (nonatomic, assign, getter=isFloatingRowStyle) BOOL floatingRowStyle;
 @property (nonatomic, strong) NSColor *selectionBackgroundColor;
-@property (nonatomic, strong) NSArray *selectionBackgroundColors;
-@property (nonatomic, strong) NSImage *selectionBackgroundImage;
+@property (nonatomic, strong) NSArray *selectionBackgroundCGColors;
+@property (nonatomic, strong) NSImageRep *selectionBackgroundImageRep;
+@property (nonatomic, assign) BOOL alwaysEmphasizedSelectionBackground;
 @end
 @implementation KKTableRowView
 - (void)layout
@@ -72,31 +74,62 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
     if (self.selectionHighlightStyle == NSTableViewSelectionHighlightStyleNone) {
         return;
     }
-    if (self.selectionBackgroundColor == nil &&
-        self.selectionBackgroundColors == nil &&
-        self.selectionBackgroundImage == nil) {
+    if (dirtyRect.size.height == 0 || dirtyRect.size.width == 0) {
+        return;
+    }
+    if ((self.selectionBackgroundColor == nil &&
+         self.selectionBackgroundCGColors == nil &&
+         self.selectionBackgroundImageRep == nil) ||
+        self.isEmphasized == NO) {
         [[self defaultBackgroundColor] setFill];
         NSBezierPath *path = [NSBezierPath bezierPathWithRect:dirtyRect];
         [path fill];
         return;
     }
     if (self.selectionBackgroundColor) {
+        /// 纯色
         [self.selectionBackgroundColor setFill];
         NSBezierPath *path = [NSBezierPath bezierPathWithRect:dirtyRect];
         [path fill];
-    } else if (self.selectionBackgroundImage) {
-        NSImageRep *imageRep    = self.selectionBackgroundImage.representations.firstObject;
-        NSRect fromRect         = NSMakeRect(0, 0, imageRep.size.width, imageRep.size.height);
-        [imageRep drawInRect:dirtyRect fromRect:fromRect operation:NSCompositingOperationSourceOver fraction:1.0 respectFlipped:self.isFlipped hints:nil];
-    } else {
-        
+    } else if (self.selectionBackgroundCGColors) {
+        /// 渐变色
+        CGContextRef context = [NSGraphicsContext currentContext].CGContext;
+        CGContextSaveGState(context);
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        CGFloat locations[] = { 0.0, 1.0 };
+        CGGradientRef gradient = CGGradientCreateWithColors(colorSpace, (__bridge CFArrayRef)self.selectionBackgroundCGColors, locations);
+        CGContextDrawLinearGradient(context, gradient, CGPointMake(0, 0.0), CGPointMake(dirtyRect.size.width, 0.0), 0);
+        CGContextRestoreGState(context);
+        CGGradientRelease(gradient);
+        CGColorSpaceRelease(colorSpace);
+    } else if (self.selectionBackgroundImageRep) {
+        /// 图像
+        NSImageRep *imageRep        = self.selectionBackgroundImageRep;
+        CGFloat imageWidth          = imageRep.size.width;
+        CGFloat imageHeight         = imageRep.size.height;
+        if (imageHeight == 0) {
+            return;
+        }
+        CGFloat imageAspectRatio    = imageWidth / imageHeight;
+        CGFloat viewAspectRatio     = dirtyRect.size.width / dirtyRect.size.height;
+        CGRect drawInRect           = CGRectZero;
+        if (viewAspectRatio  > imageAspectRatio) {
+            drawInRect.size.width     = dirtyRect.size.width;
+            drawInRect.size.height    = drawInRect.size.width / imageAspectRatio;
+            drawInRect.origin.y       = (dirtyRect.size.height - drawInRect.size.height) * 0.5;
+        } else {
+            drawInRect.size.height    = dirtyRect.size.height;
+            drawInRect.size.width     = drawInRect.size.height * imageAspectRatio;
+            drawInRect.origin.x       = (dirtyRect.size.height - drawInRect.size.width) * 0.5;
+        }
+        [imageRep drawInRect:drawInRect fromRect:CGRectMake(0, 0, imageWidth, imageHeight) operation:NSCompositingOperationSourceOver fraction:1.0 respectFlipped:self.isFlipped hints:nil];
     }
 }
 
 - (NSColor *)defaultBackgroundColor
 {
     if (@available(macOS 10.14, *)) {
-        if (self.window.isKeyWindow) {
+        if (self.isEmphasized) {
             return NSColor.selectedContentBackgroundColor;
         } else {
             return NSColor.unemphasizedSelectedContentBackgroundColor;
@@ -108,6 +141,14 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
             return NSColor.secondarySelectedControlColor;
         }
     }
+}
+
+- (BOOL)isEmphasized
+{
+    if (self.alwaysEmphasizedSelectionBackground) {
+        return YES;
+    }
+    return [super isEmphasized];
 }
 
 @end
@@ -126,6 +167,8 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 @property (nonatomic, strong) NSMutableDictionary <NSString *,Class>*cellClassMap;
 @property (nonatomic, strong) NSIndexPath *lastSelectedIndexPath;
 @property (nonatomic, strong) NSIndexSet *columnIndexSet;
+@property (nonatomic, strong) NSArray *selectionBackgroundCGColors;
+@property (nonatomic, strong) NSImageRep *selectionBackgroundImageRep;
 
 @end
 
@@ -207,9 +250,6 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 - (void)tableViewCellHeightDidChange:(NSNotification *)noti
 {
     NSView *view    = noti.object;
-//    if ([view isKindOfClass:[NSView class]] == NO) {
-//        return;
-//    }
     NSInteger row   = [self.tableView rowForView:view];
     KKTableViewRowModel *rowModel = [self rowModelForRow:row];
     rowModel.height = [view intrinsicContentSize].height;
@@ -288,11 +328,19 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 
 - (void)setSelectionBackgroundColors:(NSArray<NSColor *> *)selectionBackgroundColors
 {
-    _selectionBackgroundColors = selectionBackgroundColors;
+    _selectionBackgroundColors  = selectionBackgroundColors;
+    NSMutableArray *cgcolors    = [NSMutableArray array];
+    for (NSColor *color in self.selectionBackgroundColors) {
+        id value = (__bridge id)color.CGColor;
+        if (value) {
+            [cgcolors addObject:value];
+        }
+    }
+    self.selectionBackgroundCGColors = cgcolors;
     
     [self.tableView enumerateAvailableRowViewsUsingBlock:^(__kindof NSTableRowView * _Nonnull rowView, NSInteger row) {
-        KKTableRowView *view            = (KKTableRowView *)rowView;
-        view.selectionBackgroundColors  = selectionBackgroundColors;
+        KKTableRowView *view                = (KKTableRowView *)rowView;
+        view.selectionBackgroundCGColors    = cgcolors;
         if (view.isSelected) {
             [view setNeedsDisplay:YES];
         }
@@ -301,11 +349,25 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
 
 - (void)setSelectionBackgroundImage:(NSImage *)selectionBackgroundImage
 {
-    _selectionBackgroundImage = selectionBackgroundImage;
+    _selectionBackgroundImage           = selectionBackgroundImage;
+    self.selectionBackgroundImageRep    = selectionBackgroundImage.representations.firstObject;
     
     [self.tableView enumerateAvailableRowViewsUsingBlock:^(__kindof NSTableRowView * _Nonnull rowView, NSInteger row) {
-        KKTableRowView *view            = (KKTableRowView *)rowView;
-        view.selectionBackgroundImage   = selectionBackgroundImage;
+        KKTableRowView *view                = (KKTableRowView *)rowView;
+        view.selectionBackgroundImageRep    = self.selectionBackgroundImageRep;
+        if (view.isSelected) {
+            [view setNeedsDisplay:YES];
+        }
+    }];
+}
+
+- (void)setAlwaysEmphasizedSelectionBackground:(BOOL)alwaysEmphasizedSelectionBackground
+{
+    _alwaysEmphasizedSelectionBackground = alwaysEmphasizedSelectionBackground;
+    
+    [self.tableView enumerateAvailableRowViewsUsingBlock:^(__kindof NSTableRowView * _Nonnull rowView, NSInteger row) {
+        KKTableRowView *view = (KKTableRowView *)rowView;
+        view.alwaysEmphasizedSelectionBackground = alwaysEmphasizedSelectionBackground;
         if (view.isSelected) {
             [view setNeedsDisplay:YES];
         }
@@ -362,9 +424,12 @@ static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier"
         view.groupRowStyle  = NO;
     }
     if (self.style == KKTableViewStylePlain) {
-        view.floatingRowStyle   = [self isHeaderForRow:row] || [self isFooterForRow:row];
+        view.floatingRowStyle           = [self isHeaderForRow:row] || [self isFooterForRow:row];
     }
-    view.selectionBackgroundColor = self.selectionBackgroundColor;
+    view.selectionBackgroundColor       = self.selectionBackgroundColor;
+    view.selectionBackgroundImageRep    = self.selectionBackgroundImageRep;
+    view.selectionBackgroundCGColors    = self.selectionBackgroundCGColors;
+    view.alwaysEmphasizedSelectionBackground    = self.alwaysEmphasizedSelectionBackground;
     return view;
 }
 

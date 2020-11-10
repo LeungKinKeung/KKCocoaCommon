@@ -15,6 +15,6 @@ TODO: Add long description of the pod here.
   s.osx.deployment_target = '10.10'
   
   s.source_files    = 'KKCocoaCommon/Classes/**/*.{h,m,mm,c}'
-  s.osx.frameworks  = ['AppKit', 'QuartzCore']
+  s.osx.frameworks  = ['AppKit', 'QuartzCore', 'CoreGraphics']
   
 end
