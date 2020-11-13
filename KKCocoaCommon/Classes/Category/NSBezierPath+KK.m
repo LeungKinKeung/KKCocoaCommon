@@ -156,9 +156,11 @@
                     break;
             }
         }
+        /*
         if (!didClosePath) {
             CGPathCloseSubpath(path);
         }
+         */
         
         immutablePath = CGPathCreateCopy(path);
         CGPathRelease(path);

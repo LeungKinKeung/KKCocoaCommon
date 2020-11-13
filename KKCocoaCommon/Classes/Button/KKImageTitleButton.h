@@ -20,10 +20,10 @@
 /// 创建图片标题按钮
 + (instancetype)buttonWithImage:(NSImage *)image title:(NSString *)title;
 
-/// 上下左右的间隔（使用Masonry布局后再设置无法生效）
+/// 上下左右的间隔
 @property (nonatomic, assign) NSEdgeInsets margin;
 
-/// 图片和标题的间隔，默认：7（使用Masonry布局后再设置无法生效）
+/// 图片和标题的间隔，默认：7
 @property (nonatomic, assign) CGFloat contentSpacing;
 
 @end

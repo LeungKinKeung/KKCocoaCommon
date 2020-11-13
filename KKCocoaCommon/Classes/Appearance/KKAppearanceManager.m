@@ -200,6 +200,26 @@ BOOL KKViewAppearanceIsLight(NSView *view)
     }
 }
 
++ (NSColor *)systemSelectedContentBackgroundColor
+{
+    if (@available(macOS 10.14, *)) {
+        return NSColor.selectedContentBackgroundColor;
+    }
+    else {
+        return NSColor.alternateSelectedControlColor;
+    }
+}
+
++ (NSColor *)systemUnemphasizedSelectedContentBackgroundColor
+{
+    if (@available(macOS 10.14, *)) {
+        return NSColor.unemphasizedSelectedTextBackgroundColor;
+    }
+    else {
+        return NSColor.secondarySelectedControlColor;
+    }
+}
+
 + (NSColor *)systemHighlightColor
 {
     // NSColor.selectedControlColor

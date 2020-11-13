@@ -16,6 +16,8 @@
 @property (nonatomic, strong) KKTextField *accountTextField;
 @property (nonatomic, strong) KKTextField *passwordTextField;
 @property (nonatomic, strong) NSButton *loginButton;
+@property (nonatomic, strong) NSButton *guideButton;
+@property (nonatomic, copy) NSArray *guideTestButtons;
 @end
 
 @implementation KKLoginViewController
@@ -51,6 +53,7 @@
         [textField setBorderWidth:1.0 forState:KKTextFieldStateEditing];
         textField.edgeInsets    = NSEdgeInsetsMake(0, 6, 0, 16);
         textField.delegate      = self;
+        textField.toolTip       = @"Input Account";
         self.accountTextField   = textField;
         [self.view addSubview:textField];
     }
@@ -67,6 +70,7 @@
         [textField setBorderWidth:1.0 forState:KKTextFieldStateEditing];
         textField.edgeInsets    = NSEdgeInsetsMake(0, 6, 0, 16);
         textField.delegate      = self;
+        textField.toolTip       = @"Input Password";
         self.passwordTextField  = textField;
         [self.view addSubview:textField];
     }
@@ -80,9 +84,29 @@
         [button setTitle:@"Login" color:NSColor.whiteColor font:[NSFont systemFontOfSize:16]];
         button.target           = self;
         button.action           = @selector(loginButtonClick:);
+        button.toolTip          = @"Login Button";
         self.loginButton        = button;
         [self.view addSubview:button];
     }
+    {
+        NSButton *button        = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
+        [button setTitle:@"Guide"];
+        button.target           = self;
+        button.action           = @selector(guideButtonClick:);
+        button.toolTip          = @"Guide";
+        self.guideButton        = button;
+        [self.view addSubview:button];
+    }
+    NSMutableArray *testButtons = [NSMutableArray array];
+    for (NSInteger i = 0; i < 3; i++) {
+        NSButton *button        = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
+        [button setTitle:@"Test Guide"];
+        button.toolTip          = [NSString stringWithFormat:@"Test Guide %ld",i];
+        button.hidden           = YES;
+        [testButtons addObject:button];
+        [self.view addSubview:button];
+    }
+    self.guideTestButtons       = testButtons;
 }
 
 - (void)loginButtonClick:(NSButton *)sender
@@ -97,6 +121,39 @@
         [self.navigationView pushViewController:[KKTabelViewController new] animated:YES];
         //[self.navigationView pushViewController:[KKMainViewController new] animated:YES];
     });
+}
+
+- (void)guideButtonClick:(NSButton *)sender
+{
+    NSMutableArray <NSView *>*views = [NSMutableArray array];
+    [views addObject:self.accountTextField];
+    [views addObject:self.passwordTextField];
+    [views addObject:self.loginButton];
+    [views addObjectsFromArray:self.guideTestButtons];
+    [views addObject:self.guideButton];
+    
+    for (NSButton *button in self.guideTestButtons) {
+        button.hidden           = NO;
+        CGSize size             = [button intrinsicContentSize];
+        button.frame            = CGRectMake(arc4random_uniform(self.view.frame.size.width), arc4random_uniform(self.view.frame.size.height), size.width, size.height);
+    }
+    
+    KKGuideView *view =
+    [KKGuideView showGuideViewAddedTo:self.view targetView:views.firstObject tips:views.firstObject.toolTip completion:^(KKGuideView *guideView) {
+        [views removeObjectAtIndex:0];
+        if (views.count == 0) {
+            [guideView removeFromSuperview];
+            for (NSButton *button in self.guideTestButtons) {
+                button.hidden   = YES;
+            }
+            return;
+        }
+        guideView.targetView    = views.firstObject;
+        guideView.tipsLabel.text = guideView.targetView.toolTip;
+    }];
+    view.highlightMargin        = NSEdgeInsetsMake(3, 3, 3, 3);
+    view.highlightCornerRadius  = 3;
+    view.tipsLabel.font         = [NSFont fontWithName:@"HannotateSC-W5" size:18];
 }
 
 - (void)viewDidLayout
@@ -116,7 +173,13 @@
     CGRectMake(spacing, CGRectGetMinY(self.accountTextField.frame) - 15 - height, width, height);
     
     self.loginButton.frame =
-    CGRectMake(spacing, CGRectGetMinY(self.passwordTextField.frame) - 15 - height, width, height);
+    CGRectMake(spacing, CGRectGetMinY(self.passwordTextField.frame) - 15 - height - 30, width, height);
+    
+    CGSize guideButtonSize = [self.guideButton intrinsicContentSize];
+    CGFloat x = self.view.frame.size.width - spacing - guideButtonSize.width;
+    CGFloat y = spacing;
+    self.guideButton.frame =
+    CGRectMake(x, y,  guideButtonSize.width,  guideButtonSize.height);
 }
 
 - (void)dealloc

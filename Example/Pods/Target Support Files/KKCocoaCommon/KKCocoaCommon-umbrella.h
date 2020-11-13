@@ -22,6 +22,7 @@
 #import "KKCornerCollectionViewCell.h"
 #import "KKTextCollectionViewCell.h"
 #import "KKDisplayLink.h"
+#import "KKGuideView.h"
 #import "KKProgressHUD.h"
 #import "KKLoopRotateImageView.h"
 #import "KKCocoaCommon.h"

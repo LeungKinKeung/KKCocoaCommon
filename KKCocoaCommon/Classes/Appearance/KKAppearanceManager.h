@@ -60,6 +60,12 @@ typedef NS_ENUM(NSUInteger, KKAppearanceStyle) {
 /// 系统设置的强调色
 @property (class, readonly) NSColor *systemAccentColor;
 
+/// 系统预设的选中时的背景色
+@property (class, readonly) NSColor *systemSelectedContentBackgroundColor;
+
+/// 系统预设的选中但视图失去焦点时的背景色（灰色）
+@property (class, readonly) NSColor *systemUnemphasizedSelectedContentBackgroundColor;
+
 /// 系统设置的高亮显示颜色
 @property (class, readonly) NSColor *systemHighlightColor;
 
