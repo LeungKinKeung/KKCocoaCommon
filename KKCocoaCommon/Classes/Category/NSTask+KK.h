@@ -13,6 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)runCommand:(NSString *)command;
 
++ (void)runCommand:(NSString *)command completion:(void(^)(NSString *result, NSString *error))completion;
+
++ (void)excuteTaskPath:(NSString *)path argvs:(NSArray *)argvs completion:(void(^)(NSString *result, NSString *error))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END
