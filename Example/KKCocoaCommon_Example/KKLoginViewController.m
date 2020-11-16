@@ -77,10 +77,9 @@
     self.accountTextField.nextKeyView   = self.passwordTextField;
     self.passwordTextField.nextKeyView  = self.accountTextField;
     {
-        NSButton *button        = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
+        NSButton *button        = [KKPuddingButton buttonWithType:NSButtonTypeMomentaryPushIn];
         NSImage *bgImage        = [NSImage imageWithGradientColors:@[KKColor(0x1751c6, 1),KKColor(0x2269f8, 1)] size:CGSizeMake(self.view.frame.size.width - 25 * 2, 40) cornerRadius:6];
-        bgImage.resizable       = YES;
-        [button setBackgroundImage:bgImage scaling:NSImageScaleAxesIndependently];
+        [button setResizableBackgroundImage:bgImage];
         [button setTitle:@"Login" color:NSColor.whiteColor font:[NSFont systemFontOfSize:16]];
         button.target           = self;
         button.action           = @selector(loginButtonClick:);
@@ -89,7 +88,7 @@
         [self.view addSubview:button];
     }
     {
-        NSButton *button        = [NSButton buttonWithType:NSButtonTypeMomentaryPushIn];
+        NSButton *button        = [KKPuddingButton buttonWithType:NSButtonTypeMomentaryPushIn];
         [button setTitle:@"Guide"];
         button.target           = self;
         button.action           = @selector(guideButtonClick:);
@@ -111,8 +110,6 @@
 
 - (void)loginButtonClick:(NSButton *)sender
 {
-    [sender addCAAnimationWithDuration:0.5 fromScale:0.95 toScale:1 fromOpacity:1 toOpacity:1 forKey:nil removedOnCompletion:YES completionBlock:nil];
-    
     KKProgressHUD *hud = [KKProgressHUD showLoadingTextHUDAddedTo:self.view title:@"Login..." animated:YES];
     [hud hideAnimated:YES afterDelay:1];
 

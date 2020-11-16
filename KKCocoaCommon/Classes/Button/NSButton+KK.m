@@ -94,6 +94,18 @@
     self.image          = backgroundImage;
 }
 
+- (void)setResizableBackgroundImage:(NSImage *)backgroundImage
+{
+    NSImage *image      = backgroundImage;
+    CGFloat halfWidth   = image.size.width * 0.5;
+    CGFloat halfHeight  = image.size.height * 0.5;
+    image.resizingMode  = NSImageResizingModeStretch;
+    image.capInsets     = NSEdgeInsetsMake(halfHeight, halfWidth, halfHeight, halfWidth);
+    self.imageScaling   = NSImageScaleAxesIndependently;
+    self.imagePosition  = NSImageOverlaps;
+    self.image          = backgroundImage;
+}
+
 - (void)setOnState:(BOOL)onState
 {
     self.state = onState ? NSControlStateValueOn : NSControlStateValueOff;

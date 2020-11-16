@@ -57,6 +57,10 @@
 /// @param scaling 缩放
 - (void)setBackgroundImage:(NSImage *)backgroundImage scaling:(NSImageScaling)scaling;
 
+/// 设置为可拉伸的背景图
+/// @param backgroundImage 背景图
+- (void)setResizableBackgroundImage:(NSImage *)backgroundImage;
+
 /// 是否按下状态，NSButtonType为NSButtonTypeToggle时可用（alternateImage也是）
 @property (nonatomic, readwrite, getter=isOnState) BOOL onState;
 

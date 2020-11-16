@@ -24,6 +24,6 @@
 @property (nonatomic, assign) NSEdgeInsets margin;
 
 /// 图片和标题的间隔，默认：7
-@property (nonatomic, assign) CGFloat contentSpacing;
+@property (nonatomic, assign) CGFloat interitemSpacing;
 
 @end

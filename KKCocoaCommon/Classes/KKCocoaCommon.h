@@ -22,6 +22,8 @@ FOUNDATION_EXPORT const unsigned char PacketProcessorVersionString[];
 #import "NSTextField+KK.h"
 
 #import "KKImageTitleButton.h"
+#import "KKPuddingButton.h"
+#import "KKButtonCell.h"
 #import "NSButton+KK.h"
 
 #import "KKClipView.h"

@@ -19,7 +19,11 @@ BOOL KKAppAppearanceIsLight(void)
 
 BOOL KKViewAppearanceIsLight(NSView *view)
 {
-    return [view.effectiveAppearance.name isEqualToString:NSAppearanceNameAqua];
+    if (@available(macOS 10.14, *)) {
+        return [view.effectiveAppearance.name isEqualToString:NSAppearanceNameDarkAqua] == NO;
+    } else {
+        return YES;
+    }
 }
 
 @interface KKAppearanceManager()
@@ -70,9 +74,9 @@ BOOL KKViewAppearanceIsLight(NSView *view)
     if (@available(macOS 10.14, *)) {
         
         KKAppearanceStyle style =
-        [self.appearance.name isEqualToString:NSAppearanceNameAqua] ?
-        KKAppearanceStyleLight :
-        KKAppearanceStyleDark;
+        [self.appearance.name isEqualToString:NSAppearanceNameDarkAqua] ?
+        KKAppearanceStyleDark :
+        KKAppearanceStyleLight;
         
         if (_style == style) {
             return;

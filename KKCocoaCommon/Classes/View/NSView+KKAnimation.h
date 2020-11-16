@@ -85,7 +85,10 @@ typedef void (^KKAnimationCompletionBlock)(BOOL animationFinished);
 /// 添加循环旋转动画（viewDidAppear、viewWillDraw后才能使用，否则会以左下角为锚点旋转）
 - (CAAnimation *)addLoopRotateAnimationForKey:(NSString *)key;
 
-/// 缩放动画（viewDidAppear、viewWillDraw后才能使用，否则会以左下角为锚点旋转）
+/// 缩放动画（弹簧效果，viewDidAppear、viewWillDraw后才能使用，否则会以左下角为锚点旋转）
+- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromScale:(CGFloat)fromScale toScale:(CGFloat)toScale forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock;
+
+/// 缩放动画（弹簧效果，viewDidAppear、viewWillDraw后才能使用，否则会以左下角为锚点旋转）
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration  fromScale:(CGFloat)fromScale toScale:(CGFloat)toScale fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock;
 
 /// 移除所有动画

@@ -232,6 +232,18 @@ double KKBounceEaseOut(double p)
     return [self addRotateAnimationWithDuration:1 startAngle:M_PI*2 endAngle:0 repeat:YES forKey:key];
 }
 
+- (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromScale:(CGFloat)fromScale toScale:(CGFloat)toScale forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock
+{
+    CAAnimationGroup *animation     =
+    [CAAnimationGroup animationGroupWithDuration:duration fromScale:fromScale toScale:toScale completionBlock:completionBlock];
+    animation.removedOnCompletion   = removedOnCompletion;
+    self.wantsLayer                 = YES;
+    self.layer.position             = CGPointMake(CGRectGetMidX(self.frame) , CGRectGetMidY(self.frame));
+    self.layer.anchorPoint          = CGPointMake(0.5, 0.5);
+    [self.layer addAnimation:animation forKey:key];
+    return animation;
+}
+
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromScale:(CGFloat)fromScale toScale:(CGFloat)toScale fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock
 {
     CAAnimationGroup *animation     =

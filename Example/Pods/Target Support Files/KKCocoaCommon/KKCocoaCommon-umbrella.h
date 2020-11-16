@@ -11,7 +11,9 @@
 #endif
 
 #import "KKAppearanceManager.h"
+#import "KKButtonCell.h"
 #import "KKImageTitleButton.h"
+#import "KKPuddingButton.h"
 #import "NSButton+KK.h"
 #import "NSBezierPath+KK.h"
 #import "NSColor+KK.h"
