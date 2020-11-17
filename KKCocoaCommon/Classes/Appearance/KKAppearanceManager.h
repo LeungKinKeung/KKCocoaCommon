@@ -43,6 +43,26 @@ typedef NS_ENUM(NSUInteger, KKAppearanceStyle) {
 @end
 
 
+@interface NSView (KKAppearanceManager)
+
+/// 是深色主题
+@property (nonatomic, assign, getter=isDarkMode) BOOL darkMode;
+/// 是浅色主题
+@property (nonatomic, assign, getter=isLightMode) BOOL lightMode;
+
+@end
+
+
+@interface NSApplication (KKAppearanceManager)
+
+/// 是深色主题（全局）
+@property (nonatomic, assign, getter=isDarkMode) BOOL darkMode;
+/// 是浅色主题（全局）
+@property (nonatomic, assign, getter=isLightMode) BOOL lightMode;
+
+@end
+
+
 @interface NSObject (KKAppearanceManager)
 
 /// 在里面设置颜色，外观更改时也会调用

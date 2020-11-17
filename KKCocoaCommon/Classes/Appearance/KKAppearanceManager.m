@@ -4,6 +4,7 @@
 //
 //  Created by LeungKinKeung on 2020/10/29.
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
+//  https://developer.apple.com/documentation/xcode/supporting_dark_mode_in_your_interface?language=objc
 //
 
 #import "KKAppearanceManager.h"
@@ -20,7 +21,7 @@ BOOL KKAppAppearanceIsLight(void)
 BOOL KKViewAppearanceIsLight(NSView *view)
 {
     if (@available(macOS 10.14, *)) {
-        return [view.effectiveAppearance.name isEqualToString:NSAppearanceNameDarkAqua] == NO;
+        return view.isLightMode;
     } else {
         return YES;
     }
@@ -74,7 +75,7 @@ BOOL KKViewAppearanceIsLight(NSView *view)
     if (@available(macOS 10.14, *)) {
         
         KKAppearanceStyle style =
-        [self.appearance.name isEqualToString:NSAppearanceNameDarkAqua] ?
+        [self.appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameDarkAqua,NSAppearanceNameAqua]] == NSAppearanceNameDarkAqua ?
         KKAppearanceStyleDark :
         KKAppearanceStyleLight;
         
@@ -176,6 +177,74 @@ BOOL KKViewAppearanceIsLight(NSView *view)
 }
 
 @end
+
+
+@implementation NSView (KKAppearanceManager)
+
+- (void)setDarkMode:(BOOL)darkMode
+{
+    if (@available(macOS 10.14, *)) {
+        self.appearance =
+        darkMode ?
+        [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] :
+        [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+    }
+}
+
+- (BOOL)isDarkMode
+{
+    if (@available(macOS 10.14, *)) {
+        return [self.effectiveAppearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameDarkAqua,NSAppearanceNameAqua]] == NSAppearanceNameDarkAqua;
+    } else {
+        return NO;
+    }
+}
+
+- (void)setLightMode:(BOOL)lightMode
+{
+    [self setDarkMode:NO];
+}
+
+- (BOOL)isLightMode
+{
+    return self.isDarkMode == NO;
+}
+
+@end
+
+@implementation NSApplication (KKAppearanceManager)
+
+- (void)setDarkMode:(BOOL)darkMode
+{
+    if (@available(macOS 10.14, *)) {
+        self.appearance =
+        darkMode ?
+        [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] :
+        [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+    }
+}
+
+- (BOOL)isDarkMode
+{
+    if (@available(macOS 10.14, *)) {
+        return [self.effectiveAppearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameDarkAqua,NSAppearanceNameAqua]] == NSAppearanceNameDarkAqua;
+    } else {
+        return NO;
+    }
+}
+
+- (void)setLightMode:(BOOL)lightMode
+{
+    [self setDarkMode:NO];
+}
+
+- (BOOL)isLightMode
+{
+    return self.isDarkMode == NO;
+}
+
+@end
+
 
 @implementation NSObject (KKAppearanceManager)
 
