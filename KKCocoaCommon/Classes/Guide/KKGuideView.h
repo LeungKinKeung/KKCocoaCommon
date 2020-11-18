@@ -52,6 +52,8 @@ typedef void(^KKGuideViewCompletionBlock)(KKGuideView *guideView);
 @property (nonatomic, assign) CGPoint lineOffset;
 /// 线条宽度
 @property (nonatomic, assign) CGFloat lineWidth;
+/// 线条、文本、边框着色，默认白色
+@property (nonatomic, strong) NSColor *tintColor;
 /// 背景色，默认0.7黑色
 @property (nonatomic, strong) NSColor *backgroundColor;
 /// 点击时移除此视图

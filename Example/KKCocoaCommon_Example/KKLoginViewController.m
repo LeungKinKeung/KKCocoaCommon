@@ -77,7 +77,7 @@
     self.accountTextField.nextKeyView   = self.passwordTextField;
     self.passwordTextField.nextKeyView  = self.accountTextField;
     {
-        NSButton *button        = [KKPuddingButton buttonWithType:NSButtonTypeMomentaryPushIn];
+        KKPuddingButton *button = [KKPuddingButton buttonWithType:NSButtonTypeMomentaryPushIn];
         NSImage *bgImage        = [NSImage imageWithGradientColors:@[KKColor(0x1751c6, 1),KKColor(0x2269f8, 1)] size:CGSizeMake(self.view.frame.size.width - 25 * 2, 40) cornerRadius:6];
         [button setResizableBackgroundImage:bgImage];
         [button setTitle:@"Login" color:NSColor.whiteColor font:[NSFont systemFontOfSize:16]];
@@ -111,9 +111,10 @@
 - (void)loginButtonClick:(NSButton *)sender
 {
     KKProgressHUD *hud = [KKProgressHUD showLoadingTextHUDAddedTo:self.view title:@"Login..." animated:YES];
-    [hud hideAnimated:YES afterDelay:1];
+    hud.style = self.blurView ? KKProgressHUDBackgroundStyleSolidColor : KKProgressHUDBackgroundStyleBlur;
+    [hud hideAnimated:YES afterDelay:6];
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 
         [self.navigationView pushViewController:[KKTabelViewController new] animated:YES];
         //[self.navigationView pushViewController:[KKMainViewController new] animated:YES];

@@ -44,13 +44,13 @@
 - (void)commonInit
 {
     _lineWidth              = 2.0;
-    _lineOffset             = CGPointMake(50, 40);
     _highlightShapeStyle    = KKGuideViewShapeStyleDefault;
     _tipsBorderShapeStyle   = KKGuideViewShapeStyleCasual;
     _tipsBorderLineStyle    = KKGuideViewLineStyleDotted;
     _lineStyle              = KKGuideViewLineStyleSolid;
     _backgroundColor        = [NSColor colorWithWhite:0 alpha:0.7];
     _tipsBorderMargin       = NSEdgeInsetsMake(8, 8, 8, 8);
+    _tintColor              = NSColor.whiteColor;
     
     for (NSString *keypath in [self observableKeypaths]) {
         [self addObserver:self forKeyPath:keypath options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
@@ -133,6 +133,13 @@
     [self setNeedsDisplay:YES];
 }
 
+- (void)setTintColor:(NSColor *)tintColor
+{
+    _tintColor = tintColor;
+    _tipsLabel.textColor = tintColor;
+    [self setNeedsDisplay:YES];
+}
+
 - (void)refresh
 {
     [self.shakeValues removeAllObjects];
@@ -183,11 +190,11 @@
             case KKRectAlignmentTop:
             case KKRectAlignmentCenter:
             case KKRectAlignmentBottom: {
-                _lineOffset     = CGPointMake(30, 90);
+                _lineOffset     = CGPointMake(0, 90);
                 break;
             }
             default: {
-                _lineOffset     = CGPointMake(30, 40);
+                _lineOffset     = CGPointMake(0, 40);
                 break;
             }
         }
@@ -227,7 +234,7 @@
         case KKRectAlignmentTopLeft:
         case KKRectAlignmentLeft:{
             CGFloat tipsViewY = self.isFlipped ? CGRectGetMaxY(targetViewFrame) + lineOffset.y : CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height;
-            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightMargin.right + tipsBorderMargin.left;
+            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightMargin.right + tipsBorderMargin.left + lineOffset.x;
             if (tipsViewX + tipsViewSize.width > tipsViewMaxX) {
                 tipsViewX = tipsViewX - (tipsViewX + tipsViewSize.width - tipsViewMaxX);
             }
@@ -237,7 +244,7 @@
         case KKRectAlignmentTopRigth:
         case KKRectAlignmentRigth: {
             CGFloat tipsViewY = self.isFlipped ? CGRectGetMaxY(targetViewFrame) + lineOffset.y : CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height - tipsBorderMargin.right;
-            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightMargin.left - tipsBorderMargin.right;
+            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightMargin.left - tipsBorderMargin.right - lineOffset.x;
             if (tipsViewX < tipsViewMinX) {
                 tipsViewX = tipsViewMinX;
             }
@@ -246,7 +253,7 @@
         }
         case KKRectAlignmentBottomLeft: {
             CGFloat tipsViewY = self.isFlipped ? CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height : CGRectGetMaxY(targetViewFrame) + lineOffset.y;
-            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightMargin.right + tipsBorderMargin.left;
+            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightMargin.right + tipsBorderMargin.left + lineOffset.x;
             if (tipsViewX + tipsViewSize.width > tipsViewMaxX) {
                 tipsViewX = tipsViewX - (tipsViewX + tipsViewSize.width - tipsViewMaxX);
             }
@@ -255,7 +262,7 @@
         }
         case KKRectAlignmentBottomRigth: {
             CGFloat tipsViewY = self.isFlipped ? CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height : CGRectGetMaxY(targetViewFrame) + lineOffset.y;
-            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightMargin.left  - tipsBorderMargin.right;
+            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightMargin.left  - tipsBorderMargin.right - lineOffset.x;
             if (tipsViewX < tipsViewMinX) {
                 tipsViewX = tipsViewMinX;
             }
@@ -264,14 +271,14 @@
         }
         case KKRectAlignmentBottom: {
             CGFloat tipsViewY = self.isFlipped ? CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height : CGRectGetMaxY(targetViewFrame) + lineOffset.y;
-            tipsViewFrame = CGRectMake((selfSize.width - tipsViewSize.width) * 0.5, tipsViewY, tipsViewSize.width, tipsViewSize.height);
+            tipsViewFrame = CGRectMake((selfSize.width - tipsViewSize.width) * 0.5 + lineOffset.x, tipsViewY, tipsViewSize.width, tipsViewSize.height);
             break;
         }
         default: {
             // KKRectAlignmentTop
             // KKRectAlignmentCenter
             CGFloat tipsViewY = self.isFlipped ? CGRectGetMaxY(targetViewFrame) + lineOffset.y : CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height;
-            tipsViewFrame = CGRectMake((selfSize.width - tipsViewSize.width) * 0.5, tipsViewY, tipsViewSize.width, tipsViewSize.height);
+            tipsViewFrame = CGRectMake((selfSize.width - tipsViewSize.width) * 0.5 + lineOffset.x, tipsViewY, tipsViewSize.width, tipsViewSize.height);
             
             break;
         }
@@ -290,13 +297,13 @@
 {
     [super drawRect:dirtyRect];
     
-    {
+    if (self.backgroundColor) {
         // 背景色
         NSBezierPath *path = [NSBezierPath bezierPathWithRect:dirtyRect];
         [self.backgroundColor setFill];
         [path fill];
     }
-    {
+    if (self.backgroundColor) {
         // 高亮区域
         NSEdgeInsets margin     = self.highlightMargin;
         CGFloat cornerRadius    = self.highlightCornerRadius;
@@ -309,7 +316,7 @@
         [path fill];
         CGContextRestoreGState(context);
     }
-    [NSColor.whiteColor setStroke];
+    [self.tintColor setStroke];
     
     CGRect tipsViewFrame = self.customTipsView.frame;
     

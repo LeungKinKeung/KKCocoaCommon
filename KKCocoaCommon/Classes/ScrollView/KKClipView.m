@@ -8,7 +8,7 @@
 
 #import "KKClipView.h"
 
-CGFloat centeredCoordinateUnit(CGFloat proposedContentViewBoundsDimension, CGFloat documentViewFrameDimension);
+CGFloat KKClipViewCenteredCoordinateUnit(CGFloat proposedContentViewBoundsDimension, CGFloat documentViewFrameDimension);
 
 @implementation KKClipView
 
@@ -30,16 +30,16 @@ CGFloat centeredCoordinateUnit(CGFloat proposedContentViewBoundsDimension, CGFlo
     
     if (proposedBounds.size.width >= documentViewFrameRect.size.width) {
         constrainedClipViewBoundsRect.origin.x =
-        centeredCoordinateUnit(proposedBounds.size.width, documentViewFrameRect.size.width);
+        KKClipViewCenteredCoordinateUnit(proposedBounds.size.width, documentViewFrameRect.size.width);
     }
     if (proposedBounds.size.height >= documentViewFrameRect.size.height) {
         constrainedClipViewBoundsRect.origin.y =
-        centeredCoordinateUnit(proposedBounds.size.height, documentViewFrameRect.size.height);
+        KKClipViewCenteredCoordinateUnit(proposedBounds.size.height, documentViewFrameRect.size.height);
     }
     return constrainedClipViewBoundsRect;
 }
 
-CGFloat centeredCoordinateUnit(CGFloat proposedContentViewBoundsDimension, CGFloat documentViewFrameDimension)
+CGFloat KKClipViewCenteredCoordinateUnit(CGFloat proposedContentViewBoundsDimension, CGFloat documentViewFrameDimension)
 {
     CGFloat result = floor((proposedContentViewBoundsDimension - documentViewFrameDimension) / -2.0);
     return result;

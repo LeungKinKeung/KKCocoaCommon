@@ -10,4 +10,7 @@
 
 @interface KKPuddingButton : KKImageTitleButton
 
+/// 当鼠标在内部时显示阴影
+@property (nonatomic, assign) BOOL showsShadowWhileMouseInside;
+
 @end
