@@ -10,9 +10,9 @@
 #import <objc/runtime.h>
 #import "NSView+KKAnimation.h"
 
-static CGFloat KKAnimationDefaultDuration = 0.4;
-static NSString *KKAnimationPushKey = @"KKAnimationPushKey";
-static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
+static CGFloat gAnimationDefaultDuration    = 0.4;
+static NSString *const KKAnimationPushKey   = @"KKAnimationPushKey";
+static NSString *const KKAnimationPopKey    = @"KKAnimationPopKey";
 
 @implementation NSView (KKNavigation)
 
@@ -112,17 +112,17 @@ static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
         // 自右向左进入动画
         CGPoint addedViewFromPoint  = CGPointMake(self.frame.size.width, addedView.frame.origin.y);
         CGPoint addedViewToPoint    = CGPointMake(0, addedView.frame.origin.y);
-        [addedView addCAAnimationWithDuration:KKAnimationDefaultDuration fromPoint:addedViewFromPoint toPoint:addedViewToPoint forKey:KKAnimationPushKey removedOnCompletion:YES completionBlock:nil];
+        [addedView addCAAnimationWithDuration:gAnimationDefaultDuration fromPoint:addedViewFromPoint toPoint:addedViewToPoint forKey:KKAnimationPushKey removedOnCompletion:YES completionBlock:nil];
         
         CGPoint barFromPoint        = CGPointMake(self.frame.size.width, bar.frame.origin.y);
         CGPoint barToPoint          = CGPointMake(0, bar.frame.origin.y);
-        [bar addCAAnimationWithDuration:KKAnimationDefaultDuration fromPoint:barFromPoint toPoint:barToPoint forKey:KKAnimationPushKey removedOnCompletion:YES completionBlock:nil];
+        [bar addCAAnimationWithDuration:gAnimationDefaultDuration fromPoint:barFromPoint toPoint:barToPoint forKey:KKAnimationPushKey removedOnCompletion:YES completionBlock:nil];
         
         // 自右向左渐变消失动画
         CGPoint previousViewFromPoint   = previousView.frame.origin;
         CGPoint previousViewToPoint     = CGPointMake(-(self.frame.size.width * 0.3), previousView.frame.origin.y);
         __weak typeof(previousView) weakPreviousView    = previousView;
-        [previousView addCAAnimationWithDuration:KKAnimationDefaultDuration fromPoint:previousViewFromPoint toPoint:previousViewToPoint fromOpacity:1 toOpacity:0 forKey:KKAnimationPushKey removedOnCompletion:NO completionBlock:^(BOOL animationFinished) {
+        [previousView addCAAnimationWithDuration:gAnimationDefaultDuration fromPoint:previousViewFromPoint toPoint:previousViewToPoint fromOpacity:1 toOpacity:0 forKey:KKAnimationPushKey removedOnCompletion:NO completionBlock:^(BOOL animationFinished) {
             if (weakPreviousView == nil) {
                 return;
             }
@@ -135,7 +135,7 @@ static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
         CGPoint previousBarFromPoint    = previousBar.frame.origin;
         CGPoint previousBarToPoint      = CGPointMake(-(self.frame.size.width * 0.3), previousBar.frame.origin.y);
         __weak typeof(previousBar) weakPreviousBar    = previousBar;
-        [previousBar addCAAnimationWithDuration:KKAnimationDefaultDuration fromPoint:previousBarFromPoint toPoint:previousBarToPoint fromOpacity:1 toOpacity:0 forKey:KKAnimationPushKey removedOnCompletion:NO completionBlock:^(BOOL animationFinished) {
+        [previousBar addCAAnimationWithDuration:gAnimationDefaultDuration fromPoint:previousBarFromPoint toPoint:previousBarToPoint fromOpacity:1 toOpacity:0 forKey:KKAnimationPushKey removedOnCompletion:NO completionBlock:^(BOOL animationFinished) {
             if (weakPreviousBar == nil) {
                 return;
             }
@@ -203,7 +203,7 @@ static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
         CGPoint topFromPoint    = topView.frame.origin;
         CGPoint topToPoint      = CGPointMake(self.frame.size.width, topView.frame.origin.y);
         __weak typeof(self) weakself = self;
-        [topView addCAAnimationWithDuration:KKAnimationDefaultDuration fromPoint:topFromPoint toPoint:topToPoint forKey:KKAnimationPopKey removedOnCompletion:NO completionBlock:^(BOOL animationFinished) {
+        [topView addCAAnimationWithDuration:gAnimationDefaultDuration fromPoint:topFromPoint toPoint:topToPoint forKey:KKAnimationPopKey removedOnCompletion:NO completionBlock:^(BOOL animationFinished) {
             for (NSViewController *viewController in removeControllers) {
                 [viewController.view removeFromSuperview];
                 [viewController.navigationBar removeFromSuperview];
@@ -213,16 +213,16 @@ static NSString *KKAnimationPopKey = @"KKAnimationPopKey";
         
         CGPoint topBarFromPoint    = topBar.frame.origin;
         CGPoint topBarToPoint      = CGPointMake(self.frame.size.width, topBar.frame.origin.y);
-        [topBar addCAAnimationWithDuration:KKAnimationDefaultDuration fromPoint:topBarFromPoint toPoint:topBarToPoint forKey:KKAnimationPopKey removedOnCompletion:NO completionBlock:nil];
+        [topBar addCAAnimationWithDuration:gAnimationDefaultDuration fromPoint:topBarFromPoint toPoint:topBarToPoint forKey:KKAnimationPopKey removedOnCompletion:NO completionBlock:nil];
         
         // 自左向右渐变呈现动画
         CGPoint previousViewFromPoint   = CGPointMake(-(lastView.frame.size.width * 0.3), lastView.frame.origin.y);
         CGPoint previousViewToPoint     = CGPointMake(0, lastView.frame.origin.y);
-        [lastView addCAAnimationWithDuration:KKAnimationDefaultDuration fromPoint:previousViewFromPoint toPoint:previousViewToPoint fromOpacity:0 toOpacity:1 forKey:KKAnimationPopKey removedOnCompletion:YES completionBlock:nil];
+        [lastView addCAAnimationWithDuration:gAnimationDefaultDuration fromPoint:previousViewFromPoint toPoint:previousViewToPoint fromOpacity:0 toOpacity:1 forKey:KKAnimationPopKey removedOnCompletion:YES completionBlock:nil];
         
         CGPoint previousBarFromPoint   = CGPointMake(-(lastBar.frame.size.width * 0.3), lastBar.frame.origin.y);
         CGPoint previousBarToPoint     = CGPointMake(0, lastBar.frame.origin.y);
-        [lastBar addCAAnimationWithDuration:KKAnimationDefaultDuration fromPoint:previousBarFromPoint toPoint:previousBarToPoint fromOpacity:0 toOpacity:1 forKey:KKAnimationPopKey removedOnCompletion:YES completionBlock:nil];
+        [lastBar addCAAnimationWithDuration:gAnimationDefaultDuration fromPoint:previousBarFromPoint toPoint:previousBarToPoint fromOpacity:0 toOpacity:1 forKey:KKAnimationPopKey removedOnCompletion:YES completionBlock:nil];
     } else {
         for (NSViewController *viewController in removeControllers) {
             [viewController.view removeFromSuperview];

@@ -13,9 +13,9 @@ const CGFloat KKTableViewAutomaticDimension     = 25.0;
 const NSInteger KKTableViewHeaderTag            = -1;
 const NSInteger KKTableViewFooterTag            = -2;
 
-static NSString *KKTableRowViewIdentifier       = @"KKTableRowViewIdentifier";
-static NSString *KKTableViewHeaderIdentifier    = @"KKTableViewHeaderIdentifier";
-static NSString *KKTableViewFooterIdentifier    = @"KKTableViewFooterIdentifier";
+static NSString *const KKTableRowViewIdentifier     = @"KKTableRowViewIdentifier";
+static NSString *const KKTableViewHeaderIdentifier  = @"KKTableViewHeaderIdentifier";
+static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentifier";
 
 #pragma mark - KKTableViewSection
 @interface KKTableViewRowModel : NSObject

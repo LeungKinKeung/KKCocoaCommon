@@ -9,14 +9,13 @@
 #import "KKProgressHUD.h"
 #import "NSView+KKAnimation.h"
 
-static NSString *kEffectiveAppearanceKey = @"effectiveAppearance";
-
-static CGFloat _showAnimationDuration   = 0.2;
-static CGFloat _scaleAnimationDuration  = 0.1;
-static KKProgressHUDBackgroundStyle _defaultStyle = KKProgressHUDBackgroundStyleBlur;
-static NSColor *_defaultBackgroundColor = nil;
-static NSFont *_defaultLabelFont        = nil;
-static NSFont *_defaultDetailLabelFont  = nil;
+static NSString *const kEffectiveAppearanceKey      = @"effectiveAppearance";
+static KKProgressHUDBackgroundStyle gDefaultStyle   = KKProgressHUDBackgroundStyleBlur;
+static CGFloat gShowAnimationDuration       = 0.2;
+static CGFloat gScaleAnimationDuration      = 0.1;
+static NSColor *gDefaultBackgroundColor     = nil;
+static NSFont *gDefaultLabelFont            = nil;
+static NSFont *gDefaultDetailLabelFont      = nil;
 
 @interface KKHUDFlippedVisualEffectView : NSVisualEffectView
 
@@ -76,8 +75,8 @@ static NSFont *_defaultDetailLabelFont  = nil;
 
 + (void)initialize
 {
-    _defaultLabelFont       = [NSFont systemFontOfSize:16];
-    _defaultDetailLabelFont = [NSFont systemFontOfSize:14];;
+    gDefaultLabelFont       = [NSFont systemFontOfSize:16];
+    gDefaultDetailLabelFont = [NSFont systemFontOfSize:14];;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -190,7 +189,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
     self.layer.masksToBounds    = YES;
     self.blurView.blendingMode  = NSVisualEffectBlendingModeBehindWindow;
     self.currentScreen          = screen;
-    self.style                  = _defaultStyle;
+    self.style                  = gDefaultStyle;
     [self.windowController showWindow:nil];
 }
 
@@ -217,7 +216,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
     
     CGPoint winOrigin   = self.windowController.window.frame.origin;
     CGFloat duration    =
-    CGPointEqualToPoint(winOrigin, CGPointZero) ? 0 : _scaleAnimationDuration;
+    CGPointEqualToPoint(winOrigin, CGPointZero) ? 0 : gScaleAnimationDuration;
     
     [NSView animateWithDuration:duration animations:^{
         [self.windowController.window setFrame:windowFrame display:YES];
@@ -232,7 +231,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
     [view.window makeFirstResponder:nil];
     
     self.blurView.blendingMode  = NSVisualEffectBlendingModeWithinWindow;
-    self.style              = _defaultStyle;
+    self.style              = gDefaultStyle;
     
     NSShadow *shadow        = [[NSShadow alloc] init];
     shadow.shadowColor      = [NSColor colorWithWhite:0 alpha:0.3];
@@ -245,7 +244,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
     
     if (animated) {
         self.alphaValue = 0;
-        [NSView animateWithDuration:_showAnimationDuration animations:^{
+        [NSView animateWithDuration:gShowAnimationDuration animations:^{
             self.alphaValue = 1;
         } completion:nil];
     }
@@ -265,7 +264,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
 - (void)hideAnimated:(BOOL)animated
 {
     if (animated) {
-        [NSView animateWithDuration:_showAnimationDuration animations:^{
+        [NSView animateWithDuration:gShowAnimationDuration animations:^{
             self.alphaValue = 0;
         } completion:^{
             [self remove];
@@ -343,7 +342,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
     if (_label == nil) {
         _label              = [NSTextField label];
         _label.alignment    = NSTextAlignmentCenter;
-        _label.font         = _defaultLabelFont;
+        _label.font         = gDefaultLabelFont;
         _label.lineBreakMode= NSLineBreakByWordWrapping;
         [self.containerView addSubview:_label];
     }
@@ -355,7 +354,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
     if (_detailsLabel == nil) {
         _detailsLabel           = [NSTextField label];
         _detailsLabel.alignment = NSTextAlignmentCenter;
-        _detailsLabel.font      = _defaultDetailLabelFont;
+        _detailsLabel.font      = gDefaultDetailLabelFont;
         _detailsLabel.alphaValue= 0.8;
         _detailsLabel.lineBreakMode = NSLineBreakByWordWrapping;
         [self.containerView addSubview:_detailsLabel];
@@ -382,7 +381,7 @@ static NSFont *_defaultDetailLabelFont  = nil;
         if (self.windowController != nil) {
             [self updateWindowFrame];
         } else {
-            CGFloat duration = self.isViewAppeared ? _scaleAnimationDuration : 0;
+            CGFloat duration = self.isViewAppeared ? gScaleAnimationDuration : 0;
             [NSView animateWithDuration:duration animations:^{
                 [self layoutContainerViewSubviews];
                 [self layoutContainerView];
@@ -648,62 +647,62 @@ static NSFont *_defaultDetailLabelFont  = nil;
 
 + (void)setShowAnimationDuration:(CGFloat)showAnimationDuration
 {
-    _showAnimationDuration = showAnimationDuration;
+    gShowAnimationDuration = showAnimationDuration;
 }
 
 + (CGFloat)showAnimationDuration
 {
-    return _showAnimationDuration;
+    return gShowAnimationDuration;
 }
 
 + (void)setScaleAnimationDuration:(CGFloat)scaleAnimationDuration
 {
-    _scaleAnimationDuration = scaleAnimationDuration;
+    gScaleAnimationDuration = scaleAnimationDuration;
 }
 
 + (CGFloat)scaleAnimationDuration
 {
-    return _scaleAnimationDuration;
+    return gScaleAnimationDuration;
 }
 
 + (void)setDefaultStyle:(KKProgressHUDBackgroundStyle)defaultStyle
 {
-    _defaultStyle = defaultStyle;
+    gDefaultStyle = defaultStyle;
 }
 
 + (KKProgressHUDBackgroundStyle)defaultStyle
 {
-    return _defaultStyle;
+    return gDefaultStyle;
 }
 
 + (void)setDefaultBackgroundColor:(NSColor *)defaultBackgroundColor
 {
-    _defaultBackgroundColor = defaultBackgroundColor;
+    gDefaultBackgroundColor = defaultBackgroundColor;
 }
 
 + (NSColor *)defaultBackgroundColor
 {
-    return _defaultBackgroundColor;
+    return gDefaultBackgroundColor;
 }
 
 + (void)setDefaultLabelFont:(NSFont *)defaultLabelFont
 {
-    _defaultLabelFont = defaultLabelFont;
+    gDefaultLabelFont = defaultLabelFont;
 }
 
 + (NSFont *)defaultLabelFont
 {
-    return _defaultLabelFont;
+    return gDefaultLabelFont;
 }
 
 + (void)setDefaultDetailLabelFont:(NSFont *)defaultDetailLabelFont
 {
-    _defaultDetailLabelFont = defaultDetailLabelFont;
+    gDefaultDetailLabelFont = defaultDetailLabelFont;
 }
 
 + (NSFont *)defaultDetailLabelFont
 {
-    return _defaultDetailLabelFont;
+    return gDefaultDetailLabelFont;
 }
 
 - (NSColor *)getBackgroundColor
@@ -711,8 +710,8 @@ static NSFont *_defaultDetailLabelFont  = nil;
     if (_backgroundColor) {
         return _backgroundColor;
     }
-    if (_defaultBackgroundColor) {
-        return _defaultBackgroundColor;
+    if (gDefaultBackgroundColor) {
+        return gDefaultBackgroundColor;
     }
     if ([self.effectiveAppearance.name isEqualToString:NSAppearanceNameAqua]) {
         return [NSColor colorWithWhite:1 alpha:0.95];

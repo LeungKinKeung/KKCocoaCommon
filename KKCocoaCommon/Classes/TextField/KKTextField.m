@@ -197,7 +197,7 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
 {
     self = [super init];
     if (self) {
-        [self _initialize];
+        [self commonInit];
     }
     return self;
 }
@@ -206,12 +206,12 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
 {
     self = [super initWithCoder:coder];
     if (self) {
-        [self _initialize];
+        [self commonInit];
     }
     return self;
 }
 
-- (void)_initialize
+- (void)commonInit
 {
     _state                  = -1;
     _editable               = YES;

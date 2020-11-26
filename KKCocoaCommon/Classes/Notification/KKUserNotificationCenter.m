@@ -11,6 +11,10 @@
 
 NSNotificationName const KKUserNotificationAlertClickedNotification = @"KKUserNotificationAlertClickedNotification";
 
+@implementation KKUserNotification
+
+@end
+
 @interface KKUserNotificationCenter ()<NSUserNotificationCenterDelegate,UNUserNotificationCenterDelegate>
 
 @property (nonatomic, assign) BOOL isAuthorized;
@@ -194,31 +198,31 @@ API_AVAILABLE(macos(10.14))
                    cancelButtonTitle:(NSString *)cancelButtonTitle
                              handler:(KKUserNotificationHandler)handler
 {
-    [self deliverNotificationWithID:nil title:title subtitle:nil body:body deliveryDate:nil deliveryRepeatInterval:nil userInfo:userInfo actionButtonTitle:actionButtonTitle cancelButtonTitle:cancelButtonTitle handler:handler];
+    KKUserNotification *noti    = [KKUserNotification new];
+    noti.title                  = title;
+    noti.body                   = body;
+    noti.userInfo               = userInfo;
+    noti.actionButtonTitle      = actionButtonTitle;
+    noti.cancelButtonTitle      = cancelButtonTitle;
+    
+    [self deliverNotification:noti handler:handler];
 }
 
-+ (void)deliverNotificationWithID:(NSString *)identifier
-                            title:(NSString *)title
-                         subtitle:(NSString *)subtitle
-                             body:(NSString *)body
-                     deliveryDate:(NSDate *)deliveryDate
-           deliveryRepeatInterval:(NSDateComponents *)deliveryRepeatInterval
-                         userInfo:(NSDictionary<NSString *,id> *)userInfo
-                actionButtonTitle:(NSString *)actionButtonTitle
-                cancelButtonTitle:(NSString *)cancelButtonTitle
-                          handler:(KKUserNotificationHandler)handler
++ (void)deliverNotification:(KKUserNotification *)notification handler:(KKUserNotificationHandler)handler
 {
     if (@available(macOS 10.14, *))
     {
-        if (identifier == nil)
+        if (notification.identifier == nil)
         {
-            identifier = [[NSUUID UUID] UUIDString];
+            notification.identifier = [[NSUUID UUID] UUIDString];
         }
         [[KKUserNotificationCenter defaultCenter] requestAuthorizationWithHandler:^(BOOL granted) {
             if (granted == NO) {
                 return;
             }
-            [self getNotificationCategoriesIdentifierWithActionButtonTitle:actionButtonTitle cancelButtonTitle:cancelButtonTitle completionHandler:^(NSString *categoriesIdentifier) {
+            [self getNotificationCategoriesIdentifierWithActionButtonTitle:notification.actionButtonTitle
+                                                         cancelButtonTitle:notification.cancelButtonTitle
+                                                         completionHandler:^(NSString *categoriesIdentifier) {
 
                 UNUserNotificationCenter *center =
                 [UNUserNotificationCenter currentNotificationCenter];
@@ -226,20 +230,20 @@ API_AVAILABLE(macos(10.14))
                 UNMutableNotificationContent *content =
                 UNMutableNotificationContent.new;
                 
-                content.title               = title;
-                content.subtitle            = subtitle;
-                content.body                = body;
-                content.userInfo            = userInfo;
+                content.title               = notification.title;
+                content.subtitle            = notification.subtitle;
+                content.body                = notification.body;
+                content.userInfo            = notification.userInfo;
                 content.categoryIdentifier  = categoriesIdentifier;
                 
                 UNCalendarNotificationTrigger *trigger = nil;
                 
-                if (deliveryRepeatInterval)
+                if (notification.deliveryRepeatInterval)
                 {
                     trigger =
-                    [UNCalendarNotificationTrigger triggerWithDateMatchingComponents:deliveryRepeatInterval repeats:YES];
+                    [UNCalendarNotificationTrigger triggerWithDateMatchingComponents:notification.deliveryRepeatInterval repeats:YES];
                 }
-                else if (deliveryDate)
+                else if (notification.deliveryDate)
                 {
                     NSCalendar *calendar =
                     [NSCalendar currentCalendar];
@@ -255,14 +259,14 @@ API_AVAILABLE(macos(10.14))
                     
                     NSDateComponents *comps =
                     [calendar components:unit
-                                fromDate:deliveryDate];
+                                fromDate:notification.deliveryDate];
                     
                     trigger =
                     [UNCalendarNotificationTrigger triggerWithDateMatchingComponents:comps repeats:NO];
                 }
                 
                 UNNotificationRequest *requst =
-                [UNNotificationRequest requestWithIdentifier:identifier
+                [UNNotificationRequest requestWithIdentifier:notification.identifier
                                                      content:content
                                                      trigger:trigger];
                 
@@ -274,7 +278,7 @@ API_AVAILABLE(macos(10.14))
                     }
                     else if (handler)
                     {
-                        [[KKUserNotificationCenter defaultCenter].handlerMap setValue:handler forKey:identifier];
+                        [[KKUserNotificationCenter defaultCenter].handlerMap setValue:handler forKey:notification.identifier];
                     }
                 }];
             }];
@@ -285,22 +289,22 @@ API_AVAILABLE(macos(10.14))
         NSUserNotification *noti =
         [[NSUserNotification alloc] init];
         
-        noti.identifier         = identifier;
-        noti.title              = title;
-        noti.subtitle           = subtitle;
-        noti.informativeText    = body;
-        noti.userInfo           = userInfo;
-        noti.hasActionButton    = actionButtonTitle ? YES : NO;
-        noti.actionButtonTitle  = actionButtonTitle;
-        noti.otherButtonTitle   = cancelButtonTitle;
+        noti.identifier         = notification.identifier;
+        noti.title              = notification.title;
+        noti.subtitle           = notification.subtitle;
+        noti.informativeText    = notification.body;
+        noti.userInfo           = notification.userInfo;
+        noti.hasActionButton    = notification.actionButtonTitle ? YES : NO;
+        noti.actionButtonTitle  = notification.actionButtonTitle;
+        noti.otherButtonTitle   = notification.cancelButtonTitle;
         
-        if (deliveryDate)
+        if (notification.deliveryDate)
         {
-            noti.deliveryDate   = deliveryDate;
+            noti.deliveryDate   = notification.deliveryDate;
         }
-        else if (deliveryRepeatInterval)
+        else if (notification.deliveryRepeatInterval)
         {
-            noti.deliveryRepeatInterval = deliveryRepeatInterval;
+            noti.deliveryRepeatInterval = notification.deliveryRepeatInterval;
         }
         NSUserNotificationCenter *center =
         [NSUserNotificationCenter defaultUserNotificationCenter];
@@ -309,7 +313,8 @@ API_AVAILABLE(macos(10.14))
         
         if (handler)
         {
-            [[KKUserNotificationCenter defaultCenter].handlerMap setValue:handler forKey:identifier];
+            [[KKUserNotificationCenter defaultCenter].handlerMap setValue:handler
+                                                                   forKey:notification.identifier];
         }
     }
 }

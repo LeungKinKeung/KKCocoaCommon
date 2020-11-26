@@ -8,7 +8,7 @@
 
 #import "NSScrollView+KK.h"
 
-static CGFloat _animationDuration = 0.3;
+static CGFloat gAnimationDuration = 0.3;
 
 @implementation NSScrollView (KK)
 
@@ -20,7 +20,7 @@ static CGFloat _animationDuration = 0.3;
     if (animated) {
         [NSAnimationContext beginGrouping];
         NSAnimationContext *ctx     = [NSAnimationContext currentContext];
-        ctx.duration                = _animationDuration;
+        ctx.duration                = gAnimationDuration;
         ctx.allowsImplicitAnimation = YES;
     }
     CGFloat originY     = self.contentView.bounds.origin.y;
@@ -46,7 +46,7 @@ static CGFloat _animationDuration = 0.3;
     if (animated) {
         [NSAnimationContext beginGrouping];
         NSAnimationContext *ctx     = [NSAnimationContext currentContext];
-        ctx.duration                = _animationDuration;
+        ctx.duration                = gAnimationDuration;
         ctx.allowsImplicitAnimation = YES;
     }
     CGFloat originY     = self.contentView.bounds.origin.y;
@@ -72,7 +72,7 @@ static CGFloat _animationDuration = 0.3;
     if (animated) {
         [NSAnimationContext beginGrouping];
         NSAnimationContext *ctx     = [NSAnimationContext currentContext];
-        ctx.duration                = _animationDuration;
+        ctx.duration                = gAnimationDuration;
         ctx.allowsImplicitAnimation = YES;
     }
     if (self.hasVerticalScroller) {
@@ -98,7 +98,7 @@ static CGFloat _animationDuration = 0.3;
     if (animated) {
         [NSAnimationContext beginGrouping];
         NSAnimationContext *ctx     = [NSAnimationContext currentContext];
-        ctx.duration                = _animationDuration;
+        ctx.duration                = gAnimationDuration;
         ctx.allowsImplicitAnimation = YES;
     }
     if (self.hasVerticalScroller) {
@@ -159,7 +159,7 @@ static CGFloat _animationDuration = 0.3;
     if (animated) {
         [NSAnimationContext beginGrouping];
         NSAnimationContext *ctx     = [NSAnimationContext currentContext];
-        ctx.duration                = _animationDuration;
+        ctx.duration                = gAnimationDuration;
         ctx.allowsImplicitAnimation = YES;
     }
     CGFloat docViewHeight = self.documentView.frame.size.height;

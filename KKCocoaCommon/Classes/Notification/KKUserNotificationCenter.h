@@ -13,6 +13,30 @@ OBJC_EXTERN NSNotificationName const KKUserNotificationAlertClickedNotification;
 /// 通知Alert被点击了
 typedef void(^KKUserNotificationHandler)(NSDictionary <NSString *, id> *userInfo);
 
+@interface KKUserNotification : NSObject
+
+/// 标识符
+@property (nonatomic, copy) NSString *identifier;
+/// 标题
+@property (nonatomic, copy) NSString *title;
+/// 副标题
+@property (nonatomic, copy) NSString *subtitle;
+/// 详情
+@property (nonatomic, copy) NSString *body;
+/// 定时发送
+@property (nonatomic, copy) NSDate *deliveryDate;
+/// 重复定时发送
+@property (nonatomic, copy) NSDateComponents *deliveryRepeatInterval;
+/// 自定义信息
+@property (nonatomic, copy) NSDictionary *userInfo;
+/// 确定按钮标题（在横幅右下）
+@property (nonatomic, copy) NSString *actionButtonTitle;
+/// 其他按钮标题（在横幅右上，点击直接消失不会通知）
+@property (nonatomic, copy) NSString *cancelButtonTitle;
+
+@end
+
+
 @interface KKUserNotificationCenter : NSObject
 
 /// 本地通知中心
@@ -36,26 +60,11 @@ typedef void(^KKUserNotificationHandler)(NSDictionary <NSString *, id> *userInfo
  *  可选样式:banner(默认)，alert或none
  */
 /// 发出通知
-/// @param identifier 标识符
-/// @param title 标题
-/// @param subtitle 副标题
-/// @param body 详情
-/// @param deliveryDate 定时发送
-/// @param deliveryRepeatInterval 重复定时发送
-/// @param userInfo 自定义信息
-/// @param actionButtonTitle 确定按钮标题（在横幅右下）
-/// @param cancelButtonTitle 其他按钮标题（在横幅右上，点击直接消失不会通知）
+/// @param notification 通知
 /// @param handler 点了通知Alert或Action Button回调
-+ (void)deliverNotificationWithID:(NSString *)identifier
-                            title:(NSString *)title
-                         subtitle:(NSString *)subtitle
-                             body:(NSString *)body
-                     deliveryDate:(NSDate *)deliveryDate
-           deliveryRepeatInterval:(NSDateComponents *)deliveryRepeatInterval
-                         userInfo:(NSDictionary<NSString *,id> *)userInfo
-                actionButtonTitle:(NSString *)actionButtonTitle
-                cancelButtonTitle:(NSString *)cancelButtonTitle
-                          handler:(KKUserNotificationHandler)handler;
++ (void)deliverNotification:(KKUserNotification *)notification
+                    handler:(KKUserNotificationHandler)handler;
+
 /// 发出通知
 + (void)deliverNotificationWithTitle:(NSString *)title
                                 body:(NSString *)body

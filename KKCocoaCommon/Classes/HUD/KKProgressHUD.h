@@ -107,6 +107,8 @@ typedef NS_ENUM(NSUInteger, KKProgressHUDBackgroundStyle) {
 
 /// 默认实例
 + (instancetype)hud;
+/// 初始化
+- (void)commonInit;
 /// 添加并显示HUD
 - (void)addedTo:(id)target animated:(BOOL)animated;
 /// 添加到屏幕并显示HUD
