@@ -32,7 +32,7 @@
     
     self.datas = NSMutableArray.new;
     for (NSInteger section = 0; section < 3; section++) {
-        NSInteger numberOfRows = arc4random_uniform(10);
+        NSInteger numberOfRows = arc4random_uniform(10) + 10;
         NSMutableArray *strings = NSMutableArray.new;
         for (NSInteger row = 0; row < numberOfRows; row++) {
             [strings addObject:[NSString stringWithFormat:@"Title section:%ld row:%ld",section,row]];
@@ -40,13 +40,27 @@
         [self.datas addObject:strings];
     }
     
-    self.tableView  = [[KKTableView alloc] initWithFrame:CGRectZero
-                                                   style:KKTableViewStylePlain];
+    self.tableView  = [[KKTableView alloc] initWithFrame:CGRectZero style:KKTableViewStyleGrouped];
     self.tableView.delegate     = self;
     self.tableView.dataSource   = self;
-    //self.tableView.translucent  = YES;
+    self.tableView.translucent  = YES;
     self.tableView.selectionBackgroundColors = @[NSColor.cyanColor,NSColor.blueColor];
     self.tableView.alwaysEmphasizedSelectionBackground  = YES;
+    self.tableView.allowsMultipleSelection  = YES;
+    self.tableView.allowsEmptySelection     = YES;
+    self.tableView.allowsSelection          = YES;
+    self.tableView.selectionStyle           = KKTableViewSelectionStyleDefault;
+    
+    if (self.tableView.translucent) {
+        self.tableView.interiorBackgroundStyle  = KKTableViewInteriorBackgroundStyleDefault;
+        self.tableView.selectedImage            =
+        [NSImage kktableViewSelectedImageWithTintColor:NSColor.alternateSelectedControlColor
+                                       backgroundColor:NSColor.whiteColor
+                                                  size:CGSizeMake(20, 20)];
+    } else {
+        self.tableView.interiorBackgroundStyle  = KKTableViewInteriorBackgroundStyleAlwaysNormal;
+        self.tableView.selectionBackgroundColor = [NSColor colorWithWhite:0.5 alpha:0.1];
+    }
     
     [self.tableView registerClass:[KKTableViewCell class]
                     forIdentifier:@"KKTableViewCell"];
@@ -57,7 +71,17 @@
     [self.view addSubview:self.tableView];
     
     if (@available(macOS 10.12, *)) {
-        self.navigationBar.rightBarButtonItems = @[[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameAddTemplate] target:self action:@selector(addBarButtonItemClick)],[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameRemoveTemplate] target:self action:@selector(removeBarButtonItemClick)]];
+        self.navigationBar.rightBarButtonItems = @[[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameAddTemplate] target:self action:@selector(addBarButtonItemClick)],[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameRemoveTemplate] target:self action:@selector(removeBarButtonItemClick)],[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNamePathTemplate] target:self action:@selector(sortBarButtonItemClick)]];
+        
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            self.tableView.tableHeaderView = [NSTextField labelWithString:@"!!!!header!!!"];
+//        });
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            self.tableView.tableFooterView = [NSTextField labelWithString:@"!!!!footer!!!"];
+//        });
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            self.tableView.tableFooterView = nil;
+//        });
     }
 }
 
@@ -77,6 +101,18 @@
     [list removeLastObject];
     [self.tableView deleteRowAtIndexPath:[NSIndexPath indexPathForRow:list.count inSection:0] withRowAnimation:NSTableViewAnimationSlideRight];
     [self.tableView endUpdates];
+}
+
+- (void)sortBarButtonItemClick
+{
+    self.tableView.selectionStyle =
+    self.tableView.selectionStyle == KKTableViewSelectionStyleDefault ?
+    KKTableViewSelectionStyleCheckmark :
+    KKTableViewSelectionStyleDefault;
+    
+    if (self.tableView.selectionStyle == KKTableViewSelectionStyleDefault) {
+        [self.tableView deselectAll];
+    }
 }
 
 - (NSInteger)numberOfSectionsInTableView:(KKTableView *)tableView
@@ -108,12 +144,14 @@
 /*
 - (NSView *)tableView:(KKTableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
-    KKTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Header"];
-    
-    cell.textLabel.text = [NSString stringWithFormat:@"HEADER:%ld",section];
-    return cell;
+    NSTextField *label = [NSTextField label];
+    label.text = [NSString stringWithFormat:@"HEADER:%ld",section];
+    // KKTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Header"];
+    // cell.textLabel.text = [NSString stringWithFormat:@"HEADER:%ld",section];
+    // return cell;
+    return label;
 }
-*/
+ */
 
 - (NSString *)tableView:(KKTableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
@@ -131,6 +169,16 @@
     return 60;
 }
 */
+
+- (NSArray<NSIndexPath *> *)tableView:(KKTableView *)tableView willSelectRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths
+{
+    if (tableView.selectionStyle == KKTableViewSelectionStyleDefault) {
+        NSLog(@"Select section:%ld row:%ld",indexPaths.firstObject.section,indexPaths.firstObject.row);
+        return nil;
+    } else {
+        return indexPaths;
+    }
+}
 
 - (void)viewDidLayout
 {

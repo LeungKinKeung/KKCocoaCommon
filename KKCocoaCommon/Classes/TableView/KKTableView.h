@@ -23,7 +23,7 @@ OBJC_EXTERN const NSInteger KKTableViewFooterTag;
 
 @required
 - (NSInteger)tableView:(KKTableView *)tableView numberOfRowsInSection:(NSInteger)section;
-- (NSView *)tableView:(KKTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+- (NSTableCellView *)tableView:(KKTableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 
 @optional
 - (NSInteger)numberOfSectionsInTableView:(KKTableView *)tableView;
@@ -38,7 +38,11 @@ OBJC_EXTERN const NSInteger KKTableViewFooterTag;
 @optional
 - (CGFloat)tableView:(KKTableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
 - (NSIndexPath *)tableView:(KKTableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+- (NSIndexPath *)tableView:(KKTableView *)tableView willDeselectRowAtIndexPath:(NSIndexPath *)indexPath;
 - (void)tableView:(KKTableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+- (void)tableView:(KKTableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath;
+- (NSArray <NSIndexPath *>*)tableView:(KKTableView *)tableView willSelectRowsAtIndexPaths:(NSArray <NSIndexPath *>*)indexPaths;
+- (void)tableView:(KKTableView *)tableView didSelectRowsAtIndexPaths:(NSArray <NSIndexPath *>*)indexPaths;
 - (void)tableView:(KKTableView *)tableView didClickHeaderAtSection:(NSInteger)section;
 - (void)tableView:(KKTableView *)tableView didClickFooterAtSection:(NSInteger)section;
 - (void)tableView:(KKTableView *)tableView didDoubleClickRowAtIndexPath:(NSIndexPath *)indexPath;
@@ -57,6 +61,20 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
     KKTableViewStyleGrouped
 };
 
+typedef NS_ENUM(NSUInteger, KKTableViewInteriorBackgroundStyle) {
+    KKTableViewInteriorBackgroundStyleDefault,      // 选中时文本和图像颜色变为白色
+    KKTableViewInteriorBackgroundStyleAlwaysNormal, // 选中时文本和图像颜色不变
+};
+
+typedef NS_ENUM(NSUInteger, KKTableViewSelectionStyle) {
+    KKTableViewSelectionStyleDefault,
+    /**
+     显示selectedImage/unselectedImage
+     */
+    KKTableViewSelectionStyleCheckmark, // ，\
+    建议选中背景色为灰色，选中时文本和图像颜色不变，固定高度
+};
+
 @interface KKTableView : NSScrollView
 
 /// 初始化
@@ -67,20 +85,24 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 @property (nonatomic, weak) id<KKTableViewDelegate> delegate;
 /// 数据源
 @property (nonatomic, weak) id<KKTableViewDataSource> dataSource;
-/// 表视图
-@property (nonatomic, readonly) NSTableView *tableView;
 /// 样式
 @property (nonatomic, readonly) KKTableViewStyle style;
+/// 表视图
+@property (nonatomic, readonly) NSTableView *tableView;
+/// 页眉（需要提前设置高度，假如高度更改了，就调用-[KKTableView noteHeightOfTableHeaderViewChanged]）
+@property (nonatomic, strong) NSView *tableHeaderView;
+/// 页尾（需要提前设置高度，假如高度更改了，就调用-[KKTableView noteHeightOfTableFooterViewChanged]）
+@property (nonatomic, strong) NSView *tableFooterView;
 /// 半透明的（模糊背景），为YES时不能自定义选中背景色
 @property (nonatomic, assign, getter=isTranslucent) BOOL translucent;
-/// 选中时的背景色
-@property (nonatomic, strong) NSColor *selectionBackgroundColor;
-/// 选中时的背景渐变色
-@property (nonatomic, strong) NSArray <NSColor *>*selectionBackgroundColors;
-/// 选中时的背景图片
-@property (nonatomic, strong) NSImage *selectionBackgroundImage;
-/// 假如为NO，选中的背景色会在视图失去焦点时变为灰色
-@property (nonatomic, assign) BOOL alwaysEmphasizedSelectionBackground;
+/// 分隔线，默认:KKTableViewCellSeparatorStyleSingleLine
+@property (nonatomic, assign) KKTableViewCellSeparatorStyle separatorStyle;
+/// 分隔线颜色
+@property (nonatomic, strong) NSColor *separatorColor;
+/// 分隔线边距
+@property (nonatomic, assign) NSEdgeInsets separatorInset;
+/// 分隔线宽度
+@property (nonatomic, assign) CGFloat separatorLineWidth;
 /// 可见的Cell
 @property (nonatomic, readonly) NSArray <__kindof NSView *>*visibleCells;
 /// 可见的Cell索引
@@ -105,7 +127,29 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 @property (nonatomic, readonly) BOOL usesAutomaticHeaderHeights;
 /// 页尾使用自动高度
 @property (nonatomic, readonly) BOOL usesAutomaticFooterHeights;
+/// 使用了自定义的分隔线边距
+@property (nonatomic, readonly) BOOL usesCustomSeparatorInset;
 
+/// 选中时是否改变外观（比如改变文本和模板图片颜色）
+@property (nonatomic, assign) KKTableViewInteriorBackgroundStyle interiorBackgroundStyle;
+/// 选择样式
+@property (nonatomic, assign) KKTableViewSelectionStyle selectionStyle;
+/// 选中时的图标
+@property (nonatomic, readwrite) NSImage *selectedImage;
+/// 未选中时的图标
+@property (nonatomic, readwrite) NSImage *unselectedImage;
+/// 选中时的背景色
+@property (nonatomic, strong) NSColor *selectionBackgroundColor;
+/// 选中时的背景渐变色
+@property (nonatomic, strong) NSArray <NSColor *>*selectionBackgroundColors;
+/// 选中时的背景图片
+@property (nonatomic, strong) NSImage *selectionBackgroundImage;
+/// 选中时的背景渐变色(CGColor)
+@property (nonatomic, readonly) NSArray *selectionBackgroundCGColors;
+/// 选中时的背景图片(NSImageRep)
+@property (nonatomic, readonly) NSImageRep *selectionBackgroundImageRep;
+/// 假如为NO，选中的背景色会在视图失去焦点时变为灰色，否则保持原来的颜色
+@property (nonatomic, assign) BOOL alwaysEmphasizedSelectionBackground;
 /// 允许选择，默认：YES
 @property (nonatomic, assign) BOOL allowsSelection;
 /// 允许不选，默认：YES
@@ -120,21 +164,36 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 @property (nonatomic, readonly) NSArray<NSIndexPath *> *indexPathsForSelectedRows;
 /// 有未提交的更新
 @property (nonatomic, readonly) BOOL hasUncommittedUpdates;
-
 /// 重用Cell
 - (__kindof NSView *)dequeueReusableCellWithIdentifier:(NSString *)identifier;
 /// 取出Cell
 - (__kindof NSView *)cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+/// 获取这个位置的Cell的索引
+- (NSIndexPath *)indexPathForRowAtPoint:(CGPoint)point;
 /// 获取此Cell的索引
 - (NSIndexPath *)indexPathForCell:(NSView *)cell;
+/// 获取此范围的Cell的索引
+- (NSArray<NSIndexPath *> *)indexPathsForRowsInRect:(CGRect)rect;
 /// 此Section的行数
 - (NSInteger)numberOfRowsInSection:(NSInteger)section;
+/// 页眉的位置大小
+- (CGRect)rectForHeaderInSection:(NSInteger)section;
+/// 页尾的位置大小
+- (CGRect)rectForFooterInSection:(NSInteger)section;
+/// Cell的位置大小
+- (CGRect)rectForRowAtIndexPath:(NSIndexPath *)indexPath;
+/// 多选
+- (void)selectRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths;
+/// 选中全部
+- (void)selectAll;
 /// 选择
 - (void)selectRowAtIndexPath:(NSIndexPath *)indexPath;
 /// 选择并滚动
 - (void)selectRowAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated scrollPosition:(KKScrollViewScrollPosition)scrollPosition;
 /// 反选
 - (void)deselectRowAtIndexPath:(NSIndexPath *)indexPath;
+/// 取消全部选择
+- (void)deselectAll;
 /// 滚动
 - (void)scrollToRowAtIndexPath:(NSIndexPath *)indexPath atScrollPosition:(KKScrollViewScrollPosition)scrollPosition animated:(BOOL)animated;
 /// 重新加载
@@ -147,6 +206,7 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 - (void)insertSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation;
 - (void)deleteSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation;
 - (void)reloadSections:(NSIndexSet *)sections withRowAnimation:(NSTableViewAnimationOptions)animation;
+- (void)moveSection:(NSInteger)section toSection:(NSInteger)newSection;
 
 - (void)insertRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation;
 - (void)deleteRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths withRowAnimation:(NSTableViewAnimationOptions)animation;
@@ -163,12 +223,34 @@ typedef NS_ENUM(NSInteger, KKTableViewStyle)
 - (void)noteHeightOfRowWithIndexPathChanged:(NSIndexPath *)indexPath;
 - (void)noteHeightOfHeaderWithSectionChanged:(NSInteger)section;
 - (void)noteHeightOfFooterWithSectionChanged:(NSInteger)section;
+- (void)noteHeightOfTableHeaderViewChanged;
+- (void)noteHeightOfTableFooterViewChanged;
+- (void)noteHeightOfRowWithCellChanged:(__kindof NSView *)cell height:(CGFloat)height;
 
 /// 注册Nib
 - (void)registerNib:(NSNib *)nib forIdentifier:(NSString *)identifier;
 /// 注册Class
 - (void)registerClass:(Class)cellClass forIdentifier:(NSString *)identifier;
 
+@end
 
+
+@interface NSImage (KKTableView)
+
+/// 选中的图标
+/// @param tintColor 中间勾号的颜色
+/// @param backgroundColor 背景色
+/// @param size 大小
++ (NSImage *)kktableViewSelectedImageWithTintColor:(NSColor *)tintColor
+                                   backgroundColor:(NSColor *)backgroundColor
+                                              size:(CGSize)size;
+
+/// 未选中的图标
+/// @param borderColor 边框颜色
+/// @param lineWidth 边框线粗细
+/// @param size 大小
++ (NSImage *)kktableViewUnselectedImageWithBorderColor:(NSColor *)borderColor
+                                             lineWidth:(CGFloat)lineWidth
+                                                  size:(CGSize)size;
 
 @end

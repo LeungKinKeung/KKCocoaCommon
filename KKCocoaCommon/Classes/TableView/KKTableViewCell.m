@@ -60,10 +60,7 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 - (void)commonInit
 {
     self.wantsLayer     = YES;
-    _separatorStyle     = KKTableViewCellSeparatorStyleSingleLine;
-    _separatorColor     = [NSColor colorWithWhite:0.5 alpha:0.5];
     _separatorInset     = NSEdgeInsetsMake(0, 0, 0, 0);
-    _separatorLineWidth = 1;
     _interitemSpacing   = 10;
     _lineSpacing        = 5;
     _contentInsets      = NSEdgeInsetsMake(10, 10, 10, 10);
@@ -566,6 +563,11 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     return self.identifier;
 }
 
+- (void)selectionDidChange
+{
+    
+}
+
 - (void)setSelected:(BOOL)selected
 {
     [self.tableRowView setSelected:selected];
@@ -574,31 +576,6 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 - (BOOL)isSelected
 {
     return self.tableRowView.isSelected;
-}
-
-- (void)setPreviousRowSelected:(BOOL)previousRowSelected
-{
-    [self.tableRowView setPreviousRowSelected:previousRowSelected];
-}
-
-- (BOOL)isPreviousRowSelected
-{
-    return self.tableRowView.isPreviousRowSelected;
-}
-
-- (void)setNextRowSelected:(BOOL)nextRowSelected
-{
-    [self.tableRowView setNextRowSelected:nextRowSelected];
-}
-
-- (BOOL)isNextRowSelected
-{
-    return self.tableRowView.isNextRowSelected;
-}
-
-- (void)selectionDidChange
-{
-    [self setNeedsDisplay:YES];
 }
 
 - (KKTableView *)kktableView
@@ -627,43 +604,7 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     if (self.usesAutomaticRowHeights == NO) {
         return;
     }
-    [[NSNotificationCenter defaultCenter] postNotificationName:KKTableViewCellHeightDidChangeNotification object:self];
-}
-
-- (BOOL)isHeader
-{
-    KKTableView *tableView  = self.kktableView;
-    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
-    return (indexPath.row == KKTableViewHeaderTag);
-}
-
-- (BOOL)isFirstRow
-{
-    KKTableView *tableView  = self.kktableView;
-    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
-    return (indexPath.row == 0);
-}
-
-- (BOOL)isLastRow
-{
-    KKTableView *tableView  = self.kktableView;
-    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
-    NSInteger numberOfRows  = [tableView numberOfRowsInSection:indexPath.section];
-    return indexPath.row == numberOfRows - 1;
-}
-
-- (BOOL)isRow
-{
-    KKTableView *tableView  = self.kktableView;
-    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
-    return indexPath.row >= 0;
-}
-
-- (BOOL)isFooter
-{
-    KKTableView *tableView  = self.kktableView;
-    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
-    return (indexPath.row == KKTableViewFooterTag);
+    [self.kktableView noteHeightOfRowWithCellChanged:self height:self.rowHeight];
 }
 
 - (BOOL)usesAutomaticRowHeights
@@ -677,75 +618,6 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     } else {
         return tableView.usesAutomaticRowHeights;
     }
-}
-
-- (void)setBackgroundStyle:(NSBackgroundStyle)backgroundStyle
-{
-    if (self.tableRowView.isEmphasized &&
-        self.tableRowView.isSelected &&
-        backgroundStyle == NSBackgroundStyleNormal &&
-        self.backgroundStyle == NSBackgroundStyleEmphasized) {
-        // 忽略更改
-    } else {
-        [super setBackgroundStyle:backgroundStyle];
-    }
-}
-
-- (void)drawRect:(NSRect)dirtyRect
-{
-    [super drawRect:dirtyRect];
-    [self drawSeparatorInRect:dirtyRect];
-}
-
-- (void)drawSeparatorInRect:(NSRect)dirtyRect
-{
-    if (self.separatorStyle == KKTableViewCellSeparatorStyleNone) {
-        return;
-    }
-    if (self.separatorColor == nil) {
-        return;
-    }
-    if (self.isSelected) {
-        return;
-    }
-    KKTableView *tableView  = self.kktableView;
-    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
-    if (indexPath.row < 0) {
-        return;
-    }
-    // 画线
-    KKTableViewStyle isGrouped  = tableView.style == KKTableViewStyleGrouped;
-    KKTableViewStyle isPlain    = isGrouped == NO;
-    BOOL isFirstRow             = indexPath.row == 0;
-    if (isGrouped && isFirstRow) {
-        NSBezierPath *path  = [NSBezierPath bezierPath];
-        CGFloat lineWidth   = self.separatorLineWidth;
-        CGFloat lineY       = self.isFlipped ? 0 : dirtyRect.size.height;
-        NSPoint beginPoint  = NSMakePoint(0, lineY);
-        NSPoint endPoint    = NSMakePoint(dirtyRect.size.width - self.separatorInset.right, lineY);
-        
-        [path moveToPoint:beginPoint];
-        [path lineToPoint:endPoint];
-        [path setLineWidth:lineWidth];
-        [self.separatorColor setStroke];
-        [path stroke];
-    }
-    
-    BOOL isLastRow = [tableView numberOfRowsInSection:indexPath.section] - 1 == indexPath.row;
-    if (isPlain && isLastRow) {
-        return;
-    }
-    NSBezierPath *path  = [NSBezierPath bezierPath];
-    CGFloat lineWidth   = self.separatorLineWidth;
-    CGFloat lineY       = self.isFlipped ? dirtyRect.size.height : 0;
-    NSPoint beginPoint  = NSMakePoint(isGrouped && isLastRow? 0 : self.separatorInset.left, lineY);
-    NSPoint endPoint    = NSMakePoint(dirtyRect.size.width - self.separatorInset.right, lineY);
-    
-    [path moveToPoint:beginPoint];
-    [path lineToPoint:endPoint];
-    [path setLineWidth:lineWidth];
-    [self.separatorColor setStroke];
-    [path stroke];
 }
 
 - (void)dealloc

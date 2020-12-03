@@ -112,9 +112,9 @@
 {
     KKProgressHUD *hud = [KKProgressHUD showLoadingTextHUDAddedTo:self.view title:@"Login..." animated:YES];
     hud.style = self.blurView ? KKProgressHUDBackgroundStyleSolidColor : KKProgressHUDBackgroundStyleBlur;
-    [hud hideAnimated:YES afterDelay:6];
+    [hud hideAnimated:YES afterDelay:2];
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 
         [self.navigationView pushViewController:[KKTabelViewController new] animated:YES];
         //[self.navigationView pushViewController:[KKMainViewController new] animated:YES];
