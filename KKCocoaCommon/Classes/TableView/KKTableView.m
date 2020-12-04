@@ -18,6 +18,7 @@ const NSInteger KKTableFooterViewTag            = -4;
 static NSString *const KKTableRowViewIdentifier     = @"KKTableRowViewIdentifier";
 static NSString *const KKTableViewHeaderIdentifier  = @"KKTableViewHeaderIdentifier";
 static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentifier";
+static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDragAndDropDataType";
 
 #pragma mark - KKTableViewSection
 @interface KKTableViewRowModel : NSObject
@@ -50,8 +51,10 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
 @interface KKTableRowView : NSTableRowView
 
 @property (nonatomic, weak) KKTableView *tableView;
+@property (nonatomic, assign) NSInteger rowIndex;
 @property (nonatomic, strong) NSIndexPath *rowIndexPath;
 @property (nonatomic, strong) NSImageView *checkmarkImageView;
+@property (nonatomic, strong) NSImageView *sortingImageView;
 @property (nonatomic, readonly) NSTableCellView *tableCellView;
 @property (nonatomic, readonly) KKTableViewCell *kktableViewCell;
 @property (nonatomic, readonly) NSColor *selectionBackgroundColor;
@@ -67,20 +70,23 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
 - (void)layout
 {
     [super layout];
-    [self layoutCellSubviews];
+    [self layoutRowViewSubviews];
 }
 
-- (void)layoutCellSubviews
+- (void)layoutRowViewSubviews
 {
     NSTableCellView *cell   = self.tableCellView;
-    if (self.rowIndexPath.row < 0 ||
-        self.tableView.selectionStyle == KKTableViewSelectionStyleDefault ||
-        self.tableView.allowsSelection == NO) {
+    
+    if (self.tableView.selectionStyle != KKTableViewSelectionStyleCheckmark) {
         if (_checkmarkImageView && _checkmarkImageView.isHidden == NO) {
             _checkmarkImageView.hidden = YES;
         }
-        cell.frame          = self.bounds;
-    } else {
+    }
+    
+    // 显示选择状态图标的样式
+    if (self.tableView.selectionStyle == KKTableViewSelectionStyleCheckmark &&
+        self.tableView.allowsSelection == YES &&
+        self.rowIndexPath.row >= 0) {
         if (self.checkmarkImageView.isHidden) {
             self.checkmarkImageView.hidden = NO;
         }
@@ -90,7 +96,34 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
         self.checkmarkImageView.frame = imageFrame;
         CGFloat cellMinX    = CGRectGetMaxX(imageFrame) + spacing;
         cell.frame          = CGRectMake(cellMinX, 0, self.bounds.size.width - cellMinX, self.bounds.size.height);
+        return;
     }
+    
+    // 排序中
+    if (self.tableView.isSorting) {
+        if (self.rowIndexPath.row < 0) {
+            if (_sortingImageView.isHidden == NO){
+                _sortingImageView.hidden = YES;
+            }
+        } else {
+            if (_sortingImageView.isHidden){
+                _sortingImageView.hidden = NO;
+            }
+            CGFloat spacing     = 20;
+            CGSize imageSize    = [self.sortingImageView intrinsicContentSize];
+            CGFloat cellWidth   = self.bounds.size.width - spacing * 2 - imageSize.width;
+            CGRect imageFrame   = CGRectMake(cellWidth + spacing, (self.bounds.size.height - imageSize.height) * 0.5, imageSize.width, imageSize.height);
+            self.sortingImageView.frame = imageFrame;
+            cell.frame          = CGRectMake(0, 0, cellWidth, self.bounds.size.height);
+            return;
+        }
+    } else {
+        [_sortingImageView removeFromSuperview];
+        _sortingImageView = nil;
+    }
+    
+    // 默认
+    cell.frame          = self.bounds;
 }
 
 - (void)updateSelectionImageIfNeeded
@@ -100,7 +133,7 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
         if (_checkmarkImageView) {
             [_checkmarkImageView removeFromSuperview];
             _checkmarkImageView = nil;
-            [self layoutCellSubviews];
+            [self layoutRowViewSubviews];
         }
         return;
     }
@@ -109,7 +142,7 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
     imageView.image         = self.isSelected ? self.tableView.selectedImage : self.tableView.unselectedImage;
     
     if (CGSizeEqualToSize(imageSize, [imageView intrinsicContentSize]) == NO) {
-        [self layoutCellSubviews];
+        [self layoutRowViewSubviews];
     }
 }
 
@@ -120,6 +153,16 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
         [self addSubview:_checkmarkImageView];
     }
     return _checkmarkImageView;
+}
+
+- (NSImageView *)sortingImageView
+{
+    if (_sortingImageView == nil) {
+        _sortingImageView = [NSImageView new];
+        _sortingImageView.image = self.tableView.sortingImage;
+        [self addSubview:_sortingImageView];
+    }
+    return _sortingImageView;
 }
 
 - (void)setSelected:(BOOL)selected
@@ -334,16 +377,6 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
     return self.tableView.alwaysEmphasizedSelectionBackground;
 }
 
-- (void)setEditing:(BOOL)editing animated:(BOOL)animated
-{
-    
-}
-
-- (void)setSorting:(BOOL)sorting animated:(BOOL)animated
-{
-    
-}
-
 @end
 
 #pragma mark - KKTableView
@@ -470,6 +503,8 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
         _separatorLineWidth     = 0.5;
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(systemColorsDidChangeNotification:) name:NSSystemColorsDidChangeNotification object:nil];
+        
+        [tableView registerForDraggedTypes:@[KKTableViewDragAndDropDataType]];
     }
     return _tableView;
 }
@@ -667,6 +702,7 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
     if (self.style == KKTableViewStylePlain) {
         view.floatingRowStyle   = [self isHeaderForRow:row] || [self isFooterForRow:row];
     }
+    view.rowIndex           = row;
     view.rowIndexPath       = [self indexPathForRow:row];
     return view;
 }
@@ -768,11 +804,17 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
 #pragma mark - 索引
 - (BOOL)isHeaderForRow:(NSInteger)row
 {
+    if (row < 0) {
+        return NO;
+    }
     return [self isHeaderForIndexPath:[self indexPathForRow:row]];
 }
 
 - (BOOL)isFooterForRow:(NSInteger)row
 {
+    if (row >= self.tableView.numberOfRows) {
+        return NO;
+    }
     return [self isFooterForIndexPath:[self indexPathForRow:row]];
 }
 
@@ -1191,6 +1233,9 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
 #pragma mark 获取NSTableView上的此row映射的IndexPath
 - (NSIndexPath *)indexPathForRow:(NSInteger)row
 {
+    if (row < 0 || row >= self.tableView.numberOfRows) {
+        return nil;
+    }
     if (self.tableHeaderView && row == 0) {
         return [NSIndexPath indexPathForRow:KKTableHeaderViewTag inSection:0];
     } else if (self.tableFooterView && row == [self rowForTableFooterView]) {
@@ -1394,7 +1439,7 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
         [indexSet addIndex:idx];
     }];
     
-    if (self.allowsMultipleSelection) {
+    if (self.allowsMultipleSelection && self.selectionStyle != KKTableViewSelectionStyleSystem) {
         [indexSet addIndexes:self.tableView.selectedRowIndexes];
     }
     
@@ -1442,6 +1487,9 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
 
 - (BOOL)privateTableView:(NSTableView *)tableView mouseDown:(NSEvent *)event
 {
+    if (self.selectionStyle == KKTableViewSelectionStyleSystem) {
+        return YES;
+    }
     if (event.modifierFlags & NSEventModifierFlagShift) {
         return YES;
     }
@@ -1472,6 +1520,9 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
 
 - (BOOL)privateTableView:(NSTableView *)tableView mouseDragged:(NSEvent *)event
 {
+    if (self.selectionStyle == KKTableViewSelectionStyleSystem) {
+        return YES;
+    }
     // 拖拽批量取消
     return [self privateTableView:tableView mouseDown:event];
 }
@@ -1568,10 +1619,10 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
         KKTableRowView *tableRowView    = (KKTableRowView *)rowView;
         if (row < range.location || row > (range.location + range.length)) {
             [tableRowView updateSelectionImageIfNeeded];
-            [tableRowView layoutCellSubviews];
+            [tableRowView layoutRowViewSubviews];
         } else {
             [tableRowView updateSelectionImageIfNeeded];
-            [tableRowView.animator layoutCellSubviews];
+            [tableRowView.animator layoutRowViewSubviews];
         }
     }];
 }
@@ -1649,10 +1700,10 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
             KKTableRowView *tableRowView    = (KKTableRowView *)rowView;
             if (row < range.location || row > (range.location + range.length)) {
                 [tableRowView updateSelectionImageIfNeeded];
-                [tableRowView layoutCellSubviews];
+                [tableRowView layoutRowViewSubviews];
             } else {
                 [tableRowView updateSelectionImageIfNeeded];
-                [tableRowView.animator layoutCellSubviews];
+                [tableRowView.animator layoutRowViewSubviews];
             }
         }];
     } else {
@@ -1738,15 +1789,15 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
     }
 }
 
-- (void)updateTableRowViewsSelectionStyle
+- (void)layoutTableRowViewSubviews
 {
     NSRange range = [self.tableView rowsInRect:[self.tableView visibleRect]];
     [self.tableView enumerateAvailableRowViewsUsingBlock:^(__kindof NSTableRowView * _Nonnull rowView, NSInteger row) {
         KKTableRowView *tableRowView = (KKTableRowView *)rowView;
         if (row < range.location || row > (range.location + range.length)) {
-            [tableRowView layoutCellSubviews];
+            [tableRowView layoutRowViewSubviews];
         } else {
-            [tableRowView.animator layoutCellSubviews];
+            [tableRowView.animator layoutRowViewSubviews];
         }
     }];
 }
@@ -1778,6 +1829,171 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
     }
 }
 
+#pragma mark 排序
+- (void)setSorting:(BOOL)sorting
+{
+    _sorting = sorting;
+    [self layoutTableRowViewSubviews];
+}
+
+- (NSImage *)sortingImage
+{
+    if (_sortingImage == nil) {
+        _sortingImage = [NSImage imageNamed:NSImageNameListViewTemplate];
+    }
+    return _sortingImage;
+}
+
+- (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard
+{
+    if (self.isSorting == NO) {
+        return NO;
+    }
+    NSMutableArray <NSIndexPath *>*indexPaths = [NSMutableArray array];
+    [rowIndexes enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+        [indexPaths addObject:[self indexPathForRow:idx]];
+    }];
+    if (rowIndexes.count == 1 && indexPaths.firstObject.row < 0) {
+        return NO;
+    }
+    if ([self.delegate respondsToSelector:@selector(tableView:canMoveRowAtIndexPath:)] &&
+        [self.delegate tableView:self canMoveRowAtIndexPath:indexPaths.firstObject] == NO) {
+        return NO;
+    }
+    if ([self.delegate respondsToSelector:@selector(tableView:canMoveRowsAtIndexPaths:)] &&
+        [self.delegate tableView:self canMoveRowsAtIndexPaths:indexPaths] == NO) {
+        return NO;
+    }
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+    [pboard declareTypes:@[KKTableViewDragAndDropDataType] owner:self];
+    [pboard setData:data forType:KKTableViewDragAndDropDataType];
+    return YES;
+}
+
+- (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id<NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)dropOperation
+{
+    if (dropOperation != NSTableViewDropAbove) {
+        // 不允许移到Cell上面（叠加态）,只能移到Cell之间
+        return NSDragOperationNone;
+    }
+    NSIndexPath *indexPath = [self indexPathForRow:row];
+    if (row == 0) {
+        // 不能放在顶部页眉之上
+        if ([self isTableHeaderViewForRow:row] || [self isHeaderForIndexPath:indexPath]) {
+            return NSDragOperationNone;
+        }
+    } else {
+        NSInteger previousRow = row - 1;
+        // 不能放在表页尾之后
+        if ([self isTableFooterViewForRow:previousRow]) {
+            return NSDragOperationNone;
+        }
+        // 不能放在页尾和页眉或表页尾之间
+        NSIndexPath *previousIndexPath = [self indexPathForRow:previousRow];
+        if (previousIndexPath.row < 0 && indexPath.row < 0) {
+            return NSDragOperationNone;
+        }
+    }
+    NSPasteboard *pasteboard    = [info draggingPasteboard];
+    NSData *rowIndexesData      = [pasteboard dataForType:KKTableViewDragAndDropDataType];
+    NSIndexSet *rowIndexes      = [NSKeyedUnarchiver unarchiveObjectWithData:rowIndexesData];
+    if (rowIndexes.count <= 1) {
+        // 不能放在自身的前面或自身的后面
+        if (rowIndexes.firstIndex == row || (rowIndexes.firstIndex + 1) == row) {
+            return NSDragOperationNone;
+        }
+        return NSDragOperationMove;
+    }
+    // 不能放在选中的多个Cell之间
+    if (rowIndexes.firstIndex <= row && (rowIndexes.lastIndex + 1) >= row) {
+        return NSDragOperationNone;
+    }
+    return NSDragOperationMove;
+}
+
+- (BOOL)tableView:(NSTableView *)tableView acceptDrop:(id<NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)dropOperation
+{
+    NSPasteboard *pasteboard    = [info draggingPasteboard];
+    NSData *rowIndexesData      = [pasteboard dataForType:KKTableViewDragAndDropDataType];
+    NSIndexSet *rowIndexes      = [NSKeyedUnarchiver unarchiveObjectWithData:rowIndexesData];
+    BOOL isMoveFromTopToBottom  = rowIndexes.firstIndex < row;
+    
+    NSMutableArray <NSIndexPath *>*indexPaths = [NSMutableArray array];
+    [rowIndexes enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+        [indexPaths addObject:[self indexPathForRow:idx]];
+    }];
+    
+    NSInteger toSection             = 0;
+    NSInteger toRow                 = 0;
+    if (row > 0) {
+        NSIndexPath *previous       = [self indexPathForRow:row - 1];
+        if (previous.row >= 0) {
+            toSection               = previous.section;
+            toRow                   = previous.row + 1;
+        } else {
+            toSection               = [self indexPathForRow:row].section;
+            toRow                   = 0;
+        }
+    }
+    NSIndexPath *toIndexPath        = [NSIndexPath indexPathForRow:toRow inSection:toSection];
+    
+    // 取出Row Model，并替换成[NSNull null]
+    NSMutableArray <KKTableViewRowModel *>*srcRows = [NSMutableArray array];
+    for (NSIndexPath *indexPath in indexPaths) {
+        NSMutableArray *rows            = [self.sections objectAtIndex:indexPath.section];
+        KKTableViewRowModel *firstRow   = rows.firstObject;
+        NSInteger index                 = firstRow.isHeader ? indexPath.row + 1 : indexPath.row;
+        [srcRows addObject:[rows objectAtIndex:index]];
+        [rows replaceObjectAtIndex:index withObject:[NSNull null]];
+    }
+    
+    // 插入Row Model，并移除[NSNull null]
+    NSMutableArray <KKTableViewRowModel *>*destRows = [self.sections objectAtIndex:toIndexPath.section];
+    NSInteger beginIndex            = destRows.firstObject.isHeader ? (toIndexPath.row + 1) : toIndexPath.row;
+    NSIndexSet *indexes             = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(beginIndex, srcRows.count)];
+    [destRows insertObjects:srcRows atIndexes:indexes];
+    
+    for (NSIndexPath *indexPath in indexPaths) {
+        NSMutableArray *rowModels   = [self.sections objectAtIndex:indexPath.section];
+        [rowModels removeObject:[NSNull null]];
+    }
+    
+    [self beginUpdates];
+    
+    __block NSInteger srcOffset     = 0;
+    __block NSInteger destOffset    = isMoveFromTopToBottom ? -1 : 0;
+    [rowIndexes enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+        NSInteger destinationRow    = row + destOffset;
+        if (isMoveFromTopToBottom) {
+            [self.tableView moveRowAtIndex:(idx - srcOffset) toIndex:destinationRow];
+        } else {
+            [self.tableView moveRowAtIndex:idx toIndex:destinationRow];
+            destOffset++;
+        }
+        srcOffset++;
+    }];
+    
+    [self endUpdates];
+    
+    [self.tableView enumerateAvailableRowViewsUsingBlock:^(__kindof NSTableRowView * _Nonnull rowView, NSInteger row) {
+        KKTableRowView *tableRowView = (KKTableRowView *)rowView;
+        if (tableRowView.rowIndex != row) {
+            tableRowView.rowIndex       = row;
+            tableRowView.rowIndexPath   = [self indexPathForRow:row];
+            [rowView setNeedsDisplay:YES];
+        }
+    }];
+    
+    if ([self.delegate respondsToSelector:@selector(tableView:moveRowAtIndexPath:toIndexPath:)]) {
+        [self.delegate tableView:self moveRowAtIndexPath:indexPaths.firstObject toIndexPath:toIndexPath];
+    }
+    if ([self.delegate respondsToSelector:@selector(tableView:moveRowsAtIndexPaths:toIndexPath:)]) {
+        [self.delegate tableView:self moveRowsAtIndexPaths:indexPaths toIndexPath:toIndexPath];
+    }
+    
+    return YES;
+}
+
 #pragma mark - 列表、字典
 - (NSMutableArray<NSMutableArray<KKTableViewRowModel *> *> *)sections
 {
@@ -1793,6 +2009,11 @@ static NSString *const KKTableViewFooterIdentifier  = @"KKTableViewFooterIdentif
         _cellClassMap = [NSMutableDictionary dictionary];
     }
     return _cellClassMap;
+}
+
+- (void)dealloc
+{
+    [self.tableView unregisterDraggedTypes];
 }
 
 @end

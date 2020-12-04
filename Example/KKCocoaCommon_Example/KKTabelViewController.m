@@ -71,8 +71,6 @@
     [self.view addSubview:self.tableView];
     
     if (@available(macOS 10.12, *)) {
-        self.navigationBar.rightBarButtonItems = @[[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameAddTemplate] target:self action:@selector(addBarButtonItemClick)],[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameRemoveTemplate] target:self action:@selector(removeBarButtonItemClick)],[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNamePathTemplate] target:self action:@selector(sortBarButtonItemClick)]];
-        
 //        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 //            self.tableView.tableHeaderView = [NSTextField labelWithString:@"!!!!header!!!"];
 //        });
@@ -83,6 +81,7 @@
 //            self.tableView.tableFooterView = nil;
 //        });
     }
+    self.navigationBar.rightBarButtonItems = @[[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameAddTemplate] target:self action:@selector(addBarButtonItemClick)],[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameRemoveTemplate] target:self action:@selector(removeBarButtonItemClick)],[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameListViewTemplate] target:self action:@selector(sortBarButtonItemClick)],[NSButton imageButtonWithImage:[NSImage imageNamed:NSImageNameMenuOnStateTemplate] target:self action:@selector(selectionButtonItemClick)]];
 }
 
 - (void)addBarButtonItemClick
@@ -105,12 +104,24 @@
 
 - (void)sortBarButtonItemClick
 {
+    self.tableView.sorting = !self.tableView.isSorting;
+    if (self.tableView.selectionStyle == KKTableViewSelectionStyleCheckmark) {
+        [self.tableView deselectAll];
+    }
+    self.tableView.selectionStyle = self.tableView.isSorting ? KKTableViewSelectionStyleSystem : KKTableViewSelectionStyleDefault;
+}
+
+- (void)selectionButtonItemClick
+{
+    if (self.tableView.isSorting) {
+        self.tableView.sorting = NO;
+    }
     self.tableView.selectionStyle =
-    self.tableView.selectionStyle == KKTableViewSelectionStyleDefault ?
+    self.tableView.selectionStyle != KKTableViewSelectionStyleCheckmark ?
     KKTableViewSelectionStyleCheckmark :
     KKTableViewSelectionStyleDefault;
     
-    if (self.tableView.selectionStyle == KKTableViewSelectionStyleDefault) {
+    if (self.tableView.selectionStyle != KKTableViewSelectionStyleCheckmark) {
         [self.tableView deselectAll];
     }
 }
@@ -177,6 +188,25 @@
         return nil;
     } else {
         return indexPaths;
+    }
+}
+
+- (void)tableView:(KKTableView *)tableView moveRowsAtIndexPaths:(NSArray<NSIndexPath *> *)sourceIndexPaths toIndexPath:(NSIndexPath *)destinationIndexPath
+{
+    NSMutableArray *sources     = [NSMutableArray array];
+    for (NSIndexPath *indexPath in sourceIndexPaths) {
+        NSMutableArray *section = self.datas[indexPath.section];
+        NSString *string        = section[indexPath.row];
+        [sources addObject:string];
+        [section replaceObjectAtIndex:indexPath.row withObject:[NSNull null]];
+    }
+    NSMutableArray *destination = [self.datas objectAtIndex:destinationIndexPath.section];
+    NSRange range = NSMakeRange(destinationIndexPath.row, sources.count);
+    [destination insertObjects:sources atIndexes:[NSIndexSet indexSetWithIndexesInRange:range]];
+    
+    for (NSIndexPath *indexPath in sourceIndexPaths) {
+        NSMutableArray *from = self.datas[indexPath.section];
+        [from removeObject:[NSNull null]];
     }
 }
 

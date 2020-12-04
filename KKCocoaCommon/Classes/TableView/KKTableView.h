@@ -53,6 +53,11 @@ OBJC_EXTERN const NSInteger KKTableViewFooterTag;
 - (CGFloat)tableView:(KKTableView *)tableView heightForHeaderInSection:(NSInteger)section;
 - (CGFloat)tableView:(KKTableView *)tableView heightForFooterInSection:(NSInteger)section;
 
+- (BOOL)tableView:(KKTableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath;
+- (BOOL)tableView:(KKTableView *)tableView canMoveRowsAtIndexPaths:(NSArray <NSIndexPath *>*)indexPaths;
+- (void)tableView:(KKTableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath;
+- (void)tableView:(KKTableView *)tableView moveRowsAtIndexPaths:(NSArray <NSIndexPath *>*)sourceIndexPaths toIndexPath:(NSIndexPath *)destinationIndexPath;
+
 @end
 
 typedef NS_ENUM(NSInteger, KKTableViewStyle)
@@ -67,12 +72,17 @@ typedef NS_ENUM(NSUInteger, KKTableViewInteriorBackgroundStyle) {
 };
 
 typedef NS_ENUM(NSUInteger, KKTableViewSelectionStyle) {
+    /// 优化过的选中方式（可反选，但不可多选排序）
     KKTableViewSelectionStyleDefault,
+    /// 系统预设的选中方式（不可反选，但可多选排序）
+    KKTableViewSelectionStyleSystem,
     /**
-     显示selectedImage/unselectedImage
+     显示selectedImage/unselectedImage，并建议：
+     更改选中背景色为灰色（selectionBackgroundColor = [NSColor colorWithWhite:0.5 alpha:0.1]）
+     选中时文本和图像颜色不变（interiorBackgroundStyle = KKTableViewInteriorBackgroundStyleAlwaysNormal）
+     实现- tableView:heightForRowAtIndexPath:固定高度
      */
-    KKTableViewSelectionStyleCheckmark, // ，\
-    建议选中背景色为灰色，选中时文本和图像颜色不变，固定高度
+    KKTableViewSelectionStyleCheckmark,
 };
 
 @interface KKTableView : NSScrollView
@@ -89,9 +99,9 @@ typedef NS_ENUM(NSUInteger, KKTableViewSelectionStyle) {
 @property (nonatomic, readonly) KKTableViewStyle style;
 /// 表视图
 @property (nonatomic, readonly) NSTableView *tableView;
-/// 页眉（需要提前设置高度，假如高度更改了，就调用-[KKTableView noteHeightOfTableHeaderViewChanged]）
+/// 表的页眉（需要提前设置高度，假如高度更改了，就调用-[KKTableView noteHeightOfTableHeaderViewChanged]）
 @property (nonatomic, strong) NSView *tableHeaderView;
-/// 页尾（需要提前设置高度，假如高度更改了，就调用-[KKTableView noteHeightOfTableFooterViewChanged]）
+/// 表的页尾（需要提前设置高度，假如高度更改了，就调用-[KKTableView noteHeightOfTableFooterViewChanged]）
 @property (nonatomic, strong) NSView *tableFooterView;
 /// 半透明的（模糊背景），为YES时不能自定义选中背景色
 @property (nonatomic, assign, getter=isTranslucent) BOOL translucent;
@@ -156,6 +166,10 @@ typedef NS_ENUM(NSUInteger, KKTableViewSelectionStyle) {
 @property (nonatomic, readwrite) BOOL allowsEmptySelection;
 /// 允许多选，默认：NO
 @property (nonatomic, readwrite) BOOL allowsMultipleSelection;
+/// 排序
+@property (nonatomic, assign, getter=isSorting) BOOL sorting;
+/// 默认：NSImageNameListViewTemplate
+@property (nonatomic, strong) NSImage *sortingImage;
 /// 已选行数
 @property (nonatomic, readonly) NSInteger numberOfSelectedRows;
 /// 已选的索引

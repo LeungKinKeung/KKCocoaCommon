@@ -604,7 +604,9 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     if (self.usesAutomaticRowHeights == NO) {
         return;
     }
+    [self.kktableView beginUpdates];
     [self.kktableView noteHeightOfRowWithCellChanged:self height:self.rowHeight];
+    [self.kktableView endUpdates];
 }
 
 - (BOOL)usesAutomaticRowHeights
