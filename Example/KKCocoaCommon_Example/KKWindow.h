@@ -2,7 +2,7 @@
 //  KKWindow.h
 //  KKCocoaCommon_Example
 //
-//  Created by v_ljqliang on 2020/10/30.
+//  Created by LeungKinKeung on 2020/10/30.
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 

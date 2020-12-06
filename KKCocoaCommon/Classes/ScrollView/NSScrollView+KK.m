@@ -23,16 +23,14 @@ static CGFloat gAnimationDuration = 0.3;
         ctx.duration                = gAnimationDuration;
         ctx.allowsImplicitAnimation = YES;
     }
-    CGFloat originY     = self.contentView.bounds.origin.y;
-    NSPoint newOrigin   = NSMakePoint(0, originY - value);
-    CGFloat y           = self.documentView.frame.size.height - self.contentSize.height;
-    if (newOrigin.y <= 0) {
-        newOrigin.y = 1;
+    CGFloat originY     = 0;
+    if (self.documentView.isFlipped) {
+        originY         = self.contentView.bounds.origin.y + value;
+    } else {
+        originY         = self.contentView.bounds.origin.y - value;
     }
-    if (self.hasVerticalScroller) {
-        self.verticalScroller.doubleValue = (newOrigin.y / y);
-    }
-    [self.contentView scrollToPoint:newOrigin];
+    NSPoint newOrigin   = NSMakePoint(self.contentView.bounds.origin.x, originY);
+    [self.contentView scrollToPoint:[self adjustPoint:newOrigin]];
     if (animated) {
         [NSAnimationContext endGrouping];
     }
@@ -49,16 +47,14 @@ static CGFloat gAnimationDuration = 0.3;
         ctx.duration                = gAnimationDuration;
         ctx.allowsImplicitAnimation = YES;
     }
-    CGFloat originY     = self.contentView.bounds.origin.y;
-    NSPoint newOrigin   = NSMakePoint(0, originY + value);
-    CGFloat y           = self.documentView.frame.size.height - self.contentSize.height;
-    if (newOrigin.y >= y) {
-        newOrigin.y = y - 1;
+    CGFloat originY     = 0;
+    if (self.documentView.isFlipped) {
+        originY         = self.contentView.bounds.origin.y - value;
+    } else {
+        originY         = self.contentView.bounds.origin.y + value;
     }
-    if (self.hasVerticalScroller) {
-        self.verticalScroller.doubleValue = (newOrigin.y / y);
-    }
-    [self.contentView scrollToPoint:newOrigin];
+    NSPoint newOrigin   = NSMakePoint(self.contentView.bounds.origin.x, originY);
+    [self.contentView scrollToPoint:[self adjustPoint:newOrigin]];
     if (animated) {
         [NSAnimationContext endGrouping];
     }
@@ -78,13 +74,14 @@ static CGFloat gAnimationDuration = 0.3;
     if (self.hasVerticalScroller) {
         self.verticalScroller.floatValue = 0;
     }
+    CGFloat x = self.contentView.bounds.origin.x;
     CGFloat y = 0;
     if (self.documentView.isFlipped) {
         y = -self.contentInsets.top;
     } else {
-        y = NSMaxY(self.documentView.frame) - NSHeight(self.contentView.bounds);
+        y = NSMaxY(self.documentView.frame) - NSHeight(self.contentView.bounds) + self.contentInsets.top;
     }
-    [self.contentView scrollToPoint:NSMakePoint(0, y)];
+    [self.contentView scrollToPoint:NSMakePoint(x, y)];
     if (animated) {
         [NSAnimationContext endGrouping];
     }
@@ -104,12 +101,13 @@ static CGFloat gAnimationDuration = 0.3;
     if (self.hasVerticalScroller) {
         self.verticalScroller.floatValue = 1;
     }
-    NSPoint newOrigin = NSZeroPoint;
+    CGFloat originX     = self.contentView.bounds.origin.x;
+    NSPoint newOrigin   = NSZeroPoint;
     if (self.documentView.isFlipped) {
         CGFloat originY = self.documentView.frame.size.height - self.contentSize.height + self.contentInsets.bottom;
-        newOrigin       = NSMakePoint(0, originY);
+        newOrigin       = NSMakePoint(originX, originY);
     } else {
-        newOrigin       = NSMakePoint(0, 0);
+        newOrigin       = NSMakePoint(originX, -self.contentInsets.bottom);
     }
     [self.contentView scrollToPoint:newOrigin];
     if (animated) {
@@ -162,47 +160,70 @@ static CGFloat gAnimationDuration = 0.3;
         ctx.duration                = gAnimationDuration;
         ctx.allowsImplicitAnimation = YES;
     }
-    CGFloat docViewHeight = self.documentView.frame.size.height;
     CGFloat y = 0;
     if (self.documentView.isFlipped) {
         switch (scrollPosition) {
             case KKScrollViewScrollPositionBottom: {
-                y = rect.origin.y - self.contentSize.height + rect.size.height;
+                y = rect.origin.y - self.contentSize.height + rect.size.height + self.contentInsets.bottom;
                 break;
             }
             case KKScrollViewScrollPositionMiddle: {
-                y = rect.origin.y - self.contentSize.height * 0.5 + rect.size.height * 0.5;
+                y = rect.origin.y - self.contentSize.height * 0.5 + rect.size.height * 0.5 + self.contentInsets.bottom * 0.5 - self.contentInsets.top * 0.5;
                 break;
             }
             default: {
-                y = rect.origin.y;
+                y = rect.origin.y - self.contentInsets.top;
                 break;
             }
         }
-        if (y < 0) {
-            // 顶部越出
-            y = 0;
-        }
-        if (docViewHeight - y < self.contentSize.height) {
-            // 底部越出
-            y = docViewHeight - self.contentSize.height;
-        }
     } else {
-        y = rect.origin.y;
-        if (y < 0) {
-            // 底部越出
-            y = 0;
-        }
-        if (docViewHeight - y < self.contentSize.height) {
-            // 顶部越出
-            y = docViewHeight - self.contentSize.height;
+        switch (scrollPosition) {
+            case KKScrollViewScrollPositionBottom: {
+                y = rect.origin.y - self.contentInsets.bottom;
+                break;
+            }
+            case KKScrollViewScrollPositionMiddle: {
+                y = rect.origin.y - self.contentSize.height * 0.5 + rect.size.height * 0.5 - self.contentInsets.bottom * 0.5 + self.contentInsets.top * 0.5;
+                break;
+            }
+            default: {
+                y = rect.origin.y - self.contentSize.height + rect.size.height + self.contentInsets.top;
+                break;
+            }
         }
     }
-    [self.contentView scrollToPoint:NSMakePoint(rect.origin.x, y)];
-    [self adjustVerticalScroller];
+    CGPoint adjustedPoint = [self adjustPoint:CGPointMake(rect.origin.x, y)];
+    [self.contentView scrollToPoint:adjustedPoint];
     if (animated) {
         [NSAnimationContext endGrouping];
     }
+}
+
+- (CGPoint)adjustPoint:(CGPoint)point
+{
+    CGFloat docViewHeight = self.documentView.frame.size.height;
+    CGFloat x = point.x;
+    CGFloat y = point.y;
+    if (self.documentView.isFlipped) {
+        if (y < -self.contentInsets.top) {
+            // 顶部越出
+            y = -self.contentInsets.top;
+        }
+        if ((docViewHeight - y - self.contentInsets.bottom) < self.contentSize.height) {
+            // 底部越出
+            y = docViewHeight - self.contentSize.height + self.contentInsets.bottom;
+        }
+    } else {
+        if (y < -self.contentInsets.bottom) {
+            // 底部越出
+            y = -self.contentInsets.bottom;
+        }
+        if ((docViewHeight - y - self.contentInsets.top) < self.contentSize.height) {
+            // 顶部越出
+            y = docViewHeight - self.contentSize.height + self.contentInsets.top;
+        }
+    }
+    return CGPointMake(x, y);
 }
 
 

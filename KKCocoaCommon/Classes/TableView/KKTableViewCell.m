@@ -63,7 +63,7 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     _separatorInset     = NSEdgeInsetsMake(0, 0, 0, 0);
     _interitemSpacing   = 10;
     _lineSpacing        = 5;
-    _contentInsets      = NSEdgeInsetsMake(10, 10, 10, 10);
+    _contentInsets      = NSEdgeInsetsMake(10, 15, 10, 15);
 }
 
 - (void)enableObserveRowView:(BOOL)enable
@@ -76,28 +76,44 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 - (void)enableObserveImageView:(BOOL)enable
 {
     for (NSString *keypath in @[@"imageView.image"]) {
-        [self addObserver:self forKeyPath:keypath options:0 context:nil];
+        if (enable) {
+            [self addObserver:self forKeyPath:keypath options:0 context:nil];
+        } else {
+            [self removeObserver:self forKeyPath:keypath];
+        }
     }
 }
 
 - (void)enableObserveAccessoryImageView:(BOOL)enable
 {
     for (NSString *keypath in @[@"accessoryImageView.image"]) {
-        [self addObserver:self forKeyPath:keypath options:0 context:nil];
+        if (enable) {
+            [self addObserver:self forKeyPath:keypath options:0 context:nil];
+        } else {
+            [self removeObserver:self forKeyPath:keypath];
+        }
     }
 }
 
 - (void)enableObserveTextLabel:(BOOL)enable
 {
     for (NSString *keypath in @[@"textLabel.stringValue", @"textLabel.attributedStringValue", @"textLabel.font"]) {
-        [self addObserver:self forKeyPath:keypath options:0 context:nil];
+        if (enable) {
+            [self addObserver:self forKeyPath:keypath options:0 context:nil];
+        } else {
+            [self removeObserver:self forKeyPath:keypath];
+        }
     }
 }
 
 - (void)enableObserveDetailTextLabel:(BOOL)enable
 {
     for (NSString *keypath in @[@"detailTextLabel.stringValue", @"detailTextLabel.attributedStringValue", @"detailTextLabel.font"]) {
-        [self addObserver:self forKeyPath:keypath options:0 context:nil];
+        if (enable) {
+            [self addObserver:self forKeyPath:keypath options:0 context:nil];
+        } else {
+            [self removeObserver:self forKeyPath:keypath];
+        }
     }
 }
 
@@ -137,12 +153,16 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 - (void)viewDidMoveToSuperview
 {
     [super viewDidMoveToSuperview];
-    [self enableObserveRowView:YES];
+    if ([self.superview isKindOfClass:[NSTableRowView class]]) {
+        [self enableObserveRowView:YES];
+    }
 }
 
 - (void)removeFromSuperview
 {
-    [self enableObserveRowView:NO];
+    if ([self.superview isKindOfClass:[NSTableRowView class]]) {
+        [self enableObserveRowView:NO];
+    }
     [super removeFromSuperview];
 }
 
@@ -626,17 +646,21 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 {
     if (_imageView) {
         [self enableObserveImageView:NO];
+        _imageView = nil;
     }
     if (_textLabel) {
         [self enableObserveTextLabel:NO];
+        _textLabel = nil;
     }
     if (_detailTextLabel) {
         [self enableObserveDetailTextLabel:NO];
+        _detailTextLabel = nil;
     }
     if (_accessoryImageView) {
         [self enableObserveAccessoryImageView:NO];
+        _accessoryImageView = nil;
     }
-    if (self.superview) {
+    if (self.superview && [self.superview isKindOfClass:[NSTableRowView class]]) {
         [self enableObserveRowView:NO];
     }
 }

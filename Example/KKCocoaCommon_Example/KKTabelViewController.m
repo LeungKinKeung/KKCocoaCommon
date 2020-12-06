@@ -2,7 +2,7 @@
 //  KKTabelViewController.m
 //  KKCocoaCommon_Example
 //
-//  Created by v_ljqliang on 2020/11/6.
+//  Created by LeungKinKeung on 2020/11/6.
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 
@@ -43,7 +43,7 @@
     self.tableView  = [[KKTableView alloc] initWithFrame:CGRectZero style:KKTableViewStyleGrouped];
     self.tableView.delegate     = self;
     self.tableView.dataSource   = self;
-    self.tableView.translucent  = YES;
+    self.tableView.translucent  = NO;
     self.tableView.selectionBackgroundColors = @[NSColor.cyanColor,NSColor.blueColor];
     self.tableView.alwaysEmphasizedSelectionBackground  = YES;
     self.tableView.allowsMultipleSelection  = YES;
@@ -51,7 +51,7 @@
     self.tableView.allowsSelection          = YES;
     self.tableView.selectionStyle           = KKTableViewSelectionStyleDefault;
     
-    if (self.tableView.translucent) {
+    if (self.tableView.isTranslucent) {
         self.tableView.interiorBackgroundStyle  = KKTableViewInteriorBackgroundStyleDefault;
         self.tableView.selectedImage            =
         [NSImage kktableViewSelectedImageWithTintColor:NSColor.alternateSelectedControlColor
@@ -183,6 +183,9 @@
 
 - (NSArray<NSIndexPath *> *)tableView:(KKTableView *)tableView willSelectRowsAtIndexPaths:(NSArray<NSIndexPath *> *)indexPaths
 {
+    if (self.tableView.isSorting) {
+        return indexPaths;
+    }
     if (tableView.selectionStyle == KKTableViewSelectionStyleDefault) {
         NSLog(@"Select section:%ld row:%ld",indexPaths.firstObject.section,indexPaths.firstObject.row);
         return nil;
@@ -210,11 +213,36 @@
     }
 }
 
+- (void)viewDidAppear
+{
+    [super viewDidAppear];
+    
+    CGFloat barHeight           = self.navigationBar.frame.size.height;
+    NSEdgeInsets contentInsets  = self.tableView.contentInsets;
+    if (contentInsets.top != barHeight) {
+        contentInsets.top = barHeight;
+        contentInsets.bottom = 15;
+        self.tableView.contentInsets = contentInsets;
+    }
+    self.tableView.automaticallyAdjustsContentInsets = NO;
+}
+
 - (void)viewDidLayout
 {
     [super viewDidLayout];
     
-    self.tableView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - self.navigationBar.frame.size.height);
+    self.tableView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
+}
+
+- (BOOL)hasNavigationBar
+{
+    return YES;
+}
+
+- (void)navigationBarDidLoad
+{
+    self.navigationBar.barStyle = KKNavigationBarStyleBlur;
+    self.navigationBar.titleLabel.text = @"Table View";
 }
 
 @end

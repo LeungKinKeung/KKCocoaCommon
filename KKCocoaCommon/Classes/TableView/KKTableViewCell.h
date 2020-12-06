@@ -47,7 +47,7 @@ typedef NS_ENUM(NSInteger, KKTableViewCellAccessoryType) {
 @property (nonatomic, assign) KKTableViewCellStyle style;
 /// 附加类型
 @property (nonatomic, assign) KKTableViewCellAccessoryType accessoryType;
-/// 内容边距
+/// 内容边距{10,15,10,15}
 @property (nonatomic, assign) NSEdgeInsets contentInsets;
 /// 分隔线边距
 @property (nonatomic, assign) NSEdgeInsets separatorInset;

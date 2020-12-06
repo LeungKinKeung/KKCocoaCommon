@@ -37,9 +37,11 @@
 #import "KKTextField.h"
 #import "NSTextField+KK.h"
 #import "NSTextView+KK.h"
+#import "KKNavigationBar.h"
 #import "NSView+KK.h"
 #import "NSView+KKAnimation.h"
 #import "NSView+KKNavigation.h"
+#import "KKNavigationController.h"
 #import "KKViewController.h"
 
 FOUNDATION_EXPORT double KKCocoaCommonVersionNumber;

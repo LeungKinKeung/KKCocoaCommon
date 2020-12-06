@@ -77,7 +77,8 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
 {
     NSTableCellView *cell   = self.tableCellView;
     
-    if (self.tableView.selectionStyle != KKTableViewSelectionStyleCheckmark) {
+    if (self.tableView.selectionStyle != KKTableViewSelectionStyleCheckmark ||
+        self.rowIndexPath.row < 0) {
         if (_checkmarkImageView && _checkmarkImageView.isHidden == NO) {
             _checkmarkImageView.hidden = YES;
         }
@@ -237,7 +238,7 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
     BOOL isFirstRow             = indexPath.row == 0;
     if (isGrouped && isFirstRow) {
         NSBezierPath *path  = [NSBezierPath bezierPath];
-        CGFloat lineY       = self.isFlipped ? 0 : dirtyRect.size.height;
+        CGFloat lineY       = self.superview.isFlipped ? 0 : dirtyRect.size.height;
         NSPoint beginPoint  = NSMakePoint(0, lineY);
         NSPoint endPoint    = NSMakePoint(dirtyRect.size.width - separatorInset.right, lineY);
 
@@ -256,7 +257,7 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
         return;
     }
     NSBezierPath *path  = [NSBezierPath bezierPath];
-    CGFloat lineY       = self.isFlipped ? dirtyRect.size.height : 0;
+    CGFloat lineY       = self.superview.isFlipped ? dirtyRect.size.height : 0;
     NSPoint beginPoint  = NSMakePoint(isGrouped && isLastRow? 0 : separatorInset.left, lineY);
     NSPoint endPoint    = NSMakePoint(dirtyRect.size.width - separatorInset.right, lineY);
 

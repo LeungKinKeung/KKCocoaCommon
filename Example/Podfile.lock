@@ -1,5 +1,5 @@
 PODS:
-  - KKCocoaCommon (1.0.2)
+  - KKCocoaCommon (1.0.8)
 
 DEPENDENCIES:
   - KKCocoaCommon (from `../`)
@@ -9,7 +9,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  KKCocoaCommon: 16111134bab02a87f31678275b573e0480005ff2
+  KKCocoaCommon: fdd11b9c863143d519bfa4fa75ad3b8baf2874b4
 
 PODFILE CHECKSUM: 7368ca7332e40dc4e7df8725b139070d7a8a7e98
 

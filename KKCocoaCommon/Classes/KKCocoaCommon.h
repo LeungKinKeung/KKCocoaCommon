@@ -16,7 +16,7 @@ FOUNDATION_EXPORT const unsigned char PacketProcessorVersionString[];
 
 #import "NSView+KK.h"
 #import "NSView+KKAnimation.h"
-#import "NSView+KKNavigation.h"
+#import "KKNavigationBar.h"
 
 #import "KKTextField.h"
 #import "NSTextField+KK.h"
@@ -35,6 +35,7 @@ FOUNDATION_EXPORT const unsigned char PacketProcessorVersionString[];
 #import "NSMenu+KK.h"
 #import "NSTask+KK.h"
 
+#import "KKNavigationController.h"
 #import "KKLoopRotateImageView.h"
 #import "KKProgressHUD.h"
 #import "KKViewController.h"

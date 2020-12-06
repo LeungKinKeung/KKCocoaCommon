@@ -27,8 +27,6 @@ typedef NS_ENUM(NSUInteger, KKScrollViewScrollPosition) {
 - (void)scrollToTopUsingAnimation:(BOOL)animated;
 /// 滚动到底部
 - (void)scrollToBottomUsingAnimation:(BOOL)animated;
-/// 调整垂直滚动条
-- (void)adjustVerticalScroller;
 /// 调整视图位置
 - (void)adjustsContentViewBounds;
 /// 滚动到指定位置（目前仅垂直方向有效）

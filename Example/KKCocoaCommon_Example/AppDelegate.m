@@ -3,13 +3,14 @@
 //  KKCocoaCommon_Example
 //
 //  Created by LeungKinKeung on 2020/10/29.
+//  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 
 #import "AppDelegate.h"
 #import <KKCocoaCommon/KKCocoaCommon.h>
 #import "KKLoginViewController.h"
 
-@interface AppDelegate ()
+@interface AppDelegate ()<NSToolbarDelegate>
 
 @end
 
@@ -42,13 +43,33 @@
     self.mainWindowController           = controller;
     [controller.window makeKeyWindow];
     [controller showWindow:nil];
-    controller.window.contentView.rootViewController = [KKLoginViewController new];
+    
+    NSToolbar *toolbar  = [[NSToolbar alloc] initWithIdentifier:@"toolbar"];
+    toolbar.allowsUserCustomization     = NO;
+    toolbar.displayMode                 = NSToolbarDisplayModeIconAndLabel;
+    toolbar.sizeMode                    = NSToolbarSizeModeRegular;
+    toolbar.showsBaselineSeparator      = YES;
+    controller.window.toolbar           = toolbar;
+    controller.window.titleVisibility   = NSWindowTitleHidden;
+    
+    KKNavigationController *navigationController = (KKNavigationController *)controller.window.contentViewController;
+    navigationController.rootViewController = [KKLoginViewController new];
+//    controller.window.contentView.rootViewController = [KKLoginViewController new];
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag
 {
     if (!flag) {
-        [[NSApplication sharedApplication].windows.firstObject makeKeyAndOrderFront:nil];
+        [self.mainWindowController.window makeKeyAndOrderFront:nil];
+        /* or:
+        for (NSWindow *window in [NSApplication sharedApplication].windows) {
+            if (window == self.statusBarItem.button.window) {
+                continue;
+            }
+            [window makeKeyAndOrderFront:nil];
+            break;
+        }
+         */
     }
     return YES;
 }

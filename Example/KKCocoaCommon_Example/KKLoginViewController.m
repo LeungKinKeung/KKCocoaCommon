@@ -116,7 +116,7 @@
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 
-        [self.navigationView pushViewController:[KKTabelViewController new] animated:YES];
+        [self.navigationController pushViewController:[KKLoginViewController new] animated:YES];
         //[self.navigationView pushViewController:[KKMainViewController new] animated:YES];
     });
 }
@@ -178,6 +178,11 @@
     CGFloat y = spacing;
     self.guideButton.frame =
     CGRectMake(x, y,  guideButtonSize.width,  guideButtonSize.height);
+}
+
+- (BOOL)hasNavigationBar
+{
+    return YES;
 }
 
 - (void)dealloc

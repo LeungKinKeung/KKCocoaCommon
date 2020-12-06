@@ -14,20 +14,16 @@
 
 @implementation KKViewController
 
-- (void)loadView
-{
-    if ([[NSBundle mainBundle] loadNibNamed:[self className] owner:nil topLevelObjects:nil]) {
-        [super loadView];
-    }
-}
-
 - (NSView *)view
 {
-    if (self.isViewLoaded == NO) {
-        [super setView:[NSView new]];
-        [self viewDidLoad];
+    if (self.isViewLoaded || self.nibName || [[NSBundle mainBundle] pathForResource:[self className] ofType:@"nib"]) {
+        // 已加载、storyboard、nib
+        return [super view];
     }
-    return [super view];
+    NSView *view = [NSView new];
+    [super setView:view];
+    [self viewDidLoad];
+    return view;
 }
 
 - (CAGradientLayer *)gradientLayer
@@ -63,13 +59,13 @@
 {
     [super viewDidLayout];
     
-    [NSAnimationContext beginGrouping];
-    NSAnimationContext *ctx = [NSAnimationContext currentContext];
-    ctx.duration            = 0;
     if (_gradientLayer) {
-        _gradientLayer.frame = self.view.layer.bounds;
+        [NSAnimationContext beginGrouping];
+        NSAnimationContext *ctx = [NSAnimationContext currentContext];
+        ctx.duration            = 0;
+        _gradientLayer.frame    = self.view.layer.bounds;
+        [NSAnimationContext endGrouping];
     }
-    [NSAnimationContext endGrouping];
 }
 
 
