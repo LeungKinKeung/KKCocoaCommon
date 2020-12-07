@@ -29,16 +29,16 @@
         case NSImageRight:
         {
             // 图片在左侧/右侧
-            width   = titleSize.width + imageSize.width + self.margin.left + self.margin.right + self.interitemSpacing;
-            height  = MAX(imageSize.height, titleSize.height) + self.margin.top + self.margin.bottom;
+            width   = titleSize.width + imageSize.width + self.padding.left + self.padding.right + self.interitemSpacing;
+            height  = MAX(imageSize.height, titleSize.height) + self.padding.top + self.padding.bottom;
             break;
         }
         case NSImageAbove:
         case NSImageBelow:
         {
             // 图片在上侧/下侧
-            width   = MAX(titleSize.width, imageSize.width) + self.margin.left + self.margin.right;
-            height  = imageSize.height + titleSize.height + self.margin.top + self.margin.bottom + self.interitemSpacing;
+            width   = MAX(titleSize.width, imageSize.width) + self.padding.left + self.padding.right;
+            height  = imageSize.height + titleSize.height + self.padding.top + self.padding.bottom + self.interitemSpacing;
             break;
         }
         default:
@@ -59,7 +59,7 @@
     }
     CGSize titleSize    = self.attributedTitle.size;
     CGSize imageSize    = self.image.size;
-    NSEdgeInsets margin = self.margin;
+    NSEdgeInsets padding = self.padding;
     CGFloat rectX       = 0;
     CGFloat rectY       = 0;
     switch (self.imagePosition)
@@ -68,40 +68,40 @@
         {
             // 图片在左侧
             CGFloat contentWidth = titleSize.width + imageSize.width + self.interitemSpacing;
-            CGFloat unusedWidth = rect.size.width - margin.left - margin.right - contentWidth;
+            CGFloat unusedWidth = rect.size.width - padding.left - padding.right - contentWidth;
             CGFloat alignmentSpacing = unusedWidth * 0.5;
-            rectX = margin.left + alignmentSpacing + imageSize.width + self.interitemSpacing;
-            rectY = (rect.size.height - margin.top - margin.bottom - titleSize.height) * 0.5 + margin.top;
+            rectX = padding.left + alignmentSpacing + imageSize.width + self.interitemSpacing;
+            rectY = (rect.size.height - padding.top - padding.bottom - titleSize.height) * 0.5 + padding.top;
             break;
         }
         case NSImageRight:
         {
             // 图片在右侧
             CGFloat contentWidth = titleSize.width + imageSize.width + self.interitemSpacing;
-            CGFloat unusedWidth = rect.size.width - margin.left - margin.right - contentWidth;
+            CGFloat unusedWidth = rect.size.width - padding.left - padding.right - contentWidth;
             CGFloat alignmentSpacing = unusedWidth * 0.5;
-            rectX = margin.left + alignmentSpacing;
-            rectY = (rect.size.height - margin.top - margin.bottom - titleSize.height) * 0.5 + margin.top;
+            rectX = padding.left + alignmentSpacing;
+            rectY = (rect.size.height - padding.top - padding.bottom - titleSize.height) * 0.5 + padding.top;
             break;
         }
         case NSImageAbove:
         {
             // 图片在上侧
             CGFloat contentHeight = titleSize.height + imageSize.height + self.interitemSpacing;
-            CGFloat unusedHeight = rect.size.height - margin.top - margin.bottom - contentHeight;
+            CGFloat unusedHeight = rect.size.height - padding.top - padding.bottom - contentHeight;
             CGFloat alignmentSpacing = unusedHeight * 0.5;
-            rectX = (rect.size.width - margin.left - margin.right - titleSize.width) * 0.5 + margin.left;
-            rectY = margin.top + alignmentSpacing + imageSize.height + self.interitemSpacing;
+            rectX = (rect.size.width - padding.left - padding.right - titleSize.width) * 0.5 + padding.left;
+            rectY = padding.top + alignmentSpacing + imageSize.height + self.interitemSpacing;
             break;
         }
         case NSImageBelow:
         {
             // 图片在下侧
             CGFloat contentHeight = titleSize.height + imageSize.height + self.interitemSpacing;
-            CGFloat unusedHeight = rect.size.height - margin.top - margin.bottom - contentHeight;
+            CGFloat unusedHeight = rect.size.height - padding.top - padding.bottom - contentHeight;
             CGFloat alignmentSpacing = unusedHeight * 0.5;
-            rectX = (rect.size.width - margin.left - margin.right - titleSize.width) * 0.5 + margin.left;
-            rectY = margin.top + alignmentSpacing;
+            rectX = (rect.size.width - padding.left - padding.right - titleSize.width) * 0.5 + padding.left;
+            rectY = padding.top + alignmentSpacing;
             break;
         }
         default:
@@ -122,7 +122,7 @@
     }
     CGSize titleSize    = self.attributedTitle.size;
     CGSize imageSize    = self.image.size;
-    NSEdgeInsets margin = self.margin;
+    NSEdgeInsets padding = self.padding;
     CGFloat rectX       = 0;
     CGFloat rectY       = 0;
     switch (self.imagePosition)
@@ -131,40 +131,40 @@
         {
             // 图片在左侧
             CGFloat contentWidth = titleSize.width + imageSize.width + self.interitemSpacing;
-            CGFloat unusedWidth = rect.size.width - margin.left - margin.right - contentWidth;
+            CGFloat unusedWidth = rect.size.width - padding.left - padding.right - contentWidth;
             CGFloat alignmentSpacing = unusedWidth * 0.5;
-            rectX = margin.left + alignmentSpacing;
-            rectY = (rect.size.height - margin.top - margin.bottom - imageSize.height) * 0.5 + margin.top;
+            rectX = padding.left + alignmentSpacing;
+            rectY = (rect.size.height - padding.top - padding.bottom - imageSize.height) * 0.5 + padding.top;
             break;
         }
         case NSImageRight:
         {
             // 图片在右侧
             CGFloat contentWidth = titleSize.width + imageSize.width + self.interitemSpacing;
-            CGFloat unusedWidth = rect.size.width - margin.left - margin.right - contentWidth;
+            CGFloat unusedWidth = rect.size.width - padding.left - padding.right - contentWidth;
             CGFloat alignmentSpacing = unusedWidth * 0.5;
-            rectX = margin.left + alignmentSpacing + titleSize.width + self.interitemSpacing;
-            rectY = (rect.size.height - margin.top - margin.bottom - imageSize.height) * 0.5 + margin.top;
+            rectX = padding.left + alignmentSpacing + titleSize.width + self.interitemSpacing;
+            rectY = (rect.size.height - padding.top - padding.bottom - imageSize.height) * 0.5 + padding.top;
             break;
         }
         case NSImageAbove:
         {
             // 图片在上侧
             CGFloat contentHeight = titleSize.height + imageSize.height + self.interitemSpacing;
-            CGFloat unusedHeight = rect.size.height - margin.top - margin.bottom - contentHeight;
+            CGFloat unusedHeight = rect.size.height - padding.top - padding.bottom - contentHeight;
             CGFloat alignmentSpacing = unusedHeight * 0.5;
-            rectX = (rect.size.width - margin.left - margin.right - imageSize.width) * 0.5 + margin.left;
-            rectY = margin.top + alignmentSpacing;
+            rectX = (rect.size.width - padding.left - padding.right - imageSize.width) * 0.5 + padding.left;
+            rectY = padding.top + alignmentSpacing;
             break;
         }
         case NSImageBelow:
         {
             // 图片在下侧
             CGFloat contentHeight = titleSize.height + imageSize.height + self.interitemSpacing;
-            CGFloat unusedHeight = rect.size.height - margin.top - margin.bottom - contentHeight;
+            CGFloat unusedHeight = rect.size.height - padding.top - padding.bottom - contentHeight;
             CGFloat alignmentSpacing = unusedHeight * 0.5;
-            rectX = (rect.size.width - margin.left - margin.right - imageSize.width) * 0.5 + margin.left;
-            rectY = margin.top + alignmentSpacing + titleSize.height + self.interitemSpacing;
+            rectX = (rect.size.width - padding.left - padding.right - imageSize.width) * 0.5 + padding.left;
+            rectY = padding.top + alignmentSpacing + titleSize.height + self.interitemSpacing;
             break;
         }
         default:

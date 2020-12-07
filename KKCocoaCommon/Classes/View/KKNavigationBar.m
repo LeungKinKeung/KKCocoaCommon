@@ -57,7 +57,7 @@
     [self separator];
     [self titleLabel];
     [self setTitleView:[self titleLabel]];
-    _margin             = NSEdgeInsetsMake(0, 16, 0, 16);
+    _padding            = NSEdgeInsetsMake(0, 16, 0, 16);
     _barHeight          = 37.0;
     _interitemSpacing   = 15.0;
     self.barStyle       = KKNavigationBarStyleSolidColor;
@@ -87,7 +87,6 @@
         _blurView               = [NSVisualEffectView new];
         _blurView.state         = NSVisualEffectStateActive;
         _blurView.blendingMode  = NSVisualEffectBlendingModeWithinWindow;
-        _blurView.material      = NSVisualEffectMaterialTitlebar;
         _blurView.hidden        = YES;
         [self addSubview:_blurView];
     }
@@ -275,9 +274,9 @@
     self.imageView.hidden       = barStyle != KKNavigationBarStyleImage;
 }
 
-- (void)setMargin:(NSEdgeInsets)margin
+- (void)setPadding:(NSEdgeInsets)padding
 {
-    _margin = margin;
+    _padding = padding;
     [self setNeedsLayout:YES];
 }
 
@@ -330,18 +329,19 @@
 
 - (NSSize)intrinsicContentSize
 {
-    return [self intrinsicContentSizeWithWindow:self.window];
+    return [self intrinsicContentSizeWithNavigationControllerView:self.superview];
 }
 
-- (CGSize)intrinsicContentSizeWithWindow:(NSWindow *)window
+- (CGSize)intrinsicContentSizeWithNavigationControllerView:(NSView *)navigationControllerView
 {
     CGFloat navigationBarHeight = 0;
     if (self.barPosition == KKNavigationBarPositionOverlaps) {
-        navigationBarHeight = window.contentView.bounds.size.height - window.contentLayoutRect.size.height;
+        navigationBarHeight =
+        navigationControllerView.window.contentView.bounds.size.height - navigationControllerView.window.contentLayoutRect.size.height;
     } else {
-        navigationBarHeight = self.margin.top + self.margin.bottom + self.barHeight;
+        navigationBarHeight = self.padding.top + self.padding.bottom + self.barHeight;
     }
-    return CGSizeMake(self.superview.frame.size.width, navigationBarHeight);
+    return CGSizeMake(navigationControllerView.frame.size.width, navigationBarHeight);
 }
 
 - (void)setFrame:(NSRect)frame
@@ -388,22 +388,22 @@
         directionLeftToRight    = [self.window windowTitlebarLayoutDirection] == NSUserInterfaceLayoutDirectionLeftToRight;
     }
     BOOL isOverlaps             = self.barPosition == KKNavigationBarPositionOverlaps;
-    NSEdgeInsets margin         = NSEdgeInsetsMake(0, 0, 0, 0);
-    CGFloat topSpacing          = self.isFlipped ? self.margin.top : self.margin.bottom;
-    margin.top                  = isOverlaps ? 0 : topSpacing;
-    CGFloat containerViewHeight = isOverlaps ? self.frame.size.height : (self.frame.size.height - self.margin.top - self.margin.bottom);
+    NSEdgeInsets padding        = NSEdgeInsetsMake(0, 0, 0, 0);
+    CGFloat topSpacing          = self.isFlipped ? self.padding.top : self.padding.bottom;
+    padding.top                 = isOverlaps ? 0 : topSpacing;
+    CGFloat containerViewHeight = isOverlaps ? self.frame.size.height : (self.frame.size.height - self.padding.top - self.padding.bottom);
     if (directionLeftToRight) {
         CGFloat windowButtonMaxX    = CGRectGetMaxX(windowButtonFrame);
         CGFloat navigationBarMinX   = CGRectGetMinX(navigationBarFrame);
-        margin.left                 = self.margin.left + (windowButtonMaxX > navigationBarMinX ? (windowButtonMaxX - navigationBarMinX) : 0);
-        margin.right                = self.margin.right;
+        padding.left                = self.padding.left + (windowButtonMaxX > navigationBarMinX ? (windowButtonMaxX - navigationBarMinX) : 0);
+        padding.right               = self.padding.right;
     } else {
         CGFloat windowButtonMinX    = CGRectGetMinX(windowButtonFrame);
         CGFloat navigationBarMaxX   = CGRectGetMaxX(navigationBarFrame);
-        margin.left                 = self.margin.left;
-        margin.right                = self.margin.right + (windowButtonMinX < navigationBarMaxX ? (navigationBarMaxX - windowButtonMinX) : 0);
+        padding.left                = self.padding.left;
+        padding.right               = self.padding.right + (windowButtonMinX < navigationBarMaxX ? (navigationBarMaxX - windowButtonMinX) : 0);
     }
-    CGFloat containerViewWidth  = self.frame.size.width - margin.left - margin.right;
+    CGFloat containerViewWidth  = self.frame.size.width - padding.left - padding.right;
     
     if (containerViewWidth <= 0) {
         return;
@@ -412,7 +412,7 @@
     self.solidColorView.frame   =
     self.blurView.frame         =
     self.imageView.frame        = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
-    self.containerView.frame    = CGRectMake(margin.left, margin.top, containerViewWidth, containerViewHeight);
+    self.containerView.frame    = CGRectMake(padding.left, padding.top, containerViewWidth, containerViewHeight);
     CGSize containerSize        = self.containerView.frame.size;
     NSMutableArray *leftButtons = NSMutableArray.new;
     if (self.backButton.isHidden == NO && self.backButton.superview == self.containerView) {
@@ -465,7 +465,7 @@
     if (titleViewSize.height == 0 || titleViewSize.height > containerSize.height) {
         titleViewSize       = CGSizeMake(titleViewSize.width, containerSize.height);
     }
-    CGFloat titleViewX      = (self.frame.size.width - titleViewSize.width) * 0.5 - margin.left;
+    CGFloat titleViewX      = (self.frame.size.width - titleViewSize.width) * 0.5 - padding.left;
     CGFloat titleViewY      = (containerSize.height - titleViewSize.height) * 0.5;
     CGRect titleViewFrame   = CGRectMake(titleViewX, titleViewY, titleViewSize.width, titleViewSize.height);
     if (titleViewMaxX - CGRectGetMaxX(titleViewFrame) < 0) {

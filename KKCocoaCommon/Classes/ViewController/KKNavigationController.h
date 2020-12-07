@@ -43,7 +43,7 @@
 - (BOOL)hasNavigationBar;
 /// 自定义导航栏的类（必须继承KKNavigationBar），默认：[KKNavigationBar class]，
 - (Class)navigationBarClass;
-/// 导航栏已加载
+/// 导航栏已加载，加载顺序：navigationBarDidLoad -> viewDidLoad -> viewWillAppear -> viewDidAppear
 - (void)navigationBarDidLoad;
 
 @end

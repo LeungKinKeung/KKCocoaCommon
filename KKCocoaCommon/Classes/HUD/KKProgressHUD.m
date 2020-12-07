@@ -100,11 +100,12 @@ static NSFont *gDefaultDetailLabelFont      = nil;
 - (void)commonInit
 {
     self.layerBackgroundColor   = NSColor.clearColor;
-    _margin             = 24;
-    _interitemSpacing   = 10;
-    _maxLayoutWidth     = 296;
-    _square             = YES;
-    _mode               = KKProgressHUDModeIndeterminate;
+    _padding                    = 24;
+    _minimumMargin              = 10;
+    _interitemSpacing           = 10;
+    _preferredMaxLayoutWidth    = 296;
+    _square                     = YES;
+    _mode                       = KKProgressHUDModeIndeterminate;
     
     for (NSString *keypath in [self observableKeypaths]) {
         [self addObserver:self forKeyPath:keypath options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
@@ -132,7 +133,7 @@ static NSFont *gDefaultDetailLabelFont      = nil;
 + (instancetype)showLoadingTextHUDAddedTo:(_Nullable id)target title:(NSString *)title animated:(BOOL)animated
 {
     KKProgressHUD *hud      = [self showHUDAddedTo:target mode:KKProgressHUDModeLoadingText title:title animated:animated];
-    hud.margin              = 10;
+    hud.padding              = 10;
     hud.interitemSpacing    = 5;
     return hud;
 }
@@ -304,6 +305,7 @@ static NSFont *gDefaultDetailLabelFont      = nil;
     if (_blurView == nil) {
         _blurView = [KKHUDFlippedVisualEffectView new];
         _blurView.state = NSVisualEffectStateActive;
+        _blurView.material = NSVisualEffectMaterialSelection;
         [self addSubview:_blurView];
     }
     return _blurView;
@@ -366,7 +368,7 @@ static NSFont *gDefaultDetailLabelFont      = nil;
 {
     static NSArray *observableKeypaths = nil;
     if (observableKeypaths == nil) {
-        observableKeypaths = @[@"label.stringValue", @"label.attributedStringValue", @"label.font", @"detailsLabel.stringValue", @"detailsLabel.attributedStringValue", @"detailsLabel.font", kEffectiveAppearanceKey];
+        observableKeypaths = @[@"label.stringValue", @"label.attributedStringValue", @"label.font", @"detailsLabel.stringValue", @"detailsLabel.attributedStringValue", @"detailsLabel.font", @"padding", @"minimumMargin", @"centerOffset", @"interitemSpacing", @"preferredMaxLayoutWidth", @"square", kEffectiveAppearanceKey];
     }
     return observableKeypaths;
 }
@@ -409,14 +411,15 @@ static NSFont *gDefaultDetailLabelFont      = nil;
 
 - (void)layoutContainerViewSubviews
 {
-    CGFloat maxLayoutWidth  = self.maxLayoutWidth;
+    CGFloat maxLayoutWidth  = self.preferredMaxLayoutWidth;
     CGFloat maxSubviewWidth = 0;
-    CGFloat margin          = self.margin;
+    CGFloat padding         = self.padding;
     CGFloat subviewsSpacing = self.interitemSpacing;
-    CGFloat topSpacing      = margin - subviewsSpacing;
+    CGFloat topSpacing      = padding - subviewsSpacing;
+    CGFloat maximumWidth    = self.superview.frame.size.width - self.minimumMargin * 2;
     BOOL isSquare           = self.isSquare;
-    if (self.windowController == nil && self.superview && self.superview.frame.size.width < maxLayoutWidth) {
-        maxLayoutWidth      = self.superview.frame.size.width - 10;
+    if (self.windowController == nil && self.superview && maxLayoutWidth > maximumWidth) {
+        maxLayoutWidth      = maximumWidth;
     }
     
     CGRect progressIndicatorFrame   = CGRectZero;
@@ -488,13 +491,13 @@ static NSFont *gDefaultDetailLabelFont      = nil;
         _label.isHidden == NO) {
         
         if (self.mode == KKProgressHUDModeLoadingText) {
-            CGFloat maxWidth    = maxLayoutWidth - margin * 2 - progressIndicatorFrame.size.width;
+            CGFloat maxWidth    = maxLayoutWidth - padding * 2 - progressIndicatorFrame.size.width;
             CGSize size         = [_label sizeThatFits:CGSizeMake(maxWidth, FLT_MAX)];
-            labelFrame          = CGRectMake(0, margin, size.width, size.height);
+            labelFrame          = CGRectMake(0, padding, size.width, size.height);
             topSpacing          = MAX(CGRectGetMaxY(labelFrame), CGRectGetMaxY(progressIndicatorFrame));
             maxSubviewWidth     = size.width + subviewsSpacing + progressIndicatorFrame.size.width;
         } else {
-            CGSize size         = [_label sizeThatFits:CGSizeMake(maxLayoutWidth - margin * 2, FLT_MAX)];
+            CGSize size         = [_label sizeThatFits:CGSizeMake(maxLayoutWidth - padding * 2, FLT_MAX)];
             labelFrame          = CGRectMake(0, topSpacing + subviewsSpacing, size.width, size.height);
             topSpacing          = CGRectGetMaxY(labelFrame);
             maxSubviewWidth     = MAX(maxSubviewWidth, size.width);
@@ -505,13 +508,13 @@ static NSFont *gDefaultDetailLabelFont      = nil;
         _detailsLabel.superview != nil &&
         _detailsLabel.stringValue.length > 0 &&
         _detailsLabel.isHidden == NO) {
-        CGSize size             = [_detailsLabel sizeThatFits:CGSizeMake(maxLayoutWidth - margin * 2, FLT_MAX)];
+        CGSize size             = [_detailsLabel sizeThatFits:CGSizeMake(maxLayoutWidth - padding * 2, FLT_MAX)];
         detailsLabelFrame       = CGRectMake(0, topSpacing + subviewsSpacing, size.width, size.height);
         topSpacing              = CGRectGetMaxY(detailsLabelFrame);
         maxSubviewWidth         = MAX(maxSubviewWidth, size.width);
     }
-    CGFloat containerWidth      = MIN(maxLayoutWidth, maxSubviewWidth) + margin * 2;
-    CGFloat containerHeigth     = topSpacing + margin;
+    CGFloat containerWidth      = MIN(maxLayoutWidth, maxSubviewWidth) + padding * 2;
+    CGFloat containerHeigth     = topSpacing + padding;
     if (isSquare && containerWidth < containerHeigth) {
         containerWidth          = containerHeigth;
     }
@@ -519,7 +522,7 @@ static NSFont *gDefaultDetailLabelFont      = nil;
     
     if (CGRectIsEmpty(progressIndicatorFrame) == NO) {
         if (self.mode == KKProgressHUDModeLoadingText) {
-            progressIndicatorFrame.origin.x = margin;
+            progressIndicatorFrame.origin.x = padding;
             progressIndicatorFrame.origin.y = (containerHeigth - progressIndicatorFrame.size.height) * 0.5;
         } else {
             progressIndicatorFrame.origin.x = (containerWidth - progressIndicatorFrame.size.width) * 0.5;
@@ -611,6 +614,7 @@ static NSFont *gDefaultDetailLabelFont      = nil;
     self.style = KKProgressHUDBackgroundStyleSolidColor;
 }
 
+/*
 - (void)setCenterOffset:(CGPoint)centerOffset
 {
     _centerOffset = centerOffset;
@@ -623,9 +627,21 @@ static NSFont *gDefaultDetailLabelFont      = nil;
     [self setNeedsLayout:YES];
 }
 
-- (void)setMaxLayoutWidth:(CGFloat)maxLayoutWidth
+- (void)setPreferredMaxLayoutWidth:(CGFloat)preferredMaxLayoutWidth
 {
-    _maxLayoutWidth = maxLayoutWidth;
+    _preferredMaxLayoutWidth = preferredMaxLayoutWidth;
+    [self setNeedsLayout:YES];
+}
+
+- (void)setPadding:(CGFloat)padding
+{
+    _padding = padding;
+    [self setNeedsLayout:YES];
+}
+
+- (void)setMinimumMargin:(CGFloat)minimumMargin
+{
+    _minimumMargin = minimumMargin;
     [self setNeedsLayout:YES];
 }
 
@@ -634,6 +650,7 @@ static NSFont *gDefaultDetailLabelFont      = nil;
     _square = square;
     [self setNeedsLayout:YES];
 }
+*/
 
 - (void)setProgress:(double)progress
 {

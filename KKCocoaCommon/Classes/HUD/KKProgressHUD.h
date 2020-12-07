@@ -80,14 +80,16 @@ typedef NS_ENUM(NSUInteger, KKProgressHUDBackgroundStyle) {
 @property (nonatomic, strong) NSTextField *label;
 /// 详情
 @property (nonatomic, strong) NSTextField *detailsLabel;
-/// 上下左右边距，默认：24
-@property (nonatomic, assign) CGFloat margin;
+/// 内边距，默认：24
+@property (nonatomic, assign) CGFloat padding;
+/// 外边距，默认：10
+@property (nonatomic, assign) CGFloat minimumMargin;
 /// 中心偏移，默认：{0,0}
 @property (nonatomic, assign) CGPoint centerOffset;
 /// 子视图之间的行距，默认：10
 @property (nonatomic, assign) CGFloat interitemSpacing;
 /// 约束视图最大宽度，默认：296
-@property (nonatomic, assign) CGFloat maxLayoutWidth;
+@property (nonatomic, assign) CGFloat preferredMaxLayoutWidth;
 /// 如果可以的话，约束宽度和高度一致
 @property (nonatomic, assign, getter = isSquare) BOOL square;
 /// 进度（0 ~ 1.0）

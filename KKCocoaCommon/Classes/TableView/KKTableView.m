@@ -481,6 +481,7 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
         tableView.floatsGroupRows   = self.style == KKTableViewStylePlain;
         tableView.gridStyleMask     = NSTableViewSolidHorizontalGridLineMask;
         tableView.gridColor         = NSColor.clearColor;
+        tableView.intercellSpacing  = NSMakeSize(0, 0);
         tableView.allowsEmptySelection      = YES;
         
         self.hasVerticalScroller    = YES;
@@ -488,6 +489,7 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
         self.autohidesScrollers     = YES;
         self.scrollerStyle          = NSScrollerStyleOverlay;
         self.verticalScrollElasticity       = NSScrollElasticityAllowed;
+        self.automaticallyAdjustsContentInsets = NO;
         
         self.rowHeight                      =
         self.sectionHeaderHeight            =
@@ -524,6 +526,17 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
     NSTableViewSelectionHighlightStyleRegular;
     
     [self reloadData];
+    //    if (@available(macOS 11.0, *)) {
+    //        // macOS 11.0正常
+    //    } else if (self.contentView.bounds.origin.y > -self.contentInsets.top) {
+    //        [self.contentView.animator scrollPoint:CGPointMake(0, -self.contentInsets.top)];
+    //    }
+}
+
+- (void)scrollPoint:(NSPoint)point
+{
+    [super scrollPoint:point];
+    [self.contentView scrollPoint:point];
 }
 
 - (void)setDelegate:(id<KKTableViewDelegate>)delegate

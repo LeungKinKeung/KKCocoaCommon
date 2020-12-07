@@ -48,7 +48,7 @@
     toolbar.allowsUserCustomization     = NO;
     toolbar.displayMode                 = NSToolbarDisplayModeIconAndLabel;
     toolbar.sizeMode                    = NSToolbarSizeModeRegular;
-    toolbar.showsBaselineSeparator      = YES;
+    toolbar.showsBaselineSeparator      = NO;
     controller.window.toolbar           = toolbar;
     controller.window.titleVisibility   = NSWindowTitleHidden;
     

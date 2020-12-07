@@ -12,8 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface KKButtonCell : NSButtonCell
 
-/// 边距
-@property (nonatomic, assign) NSEdgeInsets margin;
+/// 内边距
+@property (nonatomic, assign) NSEdgeInsets padding;
 /// 间隔
 @property (nonatomic, assign) CGFloat interitemSpacing;
 

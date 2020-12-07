@@ -15,9 +15,9 @@ typedef NS_ENUM(NSUInteger, KKNavigationBarStyle) {
 };
 
 typedef NS_ENUM(NSUInteger, KKNavigationBarPosition) {
-    KKNavigationBarPositionOverlaps,    // 与window.titlebar重叠，自动计算barHeight，忽略margin.top、margin.bottom
-    KKNavigationBarPositionBelow,       // 在window.titlebar下面，自动计算margin.top
-    KKNavigationBarPositionCustom,      // 自定义margin、barHeight
+    KKNavigationBarPositionOverlaps,    // 与window.titlebar重叠，自动计算barHeight，忽略padding.top、padding.bottom
+    KKNavigationBarPositionBelow,       // 在window.titlebar下面，自动计算padding.top
+    KKNavigationBarPositionCustom,      // 自定义padding、barHeight
 };
 
 @interface KKNavigationBar : NSView
@@ -26,8 +26,8 @@ typedef NS_ENUM(NSUInteger, KKNavigationBarPosition) {
 @property (nonatomic, assign) KKNavigationBarStyle barStyle;
 /// 位置
 @property (nonatomic, assign) KKNavigationBarPosition barPosition;
-/// 上下左右间距，默认：{0,16,0,16}
-@property (nonatomic, assign) NSEdgeInsets margin;
+/// 内边距，默认：{0,16,0,16}
+@property (nonatomic, assign) NSEdgeInsets padding;
 /// 高度，默认：37
 @property (nonatomic, assign) CGFloat barHeight;
 /// 按钮、标签之间的间距，默认：15
@@ -70,6 +70,6 @@ typedef NS_ENUM(NSUInteger, KKNavigationBarPosition) {
 /// 布局，如不需要则覆盖
 - (void)layoutBarSubviews;
 /// 计算大小
-- (CGSize)intrinsicContentSizeWithWindow:(NSWindow *)window;
+- (CGSize)intrinsicContentSizeWithNavigationControllerView:(NSView *)navigationControllerView;
 
 @end

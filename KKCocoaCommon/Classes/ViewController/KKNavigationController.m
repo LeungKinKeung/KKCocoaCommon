@@ -62,27 +62,27 @@
     }
     [self addChildViewController:rootViewController];
     
+    KKNavigationBar *navigationBar  = rootViewController.navigationBar;
+    if (navigationBar) {
+        navigationBar.backButton.hidden     = YES;
+        navigationBar.separator.hidden      = YES;
+        navigationBar.backgroundView.hidden = YES;
+        [self layoutNavigationBar:navigationBar];
+        [self noteNavigationBarDidLoad:rootViewController];
+    }
+    
     if (rootViewController.isViewLoaded ||
         rootViewController.nibName ||
         [[NSBundle mainBundle] pathForResource:[rootViewController className] ofType:@"nib"]) {
         rootViewController.view.frame = [self contentViewFrame];
         [self.view addSubview:rootViewController.view];
+        [self.view addSubview:navigationBar];
     } else {
         NSView *view = [[NSView alloc] initWithFrame:[self contentViewFrame]];
         [rootViewController setView:view];
         [rootViewController viewDidLoad];
         [self.view addSubview:view];
-        KKNavigationBar *navigationBar  = rootViewController.navigationBar;
-        if (navigationBar) {
-            navigationBar.backButton.hidden     = YES;
-            navigationBar.separator.hidden      = YES;
-            navigationBar.backgroundView.hidden = YES;
-            [self.view addSubview:navigationBar];
-            [self layoutNavigationBar:navigationBar];
-            if ([rootViewController respondsToSelector:@selector(navigationBarDidLoad)]) {
-                [rootViewController navigationBarDidLoad];
-            }
-        }
+        [self.view addSubview:navigationBar];
     }
 }
 
@@ -96,8 +96,16 @@
     NSViewController *previous      = self.childViewControllers.lastObject;
     NSView *previousView            = previous.view;
     KKNavigationBar *previousBar    = previous.navigationBar;
-    
     [self addChildViewController:viewController];
+    
+    KKNavigationBar *pushingBar     = viewController.navigationBar;
+    if (pushingBar) {
+        pushingBar.backButton.target = self;
+        pushingBar.backButton.action = @selector(backButtonClicked:);
+        [self layoutNavigationBar:pushingBar];
+        [self noteNavigationBarDidLoad:viewController];
+    }
+    
     NSView *pushingView     = nil;
     if (viewController.isViewLoaded ||
         viewController.nibName ||
@@ -105,21 +113,13 @@
         pushingView         = viewController.view;
         pushingView.frame   = [self contentViewFrame];
         [self.view addSubview:pushingView];
+        [self.view addSubview:pushingBar];
     } else {
         pushingView         = [[NSView alloc] initWithFrame:[self contentViewFrame]];
         [viewController setView:pushingView];
         [viewController viewDidLoad];
         [self.view addSubview:pushingView];
-    }
-    KKNavigationBar *pushingBar = viewController.navigationBar;
-    if (pushingBar) {
-        pushingBar.backButton.target = self;
-        pushingBar.backButton.action = @selector(backButtonClicked:);
         [self.view addSubview:pushingBar];
-        [self layoutNavigationBar:pushingBar];
-        if ([viewController respondsToSelector:@selector(navigationBarDidLoad)]) {
-            [viewController navigationBarDidLoad];
-        }
     }
     
     if (animated) {
@@ -129,7 +129,7 @@
         CGRect pushingViewFromFrame     = pushingViewToFrame;
         pushingViewFromFrame.origin.x   = self.view.bounds.size.width;
         
-        CGRect pushingBarToFrame        = [self frameForNavigationBar:previousBar];
+        CGRect pushingBarToFrame        = [self frameForNavigationBar:pushingBar];
         CGRect pushingBarFromFrame      = pushingBarToFrame;
         pushingBarFromFrame.origin.x    = pushingViewFromFrame.origin.x;
         
@@ -290,6 +290,13 @@
     [self popViewControllerAnimated:YES];
 }
 
+- (void)noteNavigationBarDidLoad:(NSViewController *)viewController
+{
+    if (viewController.navigationBar && [viewController respondsToSelector:@selector(navigationBarDidLoad)]) {
+        [viewController navigationBarDidLoad];
+    }
+}
+
 - (void)viewDidLayout
 {
     [super viewDidLayout];
@@ -310,7 +317,7 @@
         return CGRectZero;
     }
     CGSize size         =
-    [navigationBar intrinsicContentSizeWithWindow:self.view.window];
+    [navigationBar intrinsicContentSizeWithNavigationControllerView:self.view];
     CGFloat barY        =
     self.view.isFlipped ? 0 : self.view.bounds.size.height - size.height;
     return CGRectMake(0, barY, size.width, size.height);

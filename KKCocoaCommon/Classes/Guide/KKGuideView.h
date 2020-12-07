@@ -34,16 +34,16 @@ typedef void(^KKGuideViewCompletionBlock)(KKGuideView *guideView);
 @property (nonatomic, strong) NSView *customTipsView;
 /// 高亮区域的样式
 @property (nonatomic, assign) KKGuideViewShapeStyle highlightShapeStyle;
-/// 高亮区域边距
-@property (nonatomic, assign) NSEdgeInsets highlightMargin;
+/// 高亮区域内边距
+@property (nonatomic, assign) NSEdgeInsets highlightPadding;
 /// 高亮区域圆角
 @property (nonatomic, assign) CGFloat highlightCornerRadius;
 /// 提示视图的边框形状样式
 @property (nonatomic, assign) KKGuideViewShapeStyle tipsBorderShapeStyle;
 /// 提示视图的边框线条样式
 @property (nonatomic, assign) KKGuideViewLineStyle tipsBorderLineStyle;
-/// 提示视图的边框边距
-@property (nonatomic, assign) NSEdgeInsets tipsBorderMargin;
+/// 提示视图的边框内边距
+@property (nonatomic, assign) NSEdgeInsets tipsBorderPadding;
 /// 提示视图的边框圆角
 @property (nonatomic, assign) CGFloat tipsBorderCornerRadius;
 /// 连接的线条样式

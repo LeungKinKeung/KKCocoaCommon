@@ -9,7 +9,7 @@
 #import "KKLoginViewController.h"
 #import <KKCocoaCommon/KKCocoaCommon.h>
 #import "KKMainViewController.h"
-#import "KKTabelViewController.h"
+#import "KKTableViewController.h"
 
 @interface KKLoginViewController ()<KKTextFieldDelegate>
 @property (nonatomic, strong) NSVisualEffectView *blurView;
@@ -116,7 +116,7 @@
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 
-        [self.navigationController pushViewController:[KKLoginViewController new] animated:YES];
+        [self.navigationController pushViewController:[KKTableViewController new] animated:YES];
         //[self.navigationView pushViewController:[KKMainViewController new] animated:YES];
     });
 }
@@ -149,7 +149,7 @@
         guideView.targetView    = views.firstObject;
         guideView.tipsLabel.text = guideView.targetView.toolTip;
     }];
-    view.highlightMargin        = NSEdgeInsetsMake(3, 3, 3, 3);
+    view.highlightPadding       = NSEdgeInsetsMake(3, 3, 3, 3);
     view.highlightCornerRadius  = 3;
     view.tipsLabel.font         = [NSFont fontWithName:@"HannotateSC-W5" size:18];
 }
@@ -178,11 +178,6 @@
     CGFloat y = spacing;
     self.guideButton.frame =
     CGRectMake(x, y,  guideButtonSize.width,  guideButtonSize.height);
-}
-
-- (BOOL)hasNavigationBar
-{
-    return YES;
 }
 
 - (void)dealloc

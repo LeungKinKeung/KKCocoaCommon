@@ -49,7 +49,7 @@
     _tipsBorderLineStyle    = KKGuideViewLineStyleDotted;
     _lineStyle              = KKGuideViewLineStyleSolid;
     _backgroundColor        = [NSColor colorWithWhite:0 alpha:0.7];
-    _tipsBorderMargin       = NSEdgeInsetsMake(8, 8, 8, 8);
+    _tipsBorderPadding       = NSEdgeInsetsMake(8, 8, 8, 8);
     _tintColor              = NSColor.whiteColor;
     
     for (NSString *keypath in [self observableKeypaths]) {
@@ -59,7 +59,7 @@
 
 - (NSArray *)observableKeypaths
 {
-    return @[@"tipsLabel.stringValue", @"tipsLabel.attributedStringValue", @"tipsLabel.font", @"highlightShapeStyle", @"highlightMargin", @"highlightCornerRadius", @"tipsBorderShapeStyle", @"tipsBorderLineStyle", @"tipsBorderMargin", @"tipsBorderCornerRadius", @"lineStyle", @"lineWidth"];
+    return @[@"tipsLabel.stringValue", @"tipsLabel.attributedStringValue", @"tipsLabel.font", @"highlightShapeStyle", @"highlightPadding", @"highlightCornerRadius", @"tipsBorderShapeStyle", @"tipsBorderLineStyle", @"tipsBorderPadding", @"tipsBorderCornerRadius", @"lineStyle", @"lineWidth"];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
@@ -200,8 +200,8 @@
         }
     }
     CGPoint lineOffset              = self.lineOffset;
-    NSEdgeInsets highlightMargin    = self.highlightMargin;
-    NSEdgeInsets tipsBorderMargin   = self.tipsBorderMargin;
+    NSEdgeInsets highlightPadding   = self.highlightPadding;
+    NSEdgeInsets tipsBorderPadding  = self.tipsBorderPadding;
     
     if (_tipsLabel && self.customTipsView == _tipsLabel) {
         
@@ -214,7 +214,7 @@
             if (textWidth < tipsViewMaxWidth && textWidth > selfSize.width * 0.6) {
                 maxLayoutWidth  = textWidth * 0.6; // 对折一下
             } else if (textWidth > tipsViewMaxWidth) {
-                maxLayoutWidth  = textWidth / ceil(textWidth / (tipsViewMaxWidth - tipsBorderMargin.left - tipsBorderMargin.right));
+                maxLayoutWidth  = textWidth / ceil(textWidth / (tipsViewMaxWidth - tipsBorderPadding.left - tipsBorderPadding.right));
             } else {
                 maxLayoutWidth  = textWidth;
             }
@@ -234,7 +234,7 @@
         case KKRectAlignmentTopLeft:
         case KKRectAlignmentLeft:{
             CGFloat tipsViewY = self.isFlipped ? CGRectGetMaxY(targetViewFrame) + lineOffset.y : CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height;
-            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightMargin.right + tipsBorderMargin.left + lineOffset.x;
+            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightPadding.right + tipsBorderPadding.left + lineOffset.x;
             if (tipsViewX + tipsViewSize.width > tipsViewMaxX) {
                 tipsViewX = tipsViewX - (tipsViewX + tipsViewSize.width - tipsViewMaxX);
             }
@@ -243,8 +243,8 @@
         }
         case KKRectAlignmentTopRigth:
         case KKRectAlignmentRigth: {
-            CGFloat tipsViewY = self.isFlipped ? CGRectGetMaxY(targetViewFrame) + lineOffset.y : CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height - tipsBorderMargin.right;
-            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightMargin.left - tipsBorderMargin.right - lineOffset.x;
+            CGFloat tipsViewY = self.isFlipped ? CGRectGetMaxY(targetViewFrame) + lineOffset.y : CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height - tipsBorderPadding.right;
+            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightPadding.left - tipsBorderPadding.right - lineOffset.x;
             if (tipsViewX < tipsViewMinX) {
                 tipsViewX = tipsViewMinX;
             }
@@ -253,7 +253,7 @@
         }
         case KKRectAlignmentBottomLeft: {
             CGFloat tipsViewY = self.isFlipped ? CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height : CGRectGetMaxY(targetViewFrame) + lineOffset.y;
-            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightMargin.right + tipsBorderMargin.left + lineOffset.x;
+            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightPadding.right + tipsBorderPadding.left + lineOffset.x;
             if (tipsViewX + tipsViewSize.width > tipsViewMaxX) {
                 tipsViewX = tipsViewX - (tipsViewX + tipsViewSize.width - tipsViewMaxX);
             }
@@ -262,7 +262,7 @@
         }
         case KKRectAlignmentBottomRigth: {
             CGFloat tipsViewY = self.isFlipped ? CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height : CGRectGetMaxY(targetViewFrame) + lineOffset.y;
-            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightMargin.left  - tipsBorderMargin.right - lineOffset.x;
+            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightPadding.left  - tipsBorderPadding.right - lineOffset.x;
             if (tipsViewX < tipsViewMinX) {
                 tipsViewX = tipsViewMinX;
             }
@@ -305,10 +305,10 @@
     }
     if (self.backgroundColor) {
         // 高亮区域
-        NSEdgeInsets margin     = self.highlightMargin;
+        NSEdgeInsets padding    = self.highlightPadding;
         CGFloat cornerRadius    = self.highlightCornerRadius;
         CGRect frame            = [self frameForTargetView];
-        CGRect rect             = CGRectMake(frame.origin.x - margin.left, (self.isFlipped ? frame.origin.y - margin.top : frame.origin.y - margin.bottom), frame.size.width + margin.left + margin.right, frame.size.height + margin.top + margin.bottom);
+        CGRect rect             = CGRectMake(frame.origin.x - padding.left, (self.isFlipped ? frame.origin.y - padding.top : frame.origin.y - padding.bottom), frame.size.width + padding.left + padding.right, frame.size.height + padding.top + padding.bottom);
         NSBezierPath *path      = [self shapePathWithStyle:self.highlightShapeStyle rect:rect cornerRadius:cornerRadius];
         CGContextRef context    = [NSGraphicsContext currentContext].CGContext;
         CGContextSaveGState(context);
@@ -330,7 +330,7 @@
         CGPoint controlPoint1   = CGPointZero;
         CGPoint controlPoint2   = CGPointZero;
         CGFloat diameter        = 0;
-        NSEdgeInsets margin     = self.highlightMargin;
+        NSEdgeInsets padding    = self.highlightPadding;
         CGPoint lineOffset      = self.lineOffset;
         
         switch (self.alignment) {
@@ -339,7 +339,7 @@
                 lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
                 lineBeginPoint.y    = self.isFlipped ? CGRectGetMinY(tipsViewFrame) - spacing: CGRectGetMaxY(tipsViewFrame) + spacing;
                 
-                lineEndPint.x       = CGRectGetMaxX(self.targetViewFrame) + margin.right + spacing;
+                lineEndPint.x       = CGRectGetMaxX(self.targetViewFrame) + padding.right + spacing;
                 lineEndPint.y       = CGRectGetMidY(self.targetViewFrame);
                 
                 if ((lineBeginPoint.x - lineEndPint.x) < lineOffset.x) {
@@ -382,7 +382,7 @@
                 lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
                 lineBeginPoint.y    = self.isFlipped ? CGRectGetMinY(tipsViewFrame) - spacing: CGRectGetMaxY(tipsViewFrame) + spacing;
                 
-                lineEndPint.x       = CGRectGetMinX(self.targetViewFrame) - margin.right - spacing;
+                lineEndPint.x       = CGRectGetMinX(self.targetViewFrame) - padding.right - spacing;
                 lineEndPint.y       = CGRectGetMidY(self.targetViewFrame);
                 
                 if ((lineEndPint.x - lineBeginPoint.x) < lineOffset.x) {
@@ -425,7 +425,7 @@
                 lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
                 lineBeginPoint.y    = self.isFlipped ? CGRectGetMaxY(tipsViewFrame) + spacing: CGRectGetMinY(tipsViewFrame) - spacing;
                 
-                lineEndPint.x       = CGRectGetMaxX(self.targetViewFrame) + margin.right + spacing;
+                lineEndPint.x       = CGRectGetMaxX(self.targetViewFrame) + padding.right + spacing;
                 lineEndPint.y       = CGRectGetMidY(self.targetViewFrame);
                 
                 if ((lineBeginPoint.x - lineEndPint.x) < lineOffset.x) {
@@ -468,7 +468,7 @@
                 lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
                 lineBeginPoint.y    = self.isFlipped ? CGRectGetMaxY(tipsViewFrame) + spacing : CGRectGetMinY(tipsViewFrame) - spacing;
                 
-                lineEndPint.x       = CGRectGetMinX(self.targetViewFrame) - margin.right - spacing;
+                lineEndPint.x       = CGRectGetMinX(self.targetViewFrame) - padding.right - spacing;
                 lineEndPint.y       = CGRectGetMidY(self.targetViewFrame);
                 
                 if ((lineEndPint.x - lineBeginPoint.x) < lineOffset.x) {
@@ -511,7 +511,7 @@
                 lineBeginPoint.y    = self.isFlipped ? CGRectGetMaxY(tipsViewFrame) + spacing : CGRectGetMinY(tipsViewFrame) - spacing;
                 
                 lineEndPint.x       = CGRectGetMidX(self.targetViewFrame);
-                lineEndPint.y       = self.isFlipped ? CGRectGetMinY(self.targetViewFrame) - spacing - margin.top :  CGRectGetMaxY(self.targetViewFrame) + spacing + margin.top;
+                lineEndPint.y       = self.isFlipped ? CGRectGetMinY(self.targetViewFrame) - spacing - padding.top :  CGRectGetMaxY(self.targetViewFrame) + spacing + padding.top;
                 
                 diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPint] * 0.3;
                 
@@ -551,7 +551,7 @@
                 lineBeginPoint.y    = self.isFlipped ? CGRectGetMinY(tipsViewFrame) - spacing: CGRectGetMaxY(tipsViewFrame) + spacing;
                 
                 lineEndPint.x       = CGRectGetMidX(self.targetViewFrame);
-                lineEndPint.y       = self.isFlipped ? CGRectGetMaxY(self.targetViewFrame) + spacing + margin.bottom : CGRectGetMinY(self.targetViewFrame) - spacing - margin.bottom;
+                lineEndPint.y       = self.isFlipped ? CGRectGetMaxY(self.targetViewFrame) + spacing + padding.bottom : CGRectGetMinY(self.targetViewFrame) - spacing - padding.bottom;
                 
                 diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPint] * 0.3;
                 
@@ -588,8 +588,8 @@
     }
     if (self.tipsBorderLineStyle != KKGuideViewLineStyleNone)
     {
-        NSEdgeInsets margin     = self.tipsBorderMargin;
-        CGRect borderFrame = CGRectMake(tipsViewFrame.origin.x - margin.left, self.isFlipped ? tipsViewFrame.origin.y - margin.top : tipsViewFrame.origin.y - margin.bottom, tipsViewFrame.size.width + margin.left + margin.right, tipsViewFrame.size.height + margin.top + margin.bottom);
+        NSEdgeInsets padding    = self.tipsBorderPadding;
+        CGRect borderFrame = CGRectMake(tipsViewFrame.origin.x - padding.left, self.isFlipped ? tipsViewFrame.origin.y - padding.top : tipsViewFrame.origin.y - padding.bottom, tipsViewFrame.size.width + padding.left + padding.right, tipsViewFrame.size.height + padding.top + padding.bottom);
         
         NSBezierPath *border = [self shapePathWithStyle:self.tipsBorderShapeStyle rect:borderFrame cornerRadius:self.tipsBorderCornerRadius];
         [border setLineWidth:self.lineWidth];

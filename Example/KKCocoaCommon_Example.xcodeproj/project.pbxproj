@@ -15,7 +15,7 @@
 		3876A3A7254AA4AD00FEDD5B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A3A6254AA4AD00FEDD5B /* main.m */; };
 		3876A407254AB77D00FEDD5B /* KKLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A406254AB77D00FEDD5B /* KKLoginViewController.m */; };
 		3876A581254C0C3000FEDD5B /* KKWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A580254C0C3000FEDD5B /* KKWindow.m */; };
-		3876A6542554E77000FEDD5B /* KKTabelViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A6532554E77000FEDD5B /* KKTabelViewController.m */; };
+		3876A6542554E77000FEDD5B /* KKTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A6532554E77000FEDD5B /* KKTableViewController.m */; };
 		8B76D35EC6B1DF7658DFD3B8 /* Pods_KKCocoaCommon_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FFDBDFC2FA5CE7404EB37BDC /* Pods_KKCocoaCommon_Example.framework */; };
 /* End PBXBuildFile section */
 
@@ -37,8 +37,8 @@
 		3876A406254AB77D00FEDD5B /* KKLoginViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKLoginViewController.m; sourceTree = "<group>"; };
 		3876A57F254C0C3000FEDD5B /* KKWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKWindow.h; sourceTree = "<group>"; };
 		3876A580254C0C3000FEDD5B /* KKWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKWindow.m; sourceTree = "<group>"; };
-		3876A6522554E77000FEDD5B /* KKTabelViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKTabelViewController.h; sourceTree = "<group>"; };
-		3876A6532554E77000FEDD5B /* KKTabelViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKTabelViewController.m; sourceTree = "<group>"; };
+		3876A6522554E77000FEDD5B /* KKTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKTableViewController.h; sourceTree = "<group>"; };
+		3876A6532554E77000FEDD5B /* KKTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKTableViewController.m; sourceTree = "<group>"; };
 		A480C47D9AD098389D86E2B6 /* Pods-KKCocoaCommon_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KKCocoaCommon_Example.release.xcconfig"; path = "Target Support Files/Pods-KKCocoaCommon_Example/Pods-KKCocoaCommon_Example.release.xcconfig"; sourceTree = "<group>"; };
 		FFDBDFC2FA5CE7404EB37BDC /* Pods_KKCocoaCommon_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KKCocoaCommon_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -84,8 +84,8 @@
 				3876A406254AB77D00FEDD5B /* KKLoginViewController.m */,
 				18892739254F04BE00E364FB /* KKMainViewController.h */,
 				1889273A254F04BE00E364FB /* KKMainViewController.m */,
-				3876A6522554E77000FEDD5B /* KKTabelViewController.h */,
-				3876A6532554E77000FEDD5B /* KKTabelViewController.m */,
+				3876A6522554E77000FEDD5B /* KKTableViewController.h */,
+				3876A6532554E77000FEDD5B /* KKTableViewController.m */,
 				3876A57F254C0C3000FEDD5B /* KKWindow.h */,
 				3876A580254C0C3000FEDD5B /* KKWindow.m */,
 				3876A3A0254AA4AD00FEDD5B /* Assets.xcassets */,
@@ -228,7 +228,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3876A6542554E77000FEDD5B /* KKTabelViewController.m in Sources */,
+				3876A6542554E77000FEDD5B /* KKTableViewController.m in Sources */,
 				3876A407254AB77D00FEDD5B /* KKLoginViewController.m in Sources */,
 				3876A581254C0C3000FEDD5B /* KKWindow.m in Sources */,
 				3876A39F254AA4AC00FEDD5B /* ViewController.m in Sources */,

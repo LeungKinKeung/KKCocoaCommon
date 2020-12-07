@@ -45,10 +45,10 @@
     [self invalidateIntrinsicContentSize];
 }
 
-- (void)setMargin:(NSEdgeInsets)margin
+- (void)setPadding:(NSEdgeInsets)padding
 {
-    _margin = margin;
-    [self buttonCell].margin = margin;
+    _padding = padding;
+    [self buttonCell].padding = padding;
     [self invalidateIntrinsicContentSize];
 }
 

@@ -1,21 +1,21 @@
 //
-//  KKTabelViewController.m
+//  KKTableViewController.m
 //  KKCocoaCommon_Example
 //
 //  Created by LeungKinKeung on 2020/11/6.
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 
-#import "KKTabelViewController.h"
+#import "KKTableViewController.h"
 
-@interface KKTabelViewController ()<KKTableViewDelegate,KKTableViewDataSource>
+@interface KKTableViewController ()<KKTableViewDelegate,KKTableViewDataSource>
 
 @property (nonatomic, strong) KKTableView *tableView;
 @property (nonatomic, strong) NSMutableArray <NSMutableArray <NSString *>*>*datas;
 
 @end
 
-@implementation KKTabelViewController
+@implementation KKTableViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -40,7 +40,13 @@
         [self.datas addObject:strings];
     }
     
+    CGFloat barHeight           = self.navigationBar.barHeight;
+    NSEdgeInsets contentInsets  = self.tableView.contentInsets;
+    contentInsets.top           = barHeight;
+    contentInsets.bottom        = 15;
+    
     self.tableView  = [[KKTableView alloc] initWithFrame:CGRectZero style:KKTableViewStyleGrouped];
+    self.tableView.contentInsets = contentInsets;
     self.tableView.delegate     = self;
     self.tableView.dataSource   = self;
     self.tableView.translucent  = NO;
@@ -217,14 +223,8 @@
 {
     [super viewDidAppear];
     
-    CGFloat barHeight           = self.navigationBar.frame.size.height;
-    NSEdgeInsets contentInsets  = self.tableView.contentInsets;
-    if (contentInsets.top != barHeight) {
-        contentInsets.top = barHeight;
-        contentInsets.bottom = 15;
-        self.tableView.contentInsets = contentInsets;
-    }
-    self.tableView.automaticallyAdjustsContentInsets = NO;
+    
+    
 }
 
 - (void)viewDidLayout
