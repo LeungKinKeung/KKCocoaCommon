@@ -63,7 +63,7 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     _separatorInset     = NSEdgeInsetsMake(0, 0, 0, 0);
     _interitemSpacing   = 10;
     _lineSpacing        = 5;
-    _contentInsets      = NSEdgeInsetsMake(10, 15, 10, 15);
+    _padding            = NSEdgeInsetsMake(10, 15, 10, 15);
 }
 
 - (void)enableObserveRowView:(BOOL)enable
@@ -136,6 +136,7 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     if (self.inLiveResize) {
         return;
     }
+    [self layoutCellSubviews];
     if (self.rowHeight > 0 && self.frame.size.height != self.rowHeight) {
         [self noteHeightChanged];
     }
@@ -353,6 +354,10 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
         }
         case KKTableViewCellStylePlain: {
             self.textLabel.font             = [NSFont boldSystemFontOfSize:16];
+            /*
+            self.wantsLayer                 = YES;
+            self.layer.backgroundColor      = [NSColor colorWithWhite:0.5 alpha:0.1].CGColor;
+             */
             break;
         }
         case KKTableViewCellStyleGrouped: {
@@ -377,7 +382,7 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     CGSize selfSize             = self.frame.size;
     CGFloat interitemSpacing    = self.interitemSpacing;
     CGFloat lineSpacing         = self.lineSpacing;
-    NSEdgeInsets insets         = self.contentInsets;
+    NSEdgeInsets padding        = self.padding;
     
     CGRect imageViewFrame       = CGRectZero;
     CGRect textLabelFrame       = CGRectZero;
@@ -386,18 +391,18 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     
     if (self.style != KKTableViewCellStyleValue2 && _imageView) {
         imageViewFrame.size     = [self.imageView intrinsicContentSize];
-        imageViewFrame.origin.x = insets.left;
-        insets.left             = insets.left + imageViewFrame.size.width + interitemSpacing;
+        imageViewFrame.origin.x = padding.left;
+        padding.left            = padding.left + imageViewFrame.size.width + interitemSpacing;
     }
     if (self.accessoryView) {
         accessoryViewFrame.size = [self.accessoryView intrinsicContentSize];
-        accessoryViewFrame.origin.x = selfSize.width - accessoryViewFrame.size.width - insets.right;
-        insets.right            = insets.right + accessoryViewFrame.size.width + interitemSpacing;
+        accessoryViewFrame.origin.x = selfSize.width - accessoryViewFrame.size.width - padding.right;
+        padding.right           = padding.right + accessoryViewFrame.size.width + interitemSpacing;
     }
     
     BOOL hasTextLabel           = _textLabel && self.textLabel.stringValue.length > 0;
     BOOL hasDetailLabel         = _detailTextLabel && self.detailTextLabel.stringValue.length > 0;
-    CGFloat availableWidth      = selfSize.width - insets.left - insets.right;
+    CGFloat availableWidth      = selfSize.width - padding.left - padding.right;
     CGFloat maxViewHeight       = MAX(imageViewFrame.size.height, accessoryViewFrame.size.height);
     CGSize fits                 = CGSizeMake(availableWidth, FLT_MAX);
     
@@ -408,13 +413,13 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
         detailLabelFrame.size   = [self.detailTextLabel sizeThatFits:fits];
         if ((textLabelFrame.size.width + detailLabelFrame.size.width) > availableWidth) {
             // 两个Label宽度的和超过可用宽度，变为各占50%
-            availableWidth          = (selfSize.width - insets.left - insets.right) * 0.5;
+            availableWidth          = (selfSize.width - padding.left - padding.right) * 0.5;
             fits                    = CGSizeMake(availableWidth, FLT_MAX);
             textLabelFrame.size     = [self.textLabel sizeThatFits:fits];
             detailLabelFrame.size   = [self.detailTextLabel sizeThatFits:fits];
         }
-        textLabelFrame.origin.x     = insets.left;
-        detailLabelFrame.origin.x   = selfSize.width - detailLabelFrame.size.width - insets.right;
+        textLabelFrame.origin.x     = padding.left;
+        detailLabelFrame.origin.x   = selfSize.width - detailLabelFrame.size.width - padding.right;
         maxViewHeight               = MAX(maxViewHeight, textLabelFrame.size.height);
         maxViewHeight               = MAX(maxViewHeight, detailLabelFrame.size.height);
         
@@ -426,8 +431,8 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
         detailLabelFrame.size   = [self.detailTextLabel sizeThatFits:CGSizeMake(availableWidth * 0.7, FLT_MAX)];
         maxViewHeight               = MAX(maxViewHeight, textLabelFrame.size.height);
         maxViewHeight               = MAX(maxViewHeight, detailLabelFrame.size.height);
-        textLabelFrame.origin.x     = insets.left;
-        detailLabelFrame.origin.x   = insets.left + textLabelWidth + interitemSpacing;
+        textLabelFrame.origin.x     = padding.left;
+        detailLabelFrame.origin.x   = padding.left + textLabelWidth + interitemSpacing;
         
     } else if (hasTextLabel && hasDetailLabel) {
         // 上下
@@ -435,27 +440,27 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
         detailLabelFrame.size   = [self.detailTextLabel sizeThatFits:fits];
         CGFloat totalHeight     = textLabelFrame.size.height + detailLabelFrame.size.height + lineSpacing;
         maxViewHeight           = MAX(maxViewHeight, totalHeight);
-        textLabelFrame.origin.x     = insets.left;
-        detailLabelFrame.origin.x   = insets.left;
+        textLabelFrame.origin.x     = padding.left;
+        detailLabelFrame.origin.x   = padding.left;
         
     } else if (hasTextLabel) {
         textLabelFrame.size         = [self.textLabel sizeThatFits:fits];
         maxViewHeight               = MAX(maxViewHeight, textLabelFrame.size.height);
-        textLabelFrame.origin.x     = insets.left;
+        textLabelFrame.origin.x     = padding.left;
         
     } else if (hasDetailLabel && self.style == KKTableViewCellStyleValue1) {
         detailLabelFrame.size       = [self.detailTextLabel sizeThatFits:fits];
         maxViewHeight               = MAX(maxViewHeight, detailLabelFrame.size.height);
-        detailLabelFrame.origin.x   = selfSize.width - detailLabelFrame.size.width - insets.right;
+        detailLabelFrame.origin.x   = selfSize.width - detailLabelFrame.size.width - padding.right;
     } else if (hasDetailLabel) {
         detailLabelFrame.size       = [self.detailTextLabel sizeThatFits:fits];
         maxViewHeight               = MAX(maxViewHeight, detailLabelFrame.size.height);
-        detailLabelFrame.origin.x   = insets.left;
+        detailLabelFrame.origin.x   = padding.left;
     }
     
     CGFloat rowHeight   = 0;
     if (self.usesAutomaticRowHeights) {
-        rowHeight       = maxViewHeight + insets.top + insets.bottom;
+        rowHeight       = maxViewHeight + padding.top + padding.bottom;
     } else {
         rowHeight       = selfSize.height;
     }
@@ -479,11 +484,11 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
         CGFloat totalHeight         = textLabelFrame.size.height + detailLabelFrame.size.height + lineSpacing;
         if (self.usesAutomaticRowHeights) {
             if (self.isFlipped) {
-                textLabelFrame.origin.y     = insets.top;
-                detailLabelFrame.origin.y   = insets.top + textLabelFrame.size.height + lineSpacing;
+                textLabelFrame.origin.y     = padding.top;
+                detailLabelFrame.origin.y   = padding.top + textLabelFrame.size.height + lineSpacing;
             } else {
-                detailLabelFrame.origin.y   = insets.bottom;
-                textLabelFrame.origin.y     = insets.bottom + detailLabelFrame.size.height + lineSpacing;
+                detailLabelFrame.origin.y   = padding.bottom;
+                textLabelFrame.origin.y     = padding.bottom + detailLabelFrame.size.height + lineSpacing;
             }
         } else {
             if (totalHeight > rowHeight) {
@@ -505,7 +510,7 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
         detailLabelFrame.origin.y   = (rowHeight - detailLabelFrame.size.height) * 0.5;
     }
     if (self.usesCustomSeparatorInset == NO) {
-        _separatorInset             = NSEdgeInsetsMake(0, insets.left, 0, 0);
+        _separatorInset             = NSEdgeInsetsMake(0, padding.left, 0, 0);
     }
     if (CGRectIsEmpty(textLabelFrame) == NO) {
         self.textLabel.frame        = textLabelFrame;
@@ -514,6 +519,12 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
         self.detailTextLabel.frame  = detailLabelFrame;
     }
     self.rowHeight  = rowHeight;
+}
+
+- (void)invalidateIntrinsicContentSize
+{
+    [super invalidateIntrinsicContentSize];
+    [self noteHeightChanged];
 }
 
 - (NSSize)intrinsicContentSize
@@ -560,9 +571,9 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
     }
 }
 
-- (void)setContentInsets:(NSEdgeInsets)contentInsets
+- (void)setPadding:(NSEdgeInsets)padding
 {
-    _contentInsets = contentInsets;
+    _padding = padding;
     [self setNeedsLayout:YES];
 }
 
@@ -632,14 +643,7 @@ NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableV
 - (BOOL)usesAutomaticRowHeights
 {
     KKTableView *tableView  = self.kktableView;
-    NSIndexPath *indexPath  = [tableView indexPathForCell:self];
-    if (indexPath.row == KKTableViewHeaderTag) {
-        return tableView.usesAutomaticHeaderHeights;
-    } else if (indexPath.row == KKTableViewFooterTag) {
-        return tableView.usesAutomaticFooterHeights;
-    } else {
-        return tableView.usesAutomaticRowHeights;
-    }
+    return [tableView isAutomaticRowHeight:self];
 }
 
 - (void)dealloc

@@ -1,5 +1,5 @@
 //
-//  KKTableViewController.h
+//  KKHUDViewController.h
 //  KKCocoaCommon_Example
 //
 //  Created by v_ljqliang on 2020/12/9.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface KKTableViewController : NSViewController
+@interface KKHUDViewController : NSViewController
 
 @end
 

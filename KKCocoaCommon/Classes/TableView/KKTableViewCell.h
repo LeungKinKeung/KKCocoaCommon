@@ -42,13 +42,12 @@ typedef NS_ENUM(NSInteger, KKTableViewCellAccessoryType) {
 @property (nonatomic, readwrite) NSTextField *detailTextLabel;
 /// 附加视图
 @property (nonatomic, readwrite) NSView *accessoryView;
-
 /// 样式
 @property (nonatomic, assign) KKTableViewCellStyle style;
 /// 附加类型
 @property (nonatomic, assign) KKTableViewCellAccessoryType accessoryType;
-/// 内容边距{10,15,10,15}
-@property (nonatomic, assign) NSEdgeInsets contentInsets;
+/// 内边距{10,15,10,15}
+@property (nonatomic, assign) NSEdgeInsets padding;
 /// 分隔线边距
 @property (nonatomic, assign) NSEdgeInsets separatorInset;
 /// 子视图的水平间隔

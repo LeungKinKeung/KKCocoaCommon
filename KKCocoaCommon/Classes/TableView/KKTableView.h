@@ -105,6 +105,8 @@ typedef NS_ENUM(NSUInteger, KKTableViewSelectionStyle) {
 @property (nonatomic, strong) NSView *tableFooterView;
 /// 半透明的（模糊背景），为YES时不能自定义选中背景色
 @property (nonatomic, assign, getter=isTranslucent) BOOL translucent;
+/// 设为纯色背景色（NSColor.clearColor会变成模糊背景）
+@property (nonatomic, strong) NSColor *solidBackgroundColor;
 /// 分隔线，默认:KKTableViewCellSeparatorStyleSingleLine
 @property (nonatomic, assign) KKTableViewCellSeparatorStyle separatorStyle;
 /// 分隔线颜色
@@ -240,6 +242,7 @@ typedef NS_ENUM(NSUInteger, KKTableViewSelectionStyle) {
 - (void)noteHeightOfTableHeaderViewChanged;
 - (void)noteHeightOfTableFooterViewChanged;
 - (void)noteHeightOfRowWithCellChanged:(__kindof NSView *)cell height:(CGFloat)height;
+- (BOOL)isAutomaticRowHeight:(__kindof NSView *)cell;
 
 /// 注册Nib
 - (void)registerNib:(NSNib *)nib forIdentifier:(NSString *)identifier;

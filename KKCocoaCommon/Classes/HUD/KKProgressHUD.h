@@ -90,7 +90,7 @@ typedef NS_ENUM(NSUInteger, KKProgressHUDBackgroundStyle) {
 @property (nonatomic, assign) CGFloat interitemSpacing;
 /// 约束视图最大宽度，默认：296
 @property (nonatomic, assign) CGFloat preferredMaxLayoutWidth;
-/// 如果可以的话，约束宽度和高度一致
+/// 当高度大于宽度时，约束宽度和高度一致
 @property (nonatomic, assign, getter = isSquare) BOOL square;
 /// 进度（0 ~ 1.0）
 @property (nonatomic, readwrite) double progress;
@@ -117,6 +117,8 @@ typedef NS_ENUM(NSUInteger, KKProgressHUDBackgroundStyle) {
 - (void)addedToScreen:(NSScreen *)screen animated:(BOOL)animated;
 /// 添加到视图并显示HUD
 - (void)addedToView:(NSView *)view animated:(BOOL)animated;
+/// 设置进度时有动画效果
+- (void)setProgress:(double)progress animated:(BOOL)animated;
 /// 关闭
 - (void)hideAnimated:(BOOL)animated;
 

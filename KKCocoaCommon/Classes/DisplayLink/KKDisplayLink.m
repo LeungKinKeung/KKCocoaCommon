@@ -10,10 +10,10 @@
 
 @implementation KKDisplayLink
 
-+ (instancetype)displayLinkWithFPS:(NSInteger)fps block:(KKDisplayLinkBlock)block
++ (instancetype)displayLinkWithFramesPerSecond:(NSInteger)fps callbackQueue:(dispatch_queue_t)callbackQueue block:(KKDisplayLinkBlock)block
 {
     if (block == nil) {
-        NSLog(@"%@ create failed: block == nil",NSStringFromClass([self class]));
+        NSLog(@"%@ create failed: block can not be nil",NSStringFromClass([self class]));
         return nil;
     }
     CGDirectDisplayID displayID     = CGMainDisplayID();
@@ -26,12 +26,12 @@
         return nil;
     }
     
-    KKDisplayLink *link = [self new];
-    link.block          = block;
-    link.fps            = fps;
+    KKDisplayLink *link     = [self new];
+    link.block              = block;
+    link.framesPerSecond    = fps;
+    link->_callbackQueue    = callbackQueue;
     
-    result              =
-    CVDisplayLinkSetOutputCallback(displayLink, renderCallback, (__bridge void *)link);
+    result = CVDisplayLinkSetOutputCallback(displayLink, rendererOutputCallback, (__bridge void *)link);
     
     if (result != kCVReturnSuccess) {
         NSLog(@"Error:CVDisplayLinkSetOutputCallback() Failed");
@@ -42,59 +42,71 @@
     return link;
 }
 
-static CVReturn renderCallback(CVDisplayLinkRef displayLink,
-                               const CVTimeStamp *inNow,
-                               const CVTimeStamp *inOutputTime,
-                               CVOptionFlags flagsIn,
-                               CVOptionFlags *flagsOut,
-                               void *displayLinkContext)
++ (instancetype)displayLinkWithFramesPerSecond:(NSInteger)fps block:(KKDisplayLinkBlock)block
+{
+    return [self displayLinkWithFramesPerSecond:fps callbackQueue:NULL block:block];
+}
+
+static CVReturn rendererOutputCallback(CVDisplayLinkRef displayLink,
+                                       const CVTimeStamp *inNow,
+                                       const CVTimeStamp *inOutputTime,
+                                       CVOptionFlags flagsIn,
+                                       CVOptionFlags *flagsOut,
+                                       void *displayLinkContext)
 {
     KKDisplayLink *context = (__bridge KKDisplayLink *)displayLinkContext;
     
-    [context renderWithVideoTime:inNow->videoTime
-                  videoTimeScale:inNow->videoTimeScale];
+    [context rendererOutputCallbackWithVideoTime:inNow->videoTime
+                                  videoTimeScale:inNow->videoTimeScale];
     
     return kCVReturnSuccess;
 }
 
-- (void)renderWithVideoTime:(int64_t)videoTime
-             videoTimeScale:(int32_t)videoTimeScale
+- (void)rendererOutputCallbackWithVideoTime:(int64_t)videoTime
+                             videoTimeScale:(int32_t)videoTimeScale
 {
-    // next videoTime - videoTime = 5481920
-    // 间隔 (next videoTime - videoTime) / videoTimeScale = (1/60)
-    // 间隔 5481920 / 328920000 = 0.016666423446431 (1/60)
-    
     NSTimeInterval secondInterval = (double)(videoTime - _lastVideoTime) / videoTimeScale;
     if (secondInterval >= _frameSecondInterval) {
         _lastVideoTime = videoTime;
     } else {
         return;
     }
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_queue_t queue = _callbackQueue ? _callbackQueue : dispatch_get_main_queue();
+    dispatch_async(queue, ^{
         if (self.isRunning && self.block) {
             self.block();
         }
     });
 }
 
-- (void)setFps:(NSInteger)fps
+- (void)setFramesPerSecond:(NSInteger)framesPerSecond
 {
-    _fps = MAX(fps, 0);
-    _frameSecondInterval = (1.0 / _fps);
+    _framesPerSecond = MAX(framesPerSecond, 0);
+    _frameSecondInterval = (1.0 / _framesPerSecond);
 }
 
-- (void)start
+- (BOOL)start
 {
     if (_displayLink) {
-        NSLog(@"Start %@ result:%d",NSStringFromClass([self class]),CVDisplayLinkStart(_displayLink));
+        BOOL succeeded = CVDisplayLinkStart(_displayLink) == kCVReturnSuccess;
+        //NSLog(@"Start %@ succeeded:%d",NSStringFromClass([self class]),succeeded);
+        return succeeded;
     }
+    return NO;
 }
 
-- (void)stop
+- (BOOL)stop
 {
     if (_displayLink && CVDisplayLinkIsRunning(_displayLink)) {
-        NSLog(@"Stop %@ result:%d",NSStringFromClass([self class]),CVDisplayLinkStop(_displayLink));
+        BOOL succeeded = CVDisplayLinkStop(_displayLink) == kCVReturnSuccess;
+        //NSLog(@"Stop %@ succeeded:%d",NSStringFromClass([self class]),succeeded);
+        if (succeeded) {
+            _callbackQueue  = NULL;
+            _displayLink    = NULL;
+        }
+        return succeeded;
     }
+    return YES;
 }
 
 - (BOOL)isRunning

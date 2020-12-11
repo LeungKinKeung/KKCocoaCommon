@@ -175,6 +175,11 @@ static NSFont *gDefaultDetailLabelFont      = nil;
 
 - (void)addedToScreen:(NSScreen *)screen animated:(BOOL)animated
 {
+//    CGRect windowFrame      = CGRectMake(0, 0, 296, 40);
+//    CGRect screenFrame      = [NSScreen deepestScreen].frame;
+//    windowFrame.origin.x    = (screenFrame.size.width - windowFrame.size.width) * 0.5;
+//    windowFrame.origin.y    = (screenFrame.size.height - windowFrame.size.height) * 0.5;
+    
     NSWindow *window        = [[NSWindow alloc] initWithContentRect:CGRectZero styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:YES screen:screen];
     self.windowController   = [[NSWindowController alloc] initWithWindow:window];
     window.opaque           = YES;
@@ -198,14 +203,14 @@ static NSFont *gDefaultDetailLabelFont      = nil;
 {
     [super viewWillDraw];
     if (self.windowController) {
-        [self updateWindowFrame];
+        [self updateWindowFrameUsingAnimation:self.viewAppeared];
     } else {
         [self setNeedsLayout:YES];
     }
     self.viewAppeared = YES;
 }
 
-- (void)updateWindowFrame
+- (void)updateWindowFrameUsingAnimation:(BOOL)animated
 {
     [self layoutContainerViewSubviews];
     CGSize containerViewSize = self.containerView.frame.size;
@@ -381,7 +386,7 @@ static NSFont *gDefaultDetailLabelFont      = nil;
         }
     } else {
         if (self.windowController != nil) {
-            [self updateWindowFrame];
+            [self updateWindowFrameUsingAnimation:self.viewAppeared];
         } else {
             CGFloat duration = self.isViewAppeared ? gScaleAnimationDuration : 0;
             [NSView animateWithDuration:duration animations:^{
@@ -403,7 +408,7 @@ static NSFont *gDefaultDetailLabelFont      = nil;
         [self.containerView addSubview:customView];
     }
     if (self.windowController != nil) {
-        [self updateWindowFrame];
+        [self updateWindowFrameUsingAnimation:self.viewAppeared];
     } else {
         [self setNeedsLayout:YES];
     }
@@ -651,6 +656,15 @@ static NSFont *gDefaultDetailLabelFont      = nil;
     [self setNeedsLayout:YES];
 }
 */
+
+- (void)setProgress:(double)progress animated:(BOOL)animated
+{
+    if (animated) {
+        self.progressIndicator.animator.doubleValue = progress;
+    } else {
+        self.progressIndicator.doubleValue = progress;
+    }
+}
 
 - (void)setProgress:(double)progress
 {

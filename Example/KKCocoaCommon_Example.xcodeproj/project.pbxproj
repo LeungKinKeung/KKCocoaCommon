@@ -7,22 +7,33 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1889273B254F04BE00E364FB /* KKMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1889273A254F04BE00E364FB /* KKMainViewController.m */; };
+		38468AF5257F7B9B00963437 /* KKMainController.m in Sources */ = {isa = PBXBuildFile; fileRef = 38468AF4257F7B9B00963437 /* KKMainController.m */; };
+		38468AFA257F82D400963437 /* KKMainWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 38468AF9257F82D400963437 /* KKMainWindowController.m */; };
+		38468B05258076E300963437 /* KKHUDViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 38468B03258076E300963437 /* KKHUDViewController.m */; };
+		38468B06258076E300963437 /* KKHUDViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38468B04258076E300963437 /* KKHUDViewController.xib */; };
+		38468B0B2580B29600963437 /* KKTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 38468B092580B29600963437 /* KKTableViewController.m */; };
+		38468B0C2580B29600963437 /* KKTableViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38468B0A2580B29600963437 /* KKTableViewController.xib */; };
 		3876A39C254AA4AC00FEDD5B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A39B254AA4AC00FEDD5B /* AppDelegate.m */; };
 		3876A39F254AA4AC00FEDD5B /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A39E254AA4AC00FEDD5B /* ViewController.m */; };
 		3876A3A1254AA4AD00FEDD5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3876A3A0254AA4AD00FEDD5B /* Assets.xcassets */; };
 		3876A3A4254AA4AD00FEDD5B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3876A3A2254AA4AD00FEDD5B /* Main.storyboard */; };
 		3876A3A7254AA4AD00FEDD5B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A3A6254AA4AD00FEDD5B /* main.m */; };
-		3876A407254AB77D00FEDD5B /* KKLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A406254AB77D00FEDD5B /* KKLoginViewController.m */; };
 		3876A581254C0C3000FEDD5B /* KKWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A580254C0C3000FEDD5B /* KKWindow.m */; };
-		3876A6542554E77000FEDD5B /* KKTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A6532554E77000FEDD5B /* KKTableViewController.m */; };
 		8B76D35EC6B1DF7658DFD3B8 /* Pods_KKCocoaCommon_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FFDBDFC2FA5CE7404EB37BDC /* Pods_KKCocoaCommon_Example.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		105DBE7C9EE867033B4E26B7 /* Pods-KKCocoaCommon_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KKCocoaCommon_Example.debug.xcconfig"; path = "Target Support Files/Pods-KKCocoaCommon_Example/Pods-KKCocoaCommon_Example.debug.xcconfig"; sourceTree = "<group>"; };
-		18892739254F04BE00E364FB /* KKMainViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKMainViewController.h; sourceTree = "<group>"; };
-		1889273A254F04BE00E364FB /* KKMainViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKMainViewController.m; sourceTree = "<group>"; };
+		38468AF3257F7B9B00963437 /* KKMainController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKMainController.h; sourceTree = "<group>"; };
+		38468AF4257F7B9B00963437 /* KKMainController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKMainController.m; sourceTree = "<group>"; };
+		38468AF8257F82D400963437 /* KKMainWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKMainWindowController.h; sourceTree = "<group>"; };
+		38468AF9257F82D400963437 /* KKMainWindowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKMainWindowController.m; sourceTree = "<group>"; };
+		38468B02258076E300963437 /* KKHUDViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKHUDViewController.h; sourceTree = "<group>"; };
+		38468B03258076E300963437 /* KKHUDViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKHUDViewController.m; sourceTree = "<group>"; };
+		38468B04258076E300963437 /* KKHUDViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KKHUDViewController.xib; sourceTree = "<group>"; };
+		38468B082580B29600963437 /* KKTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKTableViewController.h; sourceTree = "<group>"; };
+		38468B092580B29600963437 /* KKTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKTableViewController.m; sourceTree = "<group>"; };
+		38468B0A2580B29600963437 /* KKTableViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KKTableViewController.xib; sourceTree = "<group>"; };
 		3876A397254AA4AC00FEDD5B /* KKCocoaCommon_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KKCocoaCommon_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3876A39A254AA4AC00FEDD5B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		3876A39B254AA4AC00FEDD5B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -33,12 +44,8 @@
 		3876A3A5254AA4AD00FEDD5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3876A3A6254AA4AD00FEDD5B /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		3876A3A8254AA4AD00FEDD5B /* KKCocoaCommon_Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KKCocoaCommon_Example.entitlements; sourceTree = "<group>"; };
-		3876A405254AB77D00FEDD5B /* KKLoginViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKLoginViewController.h; sourceTree = "<group>"; };
-		3876A406254AB77D00FEDD5B /* KKLoginViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKLoginViewController.m; sourceTree = "<group>"; };
 		3876A57F254C0C3000FEDD5B /* KKWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKWindow.h; sourceTree = "<group>"; };
 		3876A580254C0C3000FEDD5B /* KKWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKWindow.m; sourceTree = "<group>"; };
-		3876A6522554E77000FEDD5B /* KKTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKTableViewController.h; sourceTree = "<group>"; };
-		3876A6532554E77000FEDD5B /* KKTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKTableViewController.m; sourceTree = "<group>"; };
 		A480C47D9AD098389D86E2B6 /* Pods-KKCocoaCommon_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-KKCocoaCommon_Example.release.xcconfig"; path = "Target Support Files/Pods-KKCocoaCommon_Example/Pods-KKCocoaCommon_Example.release.xcconfig"; sourceTree = "<group>"; };
 		FFDBDFC2FA5CE7404EB37BDC /* Pods_KKCocoaCommon_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_KKCocoaCommon_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -80,14 +87,18 @@
 				3876A39B254AA4AC00FEDD5B /* AppDelegate.m */,
 				3876A39D254AA4AC00FEDD5B /* ViewController.h */,
 				3876A39E254AA4AC00FEDD5B /* ViewController.m */,
-				3876A405254AB77D00FEDD5B /* KKLoginViewController.h */,
-				3876A406254AB77D00FEDD5B /* KKLoginViewController.m */,
-				18892739254F04BE00E364FB /* KKMainViewController.h */,
-				1889273A254F04BE00E364FB /* KKMainViewController.m */,
-				3876A6522554E77000FEDD5B /* KKTableViewController.h */,
-				3876A6532554E77000FEDD5B /* KKTableViewController.m */,
+				38468AF3257F7B9B00963437 /* KKMainController.h */,
+				38468AF4257F7B9B00963437 /* KKMainController.m */,
+				38468B02258076E300963437 /* KKHUDViewController.h */,
+				38468B03258076E300963437 /* KKHUDViewController.m */,
+				38468B04258076E300963437 /* KKHUDViewController.xib */,
+				38468B082580B29600963437 /* KKTableViewController.h */,
+				38468B092580B29600963437 /* KKTableViewController.m */,
+				38468B0A2580B29600963437 /* KKTableViewController.xib */,
 				3876A57F254C0C3000FEDD5B /* KKWindow.h */,
 				3876A580254C0C3000FEDD5B /* KKWindow.m */,
+				38468AF8257F82D400963437 /* KKMainWindowController.h */,
+				38468AF9257F82D400963437 /* KKMainWindowController.m */,
 				3876A3A0254AA4AD00FEDD5B /* Assets.xcassets */,
 				3876A3A2254AA4AD00FEDD5B /* Main.storyboard */,
 				3876A3A5254AA4AD00FEDD5B /* Info.plist */,
@@ -174,8 +185,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				38468B06258076E300963437 /* KKHUDViewController.xib in Resources */,
 				3876A3A1254AA4AD00FEDD5B /* Assets.xcassets in Resources */,
 				3876A3A4254AA4AD00FEDD5B /* Main.storyboard in Resources */,
+				38468B0C2580B29600963437 /* KKTableViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -228,13 +241,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3876A6542554E77000FEDD5B /* KKTableViewController.m in Sources */,
-				3876A407254AB77D00FEDD5B /* KKLoginViewController.m in Sources */,
+				38468AFA257F82D400963437 /* KKMainWindowController.m in Sources */,
 				3876A581254C0C3000FEDD5B /* KKWindow.m in Sources */,
 				3876A39F254AA4AC00FEDD5B /* ViewController.m in Sources */,
-				1889273B254F04BE00E364FB /* KKMainViewController.m in Sources */,
+				38468AF5257F7B9B00963437 /* KKMainController.m in Sources */,
 				3876A3A7254AA4AD00FEDD5B /* main.m in Sources */,
+				38468B05258076E300963437 /* KKHUDViewController.m in Sources */,
 				3876A39C254AA4AC00FEDD5B /* AppDelegate.m in Sources */,
+				38468B0B2580B29600963437 /* KKTableViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

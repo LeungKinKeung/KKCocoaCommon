@@ -8,7 +8,8 @@
 
 #import "AppDelegate.h"
 #import <KKCocoaCommon/KKCocoaCommon.h>
-#import "KKLoginViewController.h"
+#import "KKMainController.h"
+#import "KKMainWindowController.h"
 
 @interface AppDelegate ()<NSToolbarDelegate>
 
@@ -39,22 +40,51 @@
     [[NSBundle mainBundle].infoDictionary valueForKey:@"NSMainStoryboardFile"];
     NSStoryboard *mainStoryboard        =
     [NSStoryboard storyboardWithName:mainStoryboardFileName bundle:[NSBundle mainBundle]];
-    NSWindowController *controller      = [mainStoryboard instantiateControllerWithIdentifier:@"Main"];
-    self.mainWindowController           = controller;
-    [controller.window makeKeyWindow];
-    [controller showWindow:nil];
+    NSWindowController *windowController    = [mainStoryboard instantiateControllerWithIdentifier:@"MainWindowController"];
+    self.mainWindowController               = windowController;
+    [windowController.window makeKeyWindow];
+    [windowController showWindow:nil];
     
+    // 工具栏
     NSToolbar *toolbar  = [[NSToolbar alloc] initWithIdentifier:@"toolbar"];
     toolbar.allowsUserCustomization     = NO;
     toolbar.displayMode                 = NSToolbarDisplayModeIconAndLabel;
     toolbar.sizeMode                    = NSToolbarSizeModeRegular;
     toolbar.showsBaselineSeparator      = NO;
-    controller.window.toolbar           = toolbar;
-    controller.window.titleVisibility   = NSWindowTitleHidden;
+    windowController.window.toolbar         = toolbar;
+    windowController.window.titleVisibility = NSWindowTitleHidden; // 工具栏和titlebar对齐
     
-    KKNavigationController *navigationController = (KKNavigationController *)controller.window.contentViewController;
-    navigationController.rootViewController = [KKLoginViewController new];
-//    controller.window.contentView.rootViewController = [KKLoginViewController new];
+    // 主视图
+    KKMainController *mainController    = [KKMainController new];
+    windowController.contentViewController = mainController;
+    
+    // 顶部菜单
+    NSMenuItem *menuItem    = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
+    NSMenu *subMenu         = [[NSMenu alloc] initWithTitle:@"Test"];
+    NSMenuItem *testItem    = [subMenu insertItemWithTitle:@"Test Menu Item" action:@selector(testMenuItemClicked:) keyEquivalent:@"" atIndex:0];
+    testItem.enabled        = YES;
+    testItem.target         = self;
+    menuItem.submenu        = subMenu;
+    [[NSApplication sharedApplication].mainMenu insertItem:menuItem atIndex:1];
+}
+
+- (nullable NSMenu *)applicationDockMenu:(NSApplication *)sender
+{
+    // Dock菜单
+    NSMenu *subMenu         = [[NSMenu alloc] initWithTitle:@""];
+    NSMenuItem *bottomItem  = [subMenu insertItemWithTitle:@"Test Menu Bottom Item" action:@selector(testMenuItemClicked:) keyEquivalent:@"" atIndex:0];
+    bottomItem.enabled      = YES;
+    bottomItem.target       = self;
+    
+    NSMenuItem *topItem    = [subMenu insertItemWithTitle:@"Test Menu Top Item" action:@selector(testMenuItemClicked:) keyEquivalent:@"" atIndex:0];
+    topItem.enabled        = YES;
+    topItem.target         = self;
+    return subMenu;
+}
+
+- (void)testMenuItemClicked:(NSMenuItem *)sender
+{
+    NSLog(@"Test Menu Item Clicked");
 }
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)sender hasVisibleWindows:(BOOL)flag
@@ -82,6 +112,7 @@
     }
     if (app.isActive == NO) {
         [app activateIgnoringOtherApps:YES];
+        [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateAllWindows];
     }
     NSWindow *window = self.mainWindowController.window;
     [window makeKeyAndOrderFront:sender];
