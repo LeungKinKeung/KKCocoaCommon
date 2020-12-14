@@ -13,7 +13,7 @@
 @interface KKNavigationController ()
 
 @property (nonatomic) Class navigationBarClass;
-
+@property (nonatomic, assign, getter=isAnimationPlaying) BOOL animationPlaying;
 @end
 
 @implementation KKNavigationController
@@ -66,7 +66,6 @@
     if (navigationBar) {
         navigationBar.backButton.hidden     = YES;
         navigationBar.separator.hidden      = YES;
-        navigationBar.backgroundView.hidden = YES;
         [self layoutNavigationBar:navigationBar];
         [self noteNavigationBarDidLoad:rootViewController];
     }
@@ -124,6 +123,7 @@
     
     if (animated) {
         
+        self.animationPlaying           = YES;
         // 自右向左进入动画
         CGRect pushingViewToFrame       = [self contentViewFrame];
         CGRect pushingViewFromFrame     = pushingViewToFrame;
@@ -167,9 +167,11 @@
         
         __weak typeof(previousView) weakPreviousView    = previousView;
         __weak typeof(previousBar) weakPreviousBar      = previousBar;
+        __weak typeof(self) weakSelf                    = self;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.animationDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            weakPreviousView.hidden = YES;
-            weakPreviousBar.hidden = YES;
+            weakPreviousView.hidden     = YES;
+            weakPreviousBar.hidden      = YES;
+            weakSelf.animationPlaying   = NO;
         });
         
         [NSAnimationContext endGrouping];
@@ -204,6 +206,8 @@
     toViewControlerBar.hidden           = NO;
     
     if (animated) {
+        
+        self.animationPlaying           = YES;
         // 自左向右消失动画
         CGRect topViewFromFrame         = topView.frame;
         CGRect topViewToFrame           = topViewFromFrame;
@@ -255,6 +259,7 @@
                 NSInteger index = [weakSelf.childViewControllers indexOfObject:viewController];
                 [weakSelf removeChildViewControllerAtIndex:index];
             }
+            weakSelf.animationPlaying   = NO;
         });
         [NSAnimationContext endGrouping];
         
@@ -301,6 +306,9 @@
 {
     [super viewDidLayout];
     
+    if (self.isAnimationPlaying) {
+        return;
+    }
     NSViewController *visibleViewController = self.childViewControllers.lastObject;
     visibleViewController.view.frame = [self contentViewFrame];
     [self layoutNavigationBar:visibleViewController.navigationBar];

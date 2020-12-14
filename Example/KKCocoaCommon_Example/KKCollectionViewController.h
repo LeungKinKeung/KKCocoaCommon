@@ -1,8 +1,8 @@
 //
-//  KKHUDViewController.h
+//  KKCollectionViewController.h
 //  KKCocoaCommon_Example
 //
-//  Created by LeungKinKeung on 2020/12/9.
+//  Created by LeungKinKeung on 2020/12/14.
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface KKHUDViewController : NSViewController
+@interface KKCollectionViewController : NSViewController
 
 @end
 

@@ -13,6 +13,10 @@
 		38468B06258076E300963437 /* KKHUDViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38468B04258076E300963437 /* KKHUDViewController.xib */; };
 		38468B0B2580B29600963437 /* KKTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 38468B092580B29600963437 /* KKTableViewController.m */; };
 		38468B0C2580B29600963437 /* KKTableViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38468B0A2580B29600963437 /* KKTableViewController.xib */; };
+		38680B5225873BAD0043B2CA /* KKCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 38680B5025873BAD0043B2CA /* KKCollectionViewController.m */; };
+		38680B5325873BAD0043B2CA /* KKCollectionViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38680B5125873BAD0043B2CA /* KKCollectionViewController.xib */; };
+		38680B582587456C0043B2CA /* KKExampleNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 38680B562587456C0043B2CA /* KKExampleNavigationController.m */; };
+		38680B592587456C0043B2CA /* KKExampleNavigationController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 38680B572587456C0043B2CA /* KKExampleNavigationController.xib */; };
 		3876A39C254AA4AC00FEDD5B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A39B254AA4AC00FEDD5B /* AppDelegate.m */; };
 		3876A39F254AA4AC00FEDD5B /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876A39E254AA4AC00FEDD5B /* ViewController.m */; };
 		3876A3A1254AA4AD00FEDD5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3876A3A0254AA4AD00FEDD5B /* Assets.xcassets */; };
@@ -34,6 +38,12 @@
 		38468B082580B29600963437 /* KKTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKTableViewController.h; sourceTree = "<group>"; };
 		38468B092580B29600963437 /* KKTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKTableViewController.m; sourceTree = "<group>"; };
 		38468B0A2580B29600963437 /* KKTableViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KKTableViewController.xib; sourceTree = "<group>"; };
+		38680B4F25873BAD0043B2CA /* KKCollectionViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKCollectionViewController.h; sourceTree = "<group>"; };
+		38680B5025873BAD0043B2CA /* KKCollectionViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKCollectionViewController.m; sourceTree = "<group>"; };
+		38680B5125873BAD0043B2CA /* KKCollectionViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KKCollectionViewController.xib; sourceTree = "<group>"; };
+		38680B552587456C0043B2CA /* KKExampleNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KKExampleNavigationController.h; sourceTree = "<group>"; };
+		38680B562587456C0043B2CA /* KKExampleNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KKExampleNavigationController.m; sourceTree = "<group>"; };
+		38680B572587456C0043B2CA /* KKExampleNavigationController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KKExampleNavigationController.xib; sourceTree = "<group>"; };
 		3876A397254AA4AC00FEDD5B /* KKCocoaCommon_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KKCocoaCommon_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3876A39A254AA4AC00FEDD5B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		3876A39B254AA4AC00FEDD5B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -95,6 +105,12 @@
 				38468B082580B29600963437 /* KKTableViewController.h */,
 				38468B092580B29600963437 /* KKTableViewController.m */,
 				38468B0A2580B29600963437 /* KKTableViewController.xib */,
+				38680B4F25873BAD0043B2CA /* KKCollectionViewController.h */,
+				38680B5025873BAD0043B2CA /* KKCollectionViewController.m */,
+				38680B5125873BAD0043B2CA /* KKCollectionViewController.xib */,
+				38680B552587456C0043B2CA /* KKExampleNavigationController.h */,
+				38680B562587456C0043B2CA /* KKExampleNavigationController.m */,
+				38680B572587456C0043B2CA /* KKExampleNavigationController.xib */,
 				3876A57F254C0C3000FEDD5B /* KKWindow.h */,
 				3876A580254C0C3000FEDD5B /* KKWindow.m */,
 				38468AF8257F82D400963437 /* KKMainWindowController.h */,
@@ -187,6 +203,8 @@
 			files = (
 				38468B06258076E300963437 /* KKHUDViewController.xib in Resources */,
 				3876A3A1254AA4AD00FEDD5B /* Assets.xcassets in Resources */,
+				38680B592587456C0043B2CA /* KKExampleNavigationController.xib in Resources */,
+				38680B5325873BAD0043B2CA /* KKCollectionViewController.xib in Resources */,
 				3876A3A4254AA4AD00FEDD5B /* Main.storyboard in Resources */,
 				38468B0C2580B29600963437 /* KKTableViewController.xib in Resources */,
 			);
@@ -241,7 +259,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				38680B5225873BAD0043B2CA /* KKCollectionViewController.m in Sources */,
 				38468AFA257F82D400963437 /* KKMainWindowController.m in Sources */,
+				38680B582587456C0043B2CA /* KKExampleNavigationController.m in Sources */,
 				3876A581254C0C3000FEDD5B /* KKWindow.m in Sources */,
 				3876A39F254AA4AC00FEDD5B /* ViewController.m in Sources */,
 				38468AF5257F7B9B00963437 /* KKMainController.m in Sources */,

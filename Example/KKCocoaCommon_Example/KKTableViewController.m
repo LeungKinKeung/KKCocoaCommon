@@ -2,7 +2,7 @@
 //  KKTableViewController.m
 //  KKCocoaCommon_Example
 //
-//  Created by v_ljqliang on 2020/12/9.
+//  Created by LeungKinKeung on 2020/12/9.
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 
@@ -49,7 +49,7 @@
     self.headerTitles = NSMutableArray.new;
     self.footerTitles = NSMutableArray.new;
     for (NSInteger section = 0; section < 3; section++) {
-        NSInteger numberOfRows = section == 0 ? 2 : 3 ;// arc4random_uniform(10) + 10;
+        NSInteger numberOfRows = arc4random_uniform(10) + 5;
         NSMutableArray *strings = NSMutableArray.new;
         for (NSInteger row = 0; row < numberOfRows; row++) {
             [strings addObject:[NSString stringWithFormat:@"Title section:%ld row:%ld",section,row]];
@@ -103,7 +103,20 @@
 }
 
 - (IBAction)insert:(id)sender {
-    
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.insertRowTextField.stringValue.intValue inSection:self.insertSectionTextField.stringValue.intValue];
+    NSString *text = [NSString stringWithFormat:@"Title section:%ld row:%ld",indexPath.section,indexPath.row];
+    if (self.datas.count > indexPath.section) {
+        NSMutableArray *rows = [self.datas objectAtIndex:indexPath.section];
+        [rows insertObject:text atIndex:indexPath.row];
+        [self.tableView insertRowAtIndexPath:indexPath withRowAnimation:NSTableViewAnimationEffectFade];
+    } else {
+        NSMutableArray *rows = NSMutableArray.new;
+        [rows insertObject:text atIndex:indexPath.row];
+        [self.datas insertObject:rows atIndex:indexPath.section];
+        [self.headerTitles insertObject:[NSString stringWithFormat:@"HEADER:%ld",indexPath.section] atIndex:indexPath.section];
+        [self.footerTitles insertObject:[NSString stringWithFormat:@"footer:%ld",indexPath.section] atIndex:indexPath.section];
+        [self.tableView insertSection:indexPath.section withRowAnimation:NSTableViewAnimationEffectFade];
+    }
 }
 
 - (IBAction)moveTo:(id)sender {

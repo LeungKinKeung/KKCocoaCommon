@@ -58,8 +58,6 @@ typedef NS_ENUM(NSUInteger, KKNavigationBarPosition) {
 @property (nonatomic, strong) NSButton *backButton;
 /// 设置返回按钮标题
 @property (nonatomic, readwrite) NSString *backButtonTitle;
-/// 圆润的返回按钮
-@property (nonatomic, readwrite, getter=isMellowBackButton) BOOL mellowBackButton;
 /// 圆润的按钮
 @property (nonatomic, getter=isMellowStyleButtons) BOOL mellowStyleButtons;
 /// 分隔线

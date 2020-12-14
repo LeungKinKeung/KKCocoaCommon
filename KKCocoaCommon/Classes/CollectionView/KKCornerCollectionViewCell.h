@@ -6,7 +6,7 @@
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 
-#import "KKCollectionViewCell.h"
+#import <Cocoa/Cocoa.h>
 
 typedef NS_ENUM(NSUInteger, KKCornerCollectionViewCellCorner) {
     KKCornerCollectionViewCellCornerNone,
@@ -17,7 +17,7 @@ typedef NS_ENUM(NSUInteger, KKCornerCollectionViewCellCorner) {
 };
 
 API_AVAILABLE(macos(10.11))
-@interface KKCornerCollectionViewCell : KKCollectionViewCell
+@interface KKCornerCollectionViewCell : NSCollectionViewItem
 
 /// 圆角的位置
 @property (nonatomic, assign) KKCornerCollectionViewCellCorner corner;

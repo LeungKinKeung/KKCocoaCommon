@@ -2,7 +2,7 @@
 //  KKMainController.m
 //  KKCocoaCommon_Example
 //
-//  Created by v_ljqliang on 2020/12/8.
+//  Created by LeungKinKeung on 2020/12/8.
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 
@@ -10,6 +10,8 @@
 #import <KKCocoaCommon/KKCocoaCommon.h>
 #import "KKHUDViewController.h"
 #import "KKTableViewController.h"
+#import "KKCollectionViewController.h"
+#import "KKExampleNavigationController.h"
 
 @interface KKMenuItem : NSObject
 
@@ -120,6 +122,8 @@
         
         [submenu.menuItems addObject:[KKHUDViewController new]];
         [submenu.menuItems addObject:[KKTableViewController new]];
+        [submenu.menuItems addObject:[KKCollectionViewController new]];
+        [submenu.menuItems addObject:[KKNavigationRootController new]];
         
         for (NSViewController *viewController in submenu.menuItems) {
             [self.contentViewController addChildViewController:viewController];

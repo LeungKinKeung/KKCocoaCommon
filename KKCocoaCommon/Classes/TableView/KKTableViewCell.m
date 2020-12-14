@@ -9,8 +9,6 @@
 #import "KKTableViewCell.h"
 #import "KKTableView.h"
 
-NSNotificationName const KKTableViewCellHeightDidChangeNotification = @"KKTableViewCellHeightDidChangeNotification";
-
 @interface KKTableViewCell ()
 
 @property (nonatomic, strong) NSImageView *accessoryImageView;

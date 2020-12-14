@@ -274,6 +274,12 @@
     self.imageView.hidden       = barStyle != KKNavigationBarStyleImage;
 }
 
+- (void)setBarPosition:(KKNavigationBarPosition)barPosition
+{
+    _barPosition = barPosition;
+    [self.superview setNeedsLayout:YES];
+}
+
 - (void)setPadding:(NSEdgeInsets)padding
 {
     _padding = padding;
@@ -283,7 +289,7 @@
 - (void)setBarHeight:(CGFloat)barHeight
 {
     _barHeight = barHeight;
-    [self setNeedsLayout:YES];
+    [self.superview setNeedsLayout:YES];
 }
 
 - (CGFloat)barHeight
@@ -300,17 +306,6 @@
     [self setNeedsLayout:YES];
 }
 
-- (void)setMellowBackButton:(BOOL)mellowBackButton
-{
-    self.backButton.bezelStyle  = mellowBackButton ? NSBezelStyleTexturedRounded : NSBezelStyleRegularSquare;
-    self.backButton.bordered    = mellowBackButton ? YES : NO;
-}
-
-- (BOOL)mellowBackButton
-{
-    return self.backButton.bezelStyle == NSBezelStyleTexturedRounded && self.backButton.isBordered;
-}
-
 - (void)setMellowStyleButtons:(BOOL)mellowStyleButtons
 {
     _mellowStyleButtons = mellowStyleButtons;
@@ -325,6 +320,14 @@
     if (self.rightBarButtonItems.count) {
         [buttons addObjectsFromArray:self.rightBarButtonItems];
     }
+    for (NSButton *button in buttons) {
+        if ([button isKindOfClass:[NSButton class]]) {
+            button.bezelStyle  = mellowStyleButtons ? NSBezelStyleTexturedRounded : NSBezelStyleRegularSquare;
+            button.bordered    = mellowStyleButtons ? YES : NO;
+            [button sizeToFit];
+        }
+    }
+    [self layoutBarSubviews];
 }
 
 - (NSSize)intrinsicContentSize
@@ -335,11 +338,21 @@
 - (CGSize)intrinsicContentSizeWithNavigationControllerView:(NSView *)navigationControllerView
 {
     CGFloat navigationBarHeight = 0;
-    if (self.barPosition == KKNavigationBarPositionOverlaps) {
-        navigationBarHeight =
-        navigationControllerView.window.contentView.bounds.size.height - navigationControllerView.window.contentLayoutRect.size.height;
-    } else {
-        navigationBarHeight = self.padding.top + self.padding.bottom + self.barHeight;
+    switch (self.barPosition) {
+        case KKNavigationBarPositionOverlaps: {
+            navigationBarHeight =
+            navigationControllerView.window.contentView.bounds.size.height - navigationControllerView.window.contentLayoutRect.size.height;
+            break;
+        }
+        case KKNavigationBarPositionBelow: {
+            CGFloat paddingTop = navigationControllerView.window.contentView.bounds.size.height - navigationControllerView.window.contentLayoutRect.size.height;
+            navigationBarHeight = paddingTop + self.padding.bottom + self.barHeight;
+            break;
+        }
+        default: {
+            navigationBarHeight = self.padding.top + self.padding.bottom + self.barHeight;
+            break;
+        }
     }
     return CGSizeMake(navigationControllerView.frame.size.width, navigationBarHeight);
 }
@@ -388,10 +401,17 @@
         directionLeftToRight    = [self.window windowTitlebarLayoutDirection] == NSUserInterfaceLayoutDirectionLeftToRight;
     }
     BOOL isOverlaps             = self.barPosition == KKNavigationBarPositionOverlaps;
+    BOOL isBelow                = self.barPosition == KKNavigationBarPositionBelow;
     NSEdgeInsets padding        = NSEdgeInsetsMake(0, 0, 0, 0);
-    CGFloat topSpacing          = self.isFlipped ? self.padding.top : self.padding.bottom;
-    padding.top                 = isOverlaps ? 0 : topSpacing;
-    CGFloat containerViewHeight = isOverlaps ? self.frame.size.height : (self.frame.size.height - self.padding.top - self.padding.bottom);
+    if (isOverlaps) {
+        padding.top             = 0;
+    } else if (isBelow) {
+        padding.top             = self.window.contentView.bounds.size.height - self.window.contentLayoutRect.size.height;
+    } else {
+        padding.top             = self.padding.top;
+    }
+    CGFloat containerViewY      = isOverlaps ? 0 : (self.isFlipped ? padding.top : self.padding.bottom);
+    CGFloat containerViewHeight = isOverlaps ? self.frame.size.height : (self.frame.size.height - padding.top - self.padding.bottom);
     if (directionLeftToRight) {
         CGFloat windowButtonMaxX    = CGRectGetMaxX(windowButtonFrame);
         CGFloat navigationBarMinX   = CGRectGetMinX(navigationBarFrame);
@@ -409,10 +429,11 @@
         return;
     }
     
-    self.solidColorView.frame   =
-    self.blurView.frame         =
-    self.imageView.frame        = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
-    self.containerView.frame    = CGRectMake(padding.left, padding.top, containerViewWidth, containerViewHeight);
+    CGRect barFrame             = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+    self.solidColorView.frame   = barFrame;
+    self.blurView.frame         = barFrame;
+    self.imageView.frame        = barFrame;
+    self.containerView.frame    = CGRectMake(padding.left, containerViewY, containerViewWidth, containerViewHeight);
     CGSize containerSize        = self.containerView.frame.size;
     NSMutableArray *leftButtons = NSMutableArray.new;
     if (self.backButton.isHidden == NO && self.backButton.superview == self.containerView) {

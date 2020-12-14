@@ -23,4 +23,16 @@
     }
 }
 
+//- (NSView *)view
+//{
+//    if (self.isViewLoaded || self.nibName || [[NSBundle mainBundle] pathForResource:[self className] ofType:@"nib"]) {
+//        // 已加载、storyboard、nib
+//        return [super view];
+//    }
+//    NSView *view = [NSView new];
+//    [super setView:view];
+//    [self viewDidLoad];
+//    return view;
+//}
+
 @end
