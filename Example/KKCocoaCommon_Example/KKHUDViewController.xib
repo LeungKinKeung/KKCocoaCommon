@@ -8,14 +8,14 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="KKHUDViewController">
             <connections>
-                <outlet property="addtoPicker" destination="A02-Te-31h" id="3f8-pV-Jbk"/>
+                <outlet property="addtoSegmentedControl" destination="A02-Te-31h" id="k03-Sc-JPP"/>
                 <outlet property="animationSwitch" destination="f8F-Vc-kiu" id="WCL-EH-azk"/>
-                <outlet property="backgroundStylePicker" destination="2aO-9X-edE" id="VId-2B-zb9"/>
+                <outlet property="backgroundStyleSegmentedControl" destination="2aO-9X-edE" id="fkG-OH-UPE"/>
                 <outlet property="delayTextField" destination="XO3-7J-yQA" id="JPe-Tn-TJg"/>
                 <outlet property="detailsTextField" destination="D1k-wT-NqK" id="Anz-cK-8F5"/>
                 <outlet property="marginTextField" destination="G00-X7-pxL" id="WzK-PQ-GxX"/>
                 <outlet property="maxWidthTextField" destination="obr-n9-h73" id="eQX-Zy-0Cf"/>
-                <outlet property="modePicker" destination="Px6-JV-1lb" id="DwU-Ju-b5z"/>
+                <outlet property="modeSegmentedControl" destination="Px6-JV-1lb" id="4ub-zA-G8R"/>
                 <outlet property="paddingTextField" destination="0B8-uX-18S" id="HXv-SO-tiY"/>
                 <outlet property="spacingTextField" destination="cU7-TW-qwj" id="8Lu-QE-zVO"/>
                 <outlet property="squareSwitch" destination="LfC-PN-SPq" id="AGI-UJ-ftr"/>

@@ -61,8 +61,8 @@
 @end
 
 @interface KKExampleNavigationController ()
-@property (weak) IBOutlet NSSegmentedControl *barStylePicker;
-@property (weak) IBOutlet NSSegmentedControl *barPositionPicker;
+@property (weak) IBOutlet NSSegmentedControl *barStyleSegmentedControl;
+@property (weak) IBOutlet NSSegmentedControl *barPositionSegmentedControl;
 @property (weak) IBOutlet NSButton *separatorButton;
 @property (weak) IBOutlet NSColorWell *barSolidColorWell;
 @property (weak) IBOutlet NSColorWell *barGradientColorLeftWell;

@@ -10,9 +10,9 @@
 #import <KKCocoaCommon/KKCocoaCommon.h>
 
 @interface KKHUDViewController ()
-@property (weak) IBOutlet NSSegmentedControl *modePicker;
-@property (weak) IBOutlet NSSegmentedControl *backgroundStylePicker;
-@property (weak) IBOutlet NSSegmentedControl *addtoPicker;
+@property (weak) IBOutlet NSSegmentedControl *modeSegmentedControl;
+@property (weak) IBOutlet NSSegmentedControl *backgroundStyleSegmentedControl;
+@property (weak) IBOutlet NSSegmentedControl *addtoSegmentedControl;
 @property (weak) IBOutlet NSButton *animationSwitch;
 @property (weak) IBOutlet NSButton *squareSwitch;
 @property (weak) IBOutlet NSTextField *paddingTextField;
@@ -39,10 +39,10 @@
 
 - (IBAction)show:(id)sender {
     
-    KKProgressHUDMode mode = self.modePicker.selectedSegment;
+    KKProgressHUDMode mode = self.modeSegmentedControl.selectedSegment;
     
     id dest = nil;
-    switch (self.addtoPicker.selectedSegment) {
+    switch (self.addtoSegmentedControl.selectedSegment) {
         case 0: {
             dest = self.view;
             break;
@@ -88,7 +88,7 @@
             break;
         }
     }
-    hud.style           = self.backgroundStylePicker.selectedSegment;
+    hud.style           = self.backgroundStyleSegmentedControl.selectedSegment;
     hud.minimumMargin   = self.marginTextField.stringValue.doubleValue;
     hud.padding         = self.paddingTextField.stringValue.doubleValue;
     hud.square          = self.squareSwitch.state == NSControlStateValueOn;

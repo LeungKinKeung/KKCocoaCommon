@@ -101,7 +101,7 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
     }
     
     // 排序中
-    if (self.tableView.isSorting) {
+    if (self.tableView.sortStyle == KKTableViewSortStyleDisplaySortImage) {
         if (self.rowIndexPath.row < 0) {
             if (_sortingImageView.isHidden == NO){
                 _sortingImageView.hidden = YES;
@@ -460,6 +460,15 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
 {
     [super awakeFromNib];
     [self tableView];
+}
+
+- (void)layout
+{
+    [super layout];
+    
+    if (self.sortStyle != KKTableViewSortStyleNone) {
+        self.tableView.tableColumns.firstObject.width = self.frame.size.width;
+    }
 }
 
 - (NSTableView *)tableView
@@ -1917,9 +1926,12 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
 }
 
 #pragma mark 排序
-- (void)setSorting:(BOOL)sorting
+- (void)setSortStyle:(KKTableViewSortStyle)sortStyle
 {
-    _sorting = sorting;
+    _sortStyle = sortStyle;
+    if (sortStyle != KKTableViewSortStyleNone) {
+        self.tableView.tableColumns.firstObject.width = self.frame.size.width;
+    }
     [self layoutTableRowViewSubviews];
 }
 
@@ -1933,7 +1945,7 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
 
 - (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard
 {
-    if (self.isSorting == NO) {
+    if (self.sortStyle == KKTableViewSortStyleNone) {
         return NO;
     }
     NSMutableArray <NSIndexPath *>*indexPaths = [NSMutableArray array];
@@ -1964,19 +1976,29 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
         return NSDragOperationNone;
     }
     NSIndexPath *indexPath = [self indexPathForRow:row];
-    if (row == 0) {
-        // 不能放在顶部页眉之上
+    if (indexPath == nil) {
+        // 最后一个不是cell的情况下就不允许
+        NSIndexPath *lastIndexPath = [self indexPathForRow:(self.tableView.numberOfRows - 1)];
+        if (lastIndexPath.row < 0) {
+            return NSDragOperationNone;
+        }
+    } else if (row == 0) {
+        // 不能放在tableHeaderView/header之上
         if ([self isTableHeaderViewForRow:row] || [self isHeaderForIndexPath:indexPath]) {
             return NSDragOperationNone;
         }
     } else {
         NSInteger previousRow = row - 1;
-        // 不能放在表页尾之后
+        // 不能放在tableFooterView之后
         if ([self isTableFooterViewForRow:previousRow]) {
             return NSDragOperationNone;
         }
-        // 不能放在页尾和页眉或表页尾之间
         NSIndexPath *previousIndexPath = [self indexPathForRow:previousRow];
+        // header和footer之间，允许
+        if ([self isHeaderForIndexPath:previousIndexPath] && [self isFooterForIndexPath:indexPath]) {
+            return NSDragOperationMove;
+        }
+        // 不能放在footer和header之间，不能放在footer和tableFooterView之间
         if (previousIndexPath.row < 0 && indexPath.row < 0) {
             return NSDragOperationNone;
         }

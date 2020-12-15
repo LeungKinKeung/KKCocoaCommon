@@ -12,9 +12,11 @@
 @interface KKTableViewController ()<KKTableViewDelegate,KKTableViewDataSource>
 
 @property (weak) IBOutlet NSSplitView *splitView;
-@property (weak) IBOutlet NSSegmentedControl *tableViewStylePicker;
-@property (weak) IBOutlet NSSegmentedControl *backgroundStylePicker;
-@property (weak) IBOutlet NSSegmentedControl *selectionStylePicker;
+@property (weak) IBOutlet NSSegmentedControl *tableViewStyleSegmentedControl;
+@property (weak) IBOutlet NSSegmentedControl *interiorBackgroundStyleSegmentedControl;
+@property (weak) IBOutlet NSSegmentedControl *selectionStyleSegmentedControl;
+@property (weak) IBOutlet NSSegmentedControl *sortStyleSegmentedControl;
+@property (weak) IBOutlet NSColorWell *selectionBackgroundColorWell;
 @property (weak) IBOutlet NSTextField *insertSectionTextField;
 @property (weak) IBOutlet NSTextField *insertRowTextField;
 @property (weak) IBOutlet NSTextField *moveSrcSectionTextField;
@@ -64,8 +66,8 @@
 - (KKTableView *)tableView
 {
     if (_tableView == nil) {
-        NSView *parentView = [self.splitView.arrangedSubviews objectAtIndex:1];
-        _tableView  = [[KKTableView alloc] initWithFrame:parentView.bounds style:self.tableViewStylePicker.selectedSegment];
+        NSView *parentView      = [self.splitView.arrangedSubviews objectAtIndex:1];
+        _tableView              = [[KKTableView alloc] initWithFrame:parentView.bounds style:self.tableViewStyleSegmentedControl.selectedSegment];
         _tableView.delegate     = self;
         _tableView.dataSource   = self;
         _tableView.translucent  = self.translucentSwitch.isOnState;
@@ -74,8 +76,8 @@
         _tableView.allowsMultipleSelection  = self.allowsSelectionSwitch.isOnState;
         _tableView.allowsEmptySelection     = self.allowsEmptySelectionSwitch.isOnState;
         _tableView.allowsSelection          = self.allowsSelectionSwitch.isOnState;
-        _tableView.selectionStyle           = self.selectionStylePicker.selectedSegment;
-        _tableView.interiorBackgroundStyle  = self.backgroundStylePicker.selectedSegment;
+        _tableView.selectionStyle           = self.selectionStyleSegmentedControl.selectedSegment;
+        _tableView.interiorBackgroundStyle  = self.interiorBackgroundStyleSegmentedControl.selectedSegment;
         [_tableView registerClass:[KKTableViewCell class] forIdentifier:@"KKTableViewCell"];
         _tableView.autoresizingMask         = NSViewWidthSizable | NSViewHeightSizable;
         [parentView addSubview:_tableView];
@@ -88,18 +90,30 @@
     [super viewDidAppear];
 }
 
-- (IBAction)tableViewStylePickerValueChanged:(NSSegmentedControl *)sender {
+- (IBAction)tableViewStyleSegmentedControlValueChanged:(NSSegmentedControl *)sender {
     [self.tableView removeFromSuperview];
     self.tableView = nil;
     [self tableView];
 }
 
-- (IBAction)backgroundStylePickerValueChanged:(NSSegmentedControl *)sender {
-    self.tableView.interiorBackgroundStyle  = self.backgroundStylePicker.selectedSegment;
+- (IBAction)interiorBackgroundStyleSegmentedControlValueChanged:(NSSegmentedControl *)sender {
+    self.tableView.interiorBackgroundStyle  = self.interiorBackgroundStyleSegmentedControl.selectedSegment;
 }
 
-- (IBAction)selectionStylePickerValueChanged:(NSSegmentedControl *)sender {
-    self.tableView.selectionStyle           = self.selectionStylePicker.selectedSegment;
+- (IBAction)selectionStyleSegmentedControlValueChanged:(NSSegmentedControl *)sender {
+    self.tableView.selectionStyle           = self.selectionStyleSegmentedControl.selectedSegment;
+    if (self.tableView.selectionStyle == KKTableViewSelectionStyleCheckmark) {
+        self.selectionBackgroundColorWell.color     = [NSColor colorWithWhite:0.5 alpha:0.1];
+        [self selectionBackgroundColorWellValueChnaged:self.selectionBackgroundColorWell];
+        self.interiorBackgroundStyleSegmentedControl.selectedSegment  = KKTableViewInteriorBackgroundStyleAlwaysNormal;
+        [self interiorBackgroundStyleSegmentedControlValueChanged:self.interiorBackgroundStyleSegmentedControl];
+    } else {
+        self.tableView.selectionBackgroundColor = nil;
+    }
+}
+
+- (IBAction)sortStyleSegmentedControlValueChanged:(NSSegmentedControl *)sender {
+    self.tableView.sortStyle = self.sortStyleSegmentedControl.selectedSegment;
 }
 
 - (IBAction)insert:(id)sender {
@@ -155,12 +169,6 @@
     [self.tableView endUpdates];
 }
 
-- (IBAction)sorting:(NSButton *)sender {
-    self.tableView.sorting = !self.tableView.isSorting;
-    sender.title = self.tableView.isSorting ? @"Cancel Sorting" : @"Sorting";
-    [sender sizeToFit];
-}
-
 - (IBAction)removeSelectedRows:(id)sender {
     
     NSArray *indexPaths = self.tableView.indexPathsForSelectedRows;
@@ -178,7 +186,7 @@
 }
 
 - (IBAction)allowsMultipleSelection:(NSButton *)sender {
-    self.tableView.allowsMultipleSelection = self.allowsSelectionSwitch.isOnState;
+    self.tableView.allowsMultipleSelection = self.allowsMultipleSelectionSwitch.isOnState;
 }
 
 - (IBAction)translucent:(NSButton *)sender {
@@ -187,6 +195,10 @@
 
 - (IBAction)alwaysEmphasizedSelectionBackground:(NSButton *)sender {
     self.tableView.alwaysEmphasizedSelectionBackground = self.alwaysEmphasizedSelectionBackgroundSwitch.isOnState;
+}
+
+- (IBAction)selectionBackgroundColorWellValueChnaged:(NSColorWell *)sender {
+    self.tableView.selectionBackgroundColor = sender.color;
 }
 
 #pragma mark - Table View Data Source / Delegate

@@ -11,9 +11,9 @@
                 <outlet property="barGradientColorLeftWell" destination="Mmj-jD-wIx" id="53X-SW-4uy"/>
                 <outlet property="barGradientColorRightWell" destination="bcT-af-DGD" id="50C-wA-j6k"/>
                 <outlet property="barHeightTextField" destination="aWG-v7-P5W" id="XjS-mW-93v"/>
-                <outlet property="barPositionPicker" destination="ffg-5R-35H" id="a39-Yb-6aN"/>
+                <outlet property="barPositionSegmentedControl" destination="ffg-5R-35H" id="4q4-Zc-qN4"/>
                 <outlet property="barSolidColorWell" destination="hSR-z5-uZR" id="cX4-1c-g6w"/>
-                <outlet property="barStylePicker" destination="XhX-co-zZ9" id="GKe-UV-Kwp"/>
+                <outlet property="barStyleSegmentedControl" destination="XhX-co-zZ9" id="C9U-9R-w18"/>
                 <outlet property="interitemSpacingTextField" destination="kRi-vo-cAp" id="BB5-dC-jM0"/>
                 <outlet property="paddingBottomTextField" destination="lXV-LX-9N4" id="2r2-pe-NHN"/>
                 <outlet property="paddingLeftTextField" destination="LQb-4s-Qnc" id="Bz5-dd-F5V"/>
@@ -60,7 +60,7 @@
                         </segments>
                     </segmentedCell>
                     <connections>
-                        <action selector="barStyleChanged:" target="-2" id="chp-7C-zcD"/>
+                        <action selector="barStyleChanged:" target="-2" id="Fr5-Mw-G37"/>
                     </connections>
                 </segmentedControl>
                 <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fKF-Ll-Kpb">
@@ -119,7 +119,7 @@
                         </segments>
                     </segmentedCell>
                     <connections>
-                        <action selector="barPositionChanged:" target="-2" id="8Zl-zP-DxO"/>
+                        <action selector="barPositionChanged:" target="-2" id="SNM-IH-5qG"/>
                     </connections>
                 </segmentedControl>
                 <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fby-7R-p5w">

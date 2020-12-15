@@ -85,6 +85,15 @@ typedef NS_ENUM(NSUInteger, KKTableViewSelectionStyle) {
     KKTableViewSelectionStyleCheckmark,
 };
 
+typedef NS_ENUM(NSUInteger, KKTableViewSortStyle) {
+    /// 不可排序
+    KKTableViewSortStyleNone,
+    /// 默认的排序
+    KKTableViewSortStyleDefalut,
+    /// 显示排序图片
+    KKTableViewSortStyleDisplaySortImage,
+};
+
 @interface KKTableView : NSScrollView
 
 /// 初始化
@@ -169,7 +178,7 @@ typedef NS_ENUM(NSUInteger, KKTableViewSelectionStyle) {
 /// 允许多选，默认：NO
 @property (nonatomic, readwrite) BOOL allowsMultipleSelection;
 /// 排序
-@property (nonatomic, assign, getter=isSorting) BOOL sorting;
+@property (nonatomic, assign) KKTableViewSortStyle sortStyle;
 /// 默认：NSImageNameListViewTemplate
 @property (nonatomic, strong) NSImage *sortingImage;
 /// 已选行数
