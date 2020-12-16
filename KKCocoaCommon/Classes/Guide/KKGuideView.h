@@ -14,17 +14,25 @@ typedef NS_ENUM(NSUInteger, KKGuideViewShapeStyle) {
     KKGuideViewShapeStyleOval,
 };
 
-typedef NS_ENUM(NSUInteger, KKGuideViewLineStyle) {
-    KKGuideViewLineStyleNone,
-    KKGuideViewLineStyleDotted,
-    KKGuideViewLineStyleSolid,
+typedef NS_ENUM(NSUInteger, KKGuideViewLineCurveStyle) {
+    KKGuideViewLineCurveStyleDefault,
+    KKGuideViewLineCurveStyleCasual,
+};
+
+typedef NS_ENUM(NSUInteger, KKGuideViewLineFillStyle) {
+    KKGuideViewLineFillStyleNone,
+    KKGuideViewLineFillStyleDotted,
+    KKGuideViewLineFillStyleSolid,
 };
 
 @interface KKGuideView : NSView
 
 typedef void(^KKGuideViewCompletionBlock)(KKGuideView *guideView);
 
-+ (instancetype)showGuideViewAddedTo:(NSView *)superview targetView:(NSView *)targetView tips:(NSString *)tips completion:(KKGuideViewCompletionBlock)completion;
++ (instancetype)showGuideViewAddedTo:(NSView *)superview
+                          targetView:(NSView *)targetView
+                                tips:(NSString *)tips
+                          completion:(KKGuideViewCompletionBlock)completion;
 
 /// 需要指引的视图
 @property (nonatomic, weak) NSView *targetView;
@@ -40,18 +48,24 @@ typedef void(^KKGuideViewCompletionBlock)(KKGuideView *guideView);
 @property (nonatomic, assign) CGFloat highlightCornerRadius;
 /// 提示视图的边框形状样式
 @property (nonatomic, assign) KKGuideViewShapeStyle tipsBorderShapeStyle;
-/// 提示视图的边框线条样式
-@property (nonatomic, assign) KKGuideViewLineStyle tipsBorderLineStyle;
+/// 提示视图的边框线条填充样式
+@property (nonatomic, assign) KKGuideViewLineFillStyle tipsBorderLineFillStyle;
 /// 提示视图的边框内边距
 @property (nonatomic, assign) NSEdgeInsets tipsBorderPadding;
 /// 提示视图的边框圆角
 @property (nonatomic, assign) CGFloat tipsBorderCornerRadius;
-/// 连接的线条样式
-@property (nonatomic, assign) KKGuideViewLineStyle lineStyle;
-/// 线条头部和尾部的偏移值
-@property (nonatomic, assign) CGPoint lineOffset;
-/// 线条宽度
-@property (nonatomic, assign) CGFloat lineWidth;
+/// 引导线条填充样式
+@property (nonatomic, assign) KKGuideViewLineFillStyle leadingLineFillStyle;
+/// 引导线条曲线样式
+@property (nonatomic, assign) KKGuideViewLineCurveStyle leadingLineCurveStyle;
+/// 引导线条宽度
+@property (nonatomic, assign) CGFloat leadingLineWidth;
+/// tipsLabel/customTipsView相对于targetView的中心偏移值
+@property (nonatomic, assign) CGPoint tipsViewCenterOffset;
+/// 边框线条宽度
+@property (nonatomic, assign) CGFloat borderLineWidth;
+/// 内边距
+@property (nonatomic, assign) CGFloat padding;
 /// 线条、文本、边框着色，默认白色
 @property (nonatomic, strong) NSColor *tintColor;
 /// 背景色，默认0.7黑色

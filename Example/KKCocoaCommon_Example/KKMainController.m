@@ -12,6 +12,7 @@
 #import "KKTableViewController.h"
 #import "KKCollectionViewController.h"
 #import "KKExampleNavigationController.h"
+#import "KKGuideViewController.h"
 
 @interface KKMenuItem : NSObject
 
@@ -124,6 +125,7 @@
         [submenu.menuItems addObject:[KKTableViewController new]];
         [submenu.menuItems addObject:[KKCollectionViewController new]];
         [submenu.menuItems addObject:[KKNavigationRootController new]];
+        [submenu.menuItems addObject:[KKGuideViewController new]];
         
         for (NSViewController *viewController in submenu.menuItems) {
             [self.contentViewController addChildViewController:viewController];

@@ -9,6 +9,8 @@
 #import "KKGuideView.h"
 #import "NSView+KK.h"
 
+#define KKGUIDE_VIEW_DEBUG NO
+
 @interface KKGuideView ()
 
 @property (nonatomic, assign, getter=isDragged) BOOL dragged;
@@ -18,7 +20,8 @@
 @property (nonatomic, strong) NSMutableArray <NSNumber *>*arrowRadiiValues;
 @property (nonatomic, assign) NSInteger shakeValueIndex;
 @property (nonatomic, assign) BOOL shakeValuesDidLoad;
-@property (nonatomic, assign) BOOL customLineOffset;
+@property (nonatomic, assign) BOOL customedTipsViewCenterOffset;
+
 @end
 
 @implementation KKGuideView
@@ -43,14 +46,17 @@
 
 - (void)commonInit
 {
-    _lineWidth              = 2.0;
-    _highlightShapeStyle    = KKGuideViewShapeStyleDefault;
-    _tipsBorderShapeStyle   = KKGuideViewShapeStyleCasual;
-    _tipsBorderLineStyle    = KKGuideViewLineStyleDotted;
-    _lineStyle              = KKGuideViewLineStyleSolid;
-    _backgroundColor        = [NSColor colorWithWhite:0 alpha:0.7];
-    _tipsBorderPadding       = NSEdgeInsetsMake(8, 8, 8, 8);
-    _tintColor              = NSColor.whiteColor;
+    _leadingLineWidth           = 2.0;
+    _borderLineWidth            = 2.0;
+    _highlightShapeStyle        = KKGuideViewShapeStyleDefault;
+    _tipsBorderShapeStyle       = KKGuideViewShapeStyleCasual;
+    _tipsBorderLineFillStyle    = KKGuideViewLineFillStyleDotted;
+    _leadingLineWidth           = KKGuideViewLineFillStyleNone;
+    _leadingLineFillStyle       = KKGuideViewLineFillStyleSolid;
+    _leadingLineCurveStyle      = KKGuideViewLineCurveStyleCasual;
+    _backgroundColor            = [NSColor colorWithWhite:0 alpha:0.7];
+    _tipsBorderPadding          = NSEdgeInsetsMake(8, 8, 8, 8);
+    _tintColor                  = NSColor.whiteColor;
     
     for (NSString *keypath in [self observableKeypaths]) {
         [self addObserver:self forKeyPath:keypath options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
@@ -59,15 +65,34 @@
 
 - (NSArray *)observableKeypaths
 {
-    return @[@"tipsLabel.stringValue", @"tipsLabel.attributedStringValue", @"tipsLabel.font", @"highlightShapeStyle", @"highlightPadding", @"highlightCornerRadius", @"tipsBorderShapeStyle", @"tipsBorderLineStyle", @"tipsBorderPadding", @"tipsBorderCornerRadius", @"lineStyle", @"lineWidth"];
+    return @[@"tipsLabel.stringValue",
+             @"tipsLabel.attributedStringValue",
+             @"tipsLabel.font",
+             @"highlightShapeStyle",
+             @"highlightPadding",
+             @"highlightCornerRadius",
+             @"tipsBorderShapeStyle",
+             @"tipsBorderLineFillStyle",
+             @"tipsBorderPadding",
+             @"tipsBorderCornerRadius",
+             @"leadingLineFillStyle",
+             @"leadingLineWidth",
+             @"borderLineWidth",
+             @"padding"];
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey,id> *)change
+                       context:(void *)context
 {
     [self refresh];
 }
 
-+ (instancetype)showGuideViewAddedTo:(NSView *)superview targetView:(NSView *)targetView tips:(NSString *)tips completion:(KKGuideViewCompletionBlock)completion
++ (instancetype)showGuideViewAddedTo:(NSView *)superview
+                          targetView:(NSView *)targetView
+                                tips:(NSString *)tips
+                          completion:(KKGuideViewCompletionBlock)completion
 {
     KKGuideView *guide          = [self new];
     guide.tipsLabel.stringValue = tips ? tips : @"";
@@ -120,10 +145,10 @@
     [self addSubview:customTipsView];
 }
 
-- (void)setLineOffset:(CGPoint)lineOffset
+- (void)setTipsViewCenterOffset:(CGPoint)tipsViewCenterOffset
 {
-    _lineOffset = lineOffset;
-    self.customLineOffset = YES;
+    _tipsViewCenterOffset = tipsViewCenterOffset;
+    self.customedTipsViewCenterOffset = YES;
     [self refresh];
 }
 
@@ -180,26 +205,10 @@
     CGSize selfSize             = self.frame.size;
     CGSize tipsViewSize         = CGSizeZero;
     CGRect tipsViewFrame        = CGRectZero;
-    CGFloat tipsViewMinX        = 20;
-    CGFloat tipsViewMaxX        = selfSize.width - 20;
-    CGFloat tipsViewMaxWidth    = selfSize.width - tipsViewMinX * 2;
+    CGFloat tipsViewMinX        = self.padding;
+    CGFloat tipsViewMaxX        = selfSize.width - self.padding;
+    CGFloat tipsViewMaxWidth    = selfSize.width - self.padding * 2;
     CGRect targetViewFrame      = [self frameForTargetView];
-    KKRectAlignment alignment   = [self.targetView alignmentAtView:self];
-    if (self.customLineOffset == NO) {
-        switch (alignment) {
-            case KKRectAlignmentTop:
-            case KKRectAlignmentCenter:
-            case KKRectAlignmentBottom: {
-                _lineOffset     = CGPointMake(0, 90);
-                break;
-            }
-            default: {
-                _lineOffset     = CGPointMake(0, 40);
-                break;
-            }
-        }
-    }
-    CGPoint lineOffset              = self.lineOffset;
     NSEdgeInsets highlightPadding   = self.highlightPadding;
     NSEdgeInsets tipsBorderPadding  = self.tipsBorderPadding;
     
@@ -230,62 +239,115 @@
         }
     }
     
-    switch (alignment) {
-        case KKRectAlignmentTopLeft:
-        case KKRectAlignmentLeft:{
-            CGFloat tipsViewY = self.isFlipped ? CGRectGetMaxY(targetViewFrame) + lineOffset.y : CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height;
-            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightPadding.right + tipsBorderPadding.left + lineOffset.x;
-            if (tipsViewX + tipsViewSize.width > tipsViewMaxX) {
-                tipsViewX = tipsViewX - (tipsViewX + tipsViewSize.width - tipsViewMaxX);
+    if (self.customedTipsViewCenterOffset) {
+        tipsViewFrame =
+        CGRectMake(CGRectGetMidX(targetViewFrame) + self.tipsViewCenterOffset.x,
+                   CGRectGetMidY(targetViewFrame) + self.tipsViewCenterOffset.y,
+                   tipsViewSize.width,
+                   tipsViewSize.height);
+    } else {
+        KKRectAlignment alignment   = [self.targetView alignmentAtView:self];
+        CGFloat offsetY             = 0;
+        switch (alignment) {
+            case KKRectAlignmentTop:
+            case KKRectAlignmentCenter:
+            case KKRectAlignmentBottom: {
+                offsetY     = 90;
+                break;
             }
-            tipsViewFrame = CGRectMake(tipsViewX, tipsViewY, tipsViewSize.width, tipsViewSize.height);
-            break;
-        }
-        case KKRectAlignmentTopRigth:
-        case KKRectAlignmentRigth: {
-            CGFloat tipsViewY = self.isFlipped ? CGRectGetMaxY(targetViewFrame) + lineOffset.y : CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height - tipsBorderPadding.right;
-            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightPadding.left - tipsBorderPadding.right - lineOffset.x;
-            if (tipsViewX < tipsViewMinX) {
-                tipsViewX = tipsViewMinX;
+            default: {
+                offsetY     = 40;
+                break;
             }
-            tipsViewFrame = CGRectMake(tipsViewX, tipsViewY, tipsViewSize.width, tipsViewSize.height);
-            break;
         }
-        case KKRectAlignmentBottomLeft: {
-            CGFloat tipsViewY = self.isFlipped ? CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height : CGRectGetMaxY(targetViewFrame) + lineOffset.y;
-            CGFloat tipsViewX = CGRectGetMaxX(targetViewFrame) + highlightPadding.right + tipsBorderPadding.left + lineOffset.x;
-            if (tipsViewX + tipsViewSize.width > tipsViewMaxX) {
-                tipsViewX = tipsViewX - (tipsViewX + tipsViewSize.width - tipsViewMaxX);
+        switch (alignment) {
+            case KKRectAlignmentTopLeft:
+            case KKRectAlignmentLeft:{
+                CGFloat tipsViewY =
+                self.isFlipped ?
+                CGRectGetMaxY(targetViewFrame) + offsetY :
+                CGRectGetMinY(targetViewFrame) - offsetY - tipsViewSize.height;
+                CGFloat tipsViewX =
+                CGRectGetMaxX(targetViewFrame) + highlightPadding.right + tipsBorderPadding.left;
+                if (tipsViewX + tipsViewSize.width > tipsViewMaxX) {
+                    tipsViewX = tipsViewX - (tipsViewX + tipsViewSize.width - tipsViewMaxX);
+                }
+                tipsViewFrame = CGRectMake(tipsViewX, tipsViewY, tipsViewSize.width, tipsViewSize.height);
+                break;
             }
-            tipsViewFrame = CGRectMake(tipsViewX, tipsViewY, tipsViewSize.width, tipsViewSize.height);
-            break;
-        }
-        case KKRectAlignmentBottomRigth: {
-            CGFloat tipsViewY = self.isFlipped ? CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height : CGRectGetMaxY(targetViewFrame) + lineOffset.y;
-            CGFloat tipsViewX = CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightPadding.left  - tipsBorderPadding.right - lineOffset.x;
-            if (tipsViewX < tipsViewMinX) {
-                tipsViewX = tipsViewMinX;
+            case KKRectAlignmentTopRigth:
+            case KKRectAlignmentRigth: {
+                CGFloat tipsViewY =
+                self.isFlipped ?
+                CGRectGetMaxY(targetViewFrame) + offsetY :
+                CGRectGetMinY(targetViewFrame) - offsetY - tipsViewSize.height - tipsBorderPadding.right;
+                CGFloat tipsViewX =
+                CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightPadding.left - tipsBorderPadding.right;
+                if (tipsViewX < tipsViewMinX) {
+                    tipsViewX = tipsViewMinX;
+                }
+                tipsViewFrame = CGRectMake(tipsViewX, tipsViewY, tipsViewSize.width, tipsViewSize.height);
+                break;
             }
-            tipsViewFrame = CGRectMake(tipsViewX, tipsViewY, tipsViewSize.width, tipsViewSize.height);
-            break;
+            case KKRectAlignmentBottomLeft: {
+                CGFloat tipsViewY =
+                self.isFlipped ?
+                CGRectGetMinY(targetViewFrame) - offsetY - tipsViewSize.height :
+                CGRectGetMaxY(targetViewFrame) + offsetY;
+                CGFloat tipsViewX =
+                CGRectGetMaxX(targetViewFrame) + highlightPadding.right + tipsBorderPadding.left;
+                if (tipsViewX + tipsViewSize.width > tipsViewMaxX) {
+                    tipsViewX = tipsViewX - (tipsViewX + tipsViewSize.width - tipsViewMaxX);
+                }
+                tipsViewFrame = CGRectMake(tipsViewX, tipsViewY, tipsViewSize.width, tipsViewSize.height);
+                break;
+            }
+            case KKRectAlignmentBottomRigth: {
+                CGFloat tipsViewY =
+                self.isFlipped ?
+                CGRectGetMinY(targetViewFrame) - offsetY - tipsViewSize.height :
+                CGRectGetMaxY(targetViewFrame) + offsetY;
+                CGFloat tipsViewX =
+                CGRectGetMinX(targetViewFrame) - tipsViewSize.width - highlightPadding.left  - tipsBorderPadding.right;
+                if (tipsViewX < tipsViewMinX) {
+                    tipsViewX = tipsViewMinX;
+                }
+                tipsViewFrame = CGRectMake(tipsViewX, tipsViewY, tipsViewSize.width, tipsViewSize.height);
+                break;
+            }
+            case KKRectAlignmentBottom: {
+                CGFloat tipsViewY =
+                self.isFlipped ?
+                CGRectGetMinY(targetViewFrame) - offsetY - tipsViewSize.height :
+                CGRectGetMaxY(targetViewFrame) + offsetY;
+                tipsViewFrame =
+                CGRectMake((selfSize.width - tipsViewSize.width) * 0.5, tipsViewY, tipsViewSize.width, tipsViewSize.height);
+                break;
+            }
+            default: {
+                // KKRectAlignmentTop
+                // KKRectAlignmentCenter
+                CGFloat tipsViewY =
+                self.isFlipped ?
+                CGRectGetMaxY(targetViewFrame) + offsetY :
+                CGRectGetMinY(targetViewFrame) - offsetY - tipsViewSize.height;
+                tipsViewFrame =
+                CGRectMake((selfSize.width - tipsViewSize.width) * 0.5, tipsViewY, tipsViewSize.width, tipsViewSize.height);
+                
+                break;
+            }
         }
-        case KKRectAlignmentBottom: {
-            CGFloat tipsViewY = self.isFlipped ? CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height : CGRectGetMaxY(targetViewFrame) + lineOffset.y;
-            tipsViewFrame = CGRectMake((selfSize.width - tipsViewSize.width) * 0.5 + lineOffset.x, tipsViewY, tipsViewSize.width, tipsViewSize.height);
-            break;
-        }
-        default: {
-            // KKRectAlignmentTop
-            // KKRectAlignmentCenter
-            CGFloat tipsViewY = self.isFlipped ? CGRectGetMaxY(targetViewFrame) + lineOffset.y : CGRectGetMinY(targetViewFrame) - lineOffset.y - tipsViewSize.height;
-            tipsViewFrame = CGRectMake((selfSize.width - tipsViewSize.width) * 0.5 + lineOffset.x, tipsViewY, tipsViewSize.width, tipsViewSize.height);
-            
-            break;
-        }
+        self.alignment              = alignment;
+        _tipsViewCenterOffset       =
+        CGPointMake(CGRectGetMidX(tipsViewFrame) - CGRectGetMidX(targetViewFrame),
+                    CGRectGetMidY(tipsViewFrame) - CGRectGetMidY(targetViewFrame));
     }
     self.customTipsView.frame   = tipsViewFrame;
     self.targetViewFrame        = targetViewFrame;
-    self.alignment              = alignment;
+    
+    if (self.customedTipsViewCenterOffset) {
+        self.alignment          = [self.customTipsView centerAlignmentAtView:self.targetView];
+    }
 }
 
 - (CGRect)frameForTargetView
@@ -308,7 +370,11 @@
         NSEdgeInsets padding    = self.highlightPadding;
         CGFloat cornerRadius    = self.highlightCornerRadius;
         CGRect frame            = [self frameForTargetView];
-        CGRect rect             = CGRectMake(frame.origin.x - padding.left, (self.isFlipped ? frame.origin.y - padding.top : frame.origin.y - padding.bottom), frame.size.width + padding.left + padding.right, frame.size.height + padding.top + padding.bottom);
+        CGRect rect             =
+        CGRectMake(frame.origin.x - padding.left,
+                   (self.isFlipped ? frame.origin.y - padding.top : frame.origin.y - padding.bottom),
+                   frame.size.width + padding.left + padding.right,
+                   frame.size.height + padding.top + padding.bottom);
         NSBezierPath *path      = [self shapePathWithStyle:self.highlightShapeStyle rect:rect cornerRadius:cornerRadius];
         CGContextRef context    = [NSGraphicsContext currentContext].CGContext;
         CGContextSaveGState(context);
@@ -318,287 +384,455 @@
     }
     [self.tintColor setStroke];
     
+    [self drawLeadingLines];
+    
     CGRect tipsViewFrame = self.customTipsView.frame;
     
-    if (self.lineStyle != KKGuideViewLineStyleNone)
-    {
-        // 连接线
-        CGFloat spacing         = 15;
-        CGPoint lineBeginPoint  = CGPointZero;
-        CGPoint lineEndPint     = CGPointZero;
-        CGPoint lineCenterPoint = CGPointZero;
-        CGPoint controlPoint1   = CGPointZero;
-        CGPoint controlPoint2   = CGPointZero;
-        CGFloat diameter        = 0;
-        NSEdgeInsets padding    = self.highlightPadding;
-        CGPoint lineOffset      = self.lineOffset;
-        
-        switch (self.alignment) {
-            case KKRectAlignmentTopLeft:
-            case KKRectAlignmentLeft:{
-                lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
-                lineBeginPoint.y    = self.isFlipped ? CGRectGetMinY(tipsViewFrame) - spacing: CGRectGetMaxY(tipsViewFrame) + spacing;
-                
-                lineEndPint.x       = CGRectGetMaxX(self.targetViewFrame) + padding.right + spacing;
-                lineEndPint.y       = CGRectGetMidY(self.targetViewFrame);
-                
-                if ((lineBeginPoint.x - lineEndPint.x) < lineOffset.x) {
-                    lineBeginPoint.x = lineEndPint.x + lineOffset.x;
-                }
-                
-                diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPint] * 0.3;
-                
-                NSBezierPath *line  = [NSBezierPath bezierPath];
-                [line moveToPoint:lineBeginPoint];
-                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPint.x) * 0.5;
-                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPint.y) * 0.5;
-                controlPoint1.x     = lineBeginPoint.x;
-                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y - diameter : lineCenterPoint.y + diameter;
-                controlPoint2.x     = lineCenterPoint.x;
-                controlPoint2.y     = lineEndPint.y;
-                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-
-                controlPoint1.x     = lineCenterPoint.x;
-                controlPoint1.y     = lineBeginPoint.y;
-                controlPoint2.x     = lineBeginPoint.x + diameter;
-                controlPoint2.y     = lineEndPint.y;
-                [line curveToPoint:lineEndPint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-
-                [line setLineWidth:self.lineWidth];
-                if (self.lineStyle == KKGuideViewLineStyleDotted) {
-                    CGFloat lengths[] = {self.lineWidth * 3,self.lineWidth};
-                    [line setLineDash:lengths count:2 phase:0];
-                }
-                [line stroke];
-                
-                // 箭头
-                [self drawArrowWithAngle:M_PI arrowCenter:lineEndPint];
-                //[self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
-                
-                break;
-            }
-            case KKRectAlignmentTopRigth:
-            case KKRectAlignmentRigth: {
-                lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
-                lineBeginPoint.y    = self.isFlipped ? CGRectGetMinY(tipsViewFrame) - spacing: CGRectGetMaxY(tipsViewFrame) + spacing;
-                
-                lineEndPint.x       = CGRectGetMinX(self.targetViewFrame) - padding.right - spacing;
-                lineEndPint.y       = CGRectGetMidY(self.targetViewFrame);
-                
-                if ((lineEndPint.x - lineBeginPoint.x) < lineOffset.x) {
-                    lineBeginPoint.x = lineEndPint.x - lineOffset.x;
-                }
-                
-                diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPint] * 0.3;
-                
-                NSBezierPath *line  = [NSBezierPath bezierPath];
-                [line moveToPoint:lineBeginPoint];
-                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPint.x) * 0.5;
-                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPint.y) * 0.5;
-                controlPoint1.x     = lineBeginPoint.x;
-                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y - diameter : lineCenterPoint.y + diameter;
-                controlPoint2.x     = lineCenterPoint.x;
-                controlPoint2.y     = lineEndPint.y;
-                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                controlPoint1.x     = lineCenterPoint.x;
-                controlPoint1.y     = lineBeginPoint.y;
-                controlPoint2.x     = lineBeginPoint.x - diameter;
-                controlPoint2.y     = lineEndPint.y;
-                [line curveToPoint:lineEndPint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                [line setLineWidth:self.lineWidth];
-                if (self.lineStyle == KKGuideViewLineStyleDotted) {
-                    CGFloat lengths[] = {self.lineWidth * 3,self.lineWidth};
-                    [line setLineDash:lengths count:2 phase:0];
-                }
-                [line stroke];
-                
-                // 箭头
-                [self drawArrowWithAngle:0 arrowCenter:lineEndPint];
-                //[self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
-                
-                break;
-            }
-            case KKRectAlignmentBottomLeft: {
-                
-                lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
-                lineBeginPoint.y    = self.isFlipped ? CGRectGetMaxY(tipsViewFrame) + spacing: CGRectGetMinY(tipsViewFrame) - spacing;
-                
-                lineEndPint.x       = CGRectGetMaxX(self.targetViewFrame) + padding.right + spacing;
-                lineEndPint.y       = CGRectGetMidY(self.targetViewFrame);
-                
-                if ((lineBeginPoint.x - lineEndPint.x) < lineOffset.x) {
-                    lineBeginPoint.x = lineEndPint.x + lineOffset.x;
-                }
-                
-                diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPint] * 0.3;
-                
-                NSBezierPath *line  = [NSBezierPath bezierPath];
-                [line moveToPoint:lineBeginPoint];
-                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPint.x) * 0.5;
-                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPint.y) * 0.5;
-                controlPoint1.x     = lineBeginPoint.x;
-                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y - diameter : lineCenterPoint.y + diameter;
-                controlPoint2.x     = lineCenterPoint.x;
-                controlPoint2.y     = lineEndPint.y;
-                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                controlPoint1.x     = lineCenterPoint.x;
-                controlPoint1.y     = lineBeginPoint.y;
-                controlPoint2.x     = lineBeginPoint.x + diameter;
-                controlPoint2.y     = lineEndPint.y;
-                [line curveToPoint:lineEndPint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                [line setLineWidth:self.lineWidth];
-                if (self.lineStyle == KKGuideViewLineStyleDotted) {
-                    CGFloat lengths[] = {self.lineWidth * 3,self.lineWidth};
-                    [line setLineDash:lengths count:2 phase:0];
-                }
-                [line stroke];
-                
-                // 箭头
-                [self drawArrowWithAngle:M_PI arrowCenter:lineEndPint];
-                //[self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
-                
-                break;
-            }
-            case KKRectAlignmentBottomRigth: {
-                
-                lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
-                lineBeginPoint.y    = self.isFlipped ? CGRectGetMaxY(tipsViewFrame) + spacing : CGRectGetMinY(tipsViewFrame) - spacing;
-                
-                lineEndPint.x       = CGRectGetMinX(self.targetViewFrame) - padding.right - spacing;
-                lineEndPint.y       = CGRectGetMidY(self.targetViewFrame);
-                
-                if ((lineEndPint.x - lineBeginPoint.x) < lineOffset.x) {
-                    lineBeginPoint.x = lineEndPint.x - lineOffset.x;
-                }
-                
-                diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPint] * 0.3;
-                
-                NSBezierPath *line  = [NSBezierPath bezierPath];
-                [line moveToPoint:lineBeginPoint];
-                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPint.x) * 0.5;
-                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPint.y) * 0.5;
-                controlPoint1.x     = lineBeginPoint.x;
-                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y - diameter : lineCenterPoint.y + diameter;
-                controlPoint2.x     = lineCenterPoint.x;
-                controlPoint2.y     = lineEndPint.y;
-                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                controlPoint1.x     = lineCenterPoint.x;
-                controlPoint1.y     = lineBeginPoint.y;
-                controlPoint2.x     = lineBeginPoint.x - diameter;
-                controlPoint2.y     = lineEndPint.y;
-                [line curveToPoint:lineEndPint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                [line setLineWidth:self.lineWidth];
-                if (self.lineStyle == KKGuideViewLineStyleDotted) {
-                    CGFloat lengths[] = {self.lineWidth * 3,self.lineWidth};
-                    [line setLineDash:lengths count:2 phase:0];
-                }
-                [line stroke];
-                
-                // 箭头
-                [self drawArrowWithAngle:0 arrowCenter:lineEndPint];
-                //[self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
-                
-                break;
-            }
-            case KKRectAlignmentBottom: {
-                lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
-                lineBeginPoint.y    = self.isFlipped ? CGRectGetMaxY(tipsViewFrame) + spacing : CGRectGetMinY(tipsViewFrame) - spacing;
-                
-                lineEndPint.x       = CGRectGetMidX(self.targetViewFrame);
-                lineEndPint.y       = self.isFlipped ? CGRectGetMinY(self.targetViewFrame) - spacing - padding.top :  CGRectGetMaxY(self.targetViewFrame) + spacing + padding.top;
-                
-                diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPint] * 0.3;
-                
-                NSBezierPath *line  = [NSBezierPath bezierPath];
-                [line moveToPoint:lineBeginPoint];
-                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPint.x) * 0.5 + diameter;
-                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPint.y) * 0.5;
-                controlPoint1.x     = lineBeginPoint.x;
-                controlPoint1.y     = self.isFlipped ? lineEndPint.y - diameter : lineEndPint.y + diameter;
-                controlPoint2.x     = lineCenterPoint.x;
-                controlPoint2.y     = controlPoint1.y;
-                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                controlPoint1.x     = lineCenterPoint.x;
-                controlPoint1.y     = self.isFlipped ? lineBeginPoint.y + diameter : lineBeginPoint.y - diameter;
-                controlPoint2.x     = lineBeginPoint.x;
-                controlPoint2.y     = controlPoint1.y;
-                [line curveToPoint:lineEndPint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                [line setLineWidth:self.lineWidth];
-                if (self.lineStyle == KKGuideViewLineStyleDotted) {
-                    CGFloat lengths[] = {self.lineWidth * 3,self.lineWidth};
-                    [line setLineDash:lengths count:2 phase:0];
-                }
-                [line stroke];
-                
-                // 箭头
-                //[self drawArrowWithAngle:M_PI_2 * 3 arrowCenter:lineEndPint];
-                [self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
-                
-                break;
-            }
-            default: {
-                // KKRectAlignmentTop
-                // KKRectAlignmentCenter
-                lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
-                lineBeginPoint.y    = self.isFlipped ? CGRectGetMinY(tipsViewFrame) - spacing: CGRectGetMaxY(tipsViewFrame) + spacing;
-                
-                lineEndPint.x       = CGRectGetMidX(self.targetViewFrame);
-                lineEndPint.y       = self.isFlipped ? CGRectGetMaxY(self.targetViewFrame) + spacing + padding.bottom : CGRectGetMinY(self.targetViewFrame) - spacing - padding.bottom;
-                
-                diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPint] * 0.3;
-                
-                NSBezierPath *line  = [NSBezierPath bezierPath];
-                [line moveToPoint:lineBeginPoint];
-                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPint.x) * 0.5 - diameter;
-                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPint.y) * 0.5;
-                controlPoint1.x     = lineEndPint.x;
-                controlPoint1.y     = self.isFlipped ? lineEndPint.y + diameter : lineEndPint.y - diameter;
-                controlPoint2.x     = lineEndPint.x - diameter;
-                controlPoint2.y     = controlPoint1.y;
-                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                controlPoint1.x     = lineBeginPoint.x - diameter;
-                controlPoint1.y     = self.isFlipped ? lineBeginPoint.y - diameter : lineBeginPoint.y + diameter;
-                controlPoint2.x     = lineBeginPoint.x;
-                controlPoint2.y     = controlPoint1.y;
-                [line curveToPoint:lineEndPint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
-                
-                [line setLineWidth:self.lineWidth];
-                if (self.lineStyle == KKGuideViewLineStyleDotted) {
-                    CGFloat lengths[] = {self.lineWidth * 3,self.lineWidth};
-                    [line setLineDash:lengths count:2 phase:0];
-                }
-                [line stroke];
-                
-                // 箭头
-                //[self drawArrowWithAngle:M_PI_2 arrowCenter:lineEndPint];
-                [self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
-                
-                break;
-            }
-        }
-    }
-    if (self.tipsBorderLineStyle != KKGuideViewLineStyleNone)
+    if (self.tipsBorderLineFillStyle != KKGuideViewLineFillStyleNone)
     {
         NSEdgeInsets padding    = self.tipsBorderPadding;
-        CGRect borderFrame = CGRectMake(tipsViewFrame.origin.x - padding.left, self.isFlipped ? tipsViewFrame.origin.y - padding.top : tipsViewFrame.origin.y - padding.bottom, tipsViewFrame.size.width + padding.left + padding.right, tipsViewFrame.size.height + padding.top + padding.bottom);
+        CGRect borderFrame      =
+        CGRectMake(tipsViewFrame.origin.x - padding.left,
+                   self.isFlipped ? tipsViewFrame.origin.y - padding.top : tipsViewFrame.origin.y - padding.bottom,
+                   tipsViewFrame.size.width + padding.left + padding.right,
+                   tipsViewFrame.size.height + padding.top + padding.bottom);
         
         NSBezierPath *border = [self shapePathWithStyle:self.tipsBorderShapeStyle rect:borderFrame cornerRadius:self.tipsBorderCornerRadius];
-        [border setLineWidth:self.lineWidth];
-        if (self.tipsBorderLineStyle == KKGuideViewLineStyleDotted) {
-            CGFloat lengths[] = {self.lineWidth * 3,self.lineWidth};
+        [border setLineWidth:self.borderLineWidth];
+        if (self.tipsBorderLineFillStyle == KKGuideViewLineFillStyleDotted) {
+            CGFloat lengths[] = {self.borderLineWidth * 3,self.borderLineWidth};
             [border setLineDash:lengths count:2 phase:0];
         }
         [border stroke];
     }
+}
+
+- (void)drawLeadingLines
+{
+    if (self.leadingLineFillStyle == KKGuideViewLineFillStyleNone) {
+        return;
+    }
+    CGRect tipsViewFrame = self.customTipsView.frame;
+    
+    // 连接线
+    CGFloat spacing         = 15;
+    CGPoint lineBeginPoint  = CGPointZero;
+    CGPoint lineEndPoint    = CGPointZero;
+    CGPoint lineCenterPoint = CGPointZero;
+    CGPoint controlPoint1   = CGPointZero;
+    CGPoint controlPoint2   = CGPointZero;
+    CGFloat diameter        = 0;
+    NSEdgeInsets padding    = self.highlightPadding;
+    CGFloat lineBeginPointXMaxOffset = 70;
+    
+    switch (self.alignment) {
+        case KKRectAlignmentTopLeft:
+        case KKRectAlignmentLeft:{
+            lineBeginPoint.x    = MIN(CGRectGetMinX(tipsViewFrame) + lineBeginPointXMaxOffset, CGRectGetMidX(tipsViewFrame));
+            lineBeginPoint.y    = self.isFlipped ? CGRectGetMinY(tipsViewFrame) - spacing: CGRectGetMaxY(tipsViewFrame) + spacing;
+            
+            lineEndPoint.x      = CGRectGetMaxX(self.targetViewFrame) + padding.right + spacing;
+            lineEndPoint.y      = CGRectGetMidY(self.targetViewFrame);
+            
+            NSBezierPath *line  = [NSBezierPath bezierPath];
+            [line moveToPoint:lineBeginPoint];
+            lineCenterPoint.x   = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+            lineCenterPoint.y   = (lineBeginPoint.y + lineEndPoint.y) * 0.5;
+            
+            if (self.leadingLineCurveStyle == KKGuideViewLineCurveStyleCasual) {
+                controlPoint1.x     = lineBeginPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y: lineCenterPoint.y;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+                
+                controlPoint1.x     = lineCenterPoint.x;
+                controlPoint1.y     = lineBeginPoint.y;
+                controlPoint2.x     = lineBeginPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint1 color:NSColor.yellowColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.greenColor];
+                }
+            } else {
+                controlPoint1.x     = lineBeginPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y: lineCenterPoint.y;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+            }
+            
+            [line setLineWidth:self.leadingLineWidth];
+            if (self.leadingLineFillStyle == KKGuideViewLineFillStyleDotted) {
+                CGFloat lengths[] = {self.leadingLineWidth * 3,self.leadingLineWidth};
+                [line setLineDash:lengths count:2 phase:0];
+            }
+            [line stroke];
+            
+            // 箭头
+            [self drawArrowWithAngle:M_PI arrowCenter:lineEndPoint];
+            //[self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
+            
+            break;
+        }
+        case KKRectAlignmentTopRigth:
+        case KKRectAlignmentRigth: {
+            lineBeginPoint.x    = MAX(CGRectGetMaxX(tipsViewFrame) - lineBeginPointXMaxOffset, CGRectGetMidX(tipsViewFrame));
+            lineBeginPoint.y    = self.isFlipped ? CGRectGetMinY(tipsViewFrame) - spacing: CGRectGetMaxY(tipsViewFrame) + spacing;
+            
+            lineEndPoint.x      = CGRectGetMinX(self.targetViewFrame) - padding.right - spacing;
+            lineEndPoint.y      = CGRectGetMidY(self.targetViewFrame);
+            
+            NSBezierPath *line  = [NSBezierPath bezierPath];
+            [line moveToPoint:lineBeginPoint];
+            lineCenterPoint.x   = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+            lineCenterPoint.y   = (lineBeginPoint.y + lineEndPoint.y) * 0.5;
+            
+            if (self.leadingLineCurveStyle == KKGuideViewLineCurveStyleCasual) {
+                controlPoint1.x     = lineBeginPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y : lineCenterPoint.y;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+                
+                controlPoint1.x     = lineCenterPoint.x;
+                controlPoint1.y     = lineBeginPoint.y;
+                controlPoint2.x     = lineBeginPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint1 color:NSColor.yellowColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.greenColor];
+                }
+            } else {
+                controlPoint1.x     = lineBeginPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y : lineCenterPoint.y;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+            }
+            
+            [line setLineWidth:self.leadingLineWidth];
+            if (self.leadingLineFillStyle == KKGuideViewLineFillStyleDotted) {
+                CGFloat lengths[] = {self.leadingLineWidth * 3,self.leadingLineWidth};
+                [line setLineDash:lengths count:2 phase:0];
+            }
+            [line stroke];
+            
+            // 箭头
+            [self drawArrowWithAngle:0 arrowCenter:lineEndPoint];
+            //[self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
+            
+            break;
+        }
+        case KKRectAlignmentBottomLeft: {
+            
+            lineBeginPoint.x    = MIN(CGRectGetMinX(tipsViewFrame) + lineBeginPointXMaxOffset, CGRectGetMidX(tipsViewFrame));
+            lineBeginPoint.y    = self.isFlipped ? CGRectGetMaxY(tipsViewFrame) + spacing: CGRectGetMinY(tipsViewFrame) - spacing;
+            
+            lineEndPoint.x      = CGRectGetMaxX(self.targetViewFrame) + padding.right + spacing;
+            lineEndPoint.y      = CGRectGetMidY(self.targetViewFrame);
+            
+            NSBezierPath *line  = [NSBezierPath bezierPath];
+            [line moveToPoint:lineBeginPoint];
+            lineCenterPoint.x   = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+            lineCenterPoint.y   = (lineBeginPoint.y + lineEndPoint.y) * 0.5;
+            
+            if (self.leadingLineCurveStyle == KKGuideViewLineCurveStyleCasual) {
+                controlPoint1.x     = lineBeginPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y : lineCenterPoint.y;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+                
+                controlPoint1.x     = lineCenterPoint.x;
+                controlPoint1.y     = lineBeginPoint.y;
+                controlPoint2.x     = lineBeginPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint1 color:NSColor.yellowColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.greenColor];
+                }
+            } else {
+                controlPoint1.x     = lineBeginPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y : lineCenterPoint.y;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+            }
+            
+            [line setLineWidth:self.leadingLineWidth];
+            if (self.leadingLineFillStyle == KKGuideViewLineFillStyleDotted) {
+                CGFloat lengths[] = {self.leadingLineWidth * 3,self.leadingLineWidth};
+                [line setLineDash:lengths count:2 phase:0];
+            }
+            [line stroke];
+            
+            // 箭头
+            [self drawArrowWithAngle:M_PI arrowCenter:lineEndPoint];
+            //[self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
+            
+            break;
+        }
+        case KKRectAlignmentBottomRigth: {
+            
+            lineBeginPoint.x    = MAX(CGRectGetMaxX(tipsViewFrame) - lineBeginPointXMaxOffset, CGRectGetMidX(tipsViewFrame));
+            lineBeginPoint.y    = self.isFlipped ? CGRectGetMaxY(tipsViewFrame) + spacing : CGRectGetMinY(tipsViewFrame) - spacing;
+            
+            lineEndPoint.x      = CGRectGetMinX(self.targetViewFrame) - padding.right - spacing;
+            lineEndPoint.y      = CGRectGetMidY(self.targetViewFrame);
+            
+            NSBezierPath *line  = [NSBezierPath bezierPath];
+            [line moveToPoint:lineBeginPoint];
+            lineCenterPoint.x   = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+            lineCenterPoint.y   = (lineBeginPoint.y + lineEndPoint.y) * 0.5;
+            
+            if (self.leadingLineCurveStyle == KKGuideViewLineCurveStyleCasual) {
+                controlPoint1.x     = lineBeginPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y : lineCenterPoint.y;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+                
+                controlPoint1.x     = lineCenterPoint.x;
+                controlPoint1.y     = lineBeginPoint.y;
+                controlPoint2.x     = lineBeginPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint1 color:NSColor.yellowColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.greenColor];
+                }
+            } else {
+                controlPoint1.x     = lineBeginPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y : lineCenterPoint.y;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = lineEndPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+            }
+            
+            [line setLineWidth:self.leadingLineWidth];
+            if (self.leadingLineFillStyle == KKGuideViewLineFillStyleDotted) {
+                CGFloat lengths[] = {self.leadingLineWidth * 3,self.leadingLineWidth};
+                [line setLineDash:lengths count:2 phase:0];
+            }
+            [line stroke];
+            
+            // 箭头
+            [self drawArrowWithAngle:0 arrowCenter:lineEndPoint];
+            //[self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPint] arrowCenter:lineEndPint];
+            
+            break;
+        }
+        case KKRectAlignmentBottom: {
+            lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
+            lineBeginPoint.y    =
+            self.isFlipped ?
+            CGRectGetMaxY(tipsViewFrame) + spacing :
+            CGRectGetMinY(tipsViewFrame) - spacing;
+            
+            lineEndPoint.x      = CGRectGetMidX(self.targetViewFrame);
+            lineEndPoint.y      =
+            self.isFlipped ?
+            CGRectGetMinY(self.targetViewFrame) - spacing - padding.top :
+            CGRectGetMaxY(self.targetViewFrame) + spacing + padding.top;
+            
+            diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPoint] * 0.3;
+            CGFloat distanceY   = fabs(lineEndPoint.y - lineBeginPoint.y);
+            CGFloat offsetY     = distanceY * 0.25;
+            
+            NSBezierPath *line  = [NSBezierPath bezierPath];
+            [line moveToPoint:lineBeginPoint];
+            
+            if (self.leadingLineCurveStyle == KKGuideViewLineCurveStyleCasual) {
+                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPoint.x) * 0.5 + diameter;
+                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPoint.y) * 0.5;
+                controlPoint1.x     = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y + offsetY : lineCenterPoint.y - offsetY;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = controlPoint1.y;
+                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+                
+                controlPoint1.x     = lineCenterPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y - offsetY : lineCenterPoint.y + offsetY;
+                controlPoint2.x     = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+                controlPoint2.y     = controlPoint1.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint1 color:NSColor.yellowColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.greenColor];
+                }
+            } else {
+                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPoint.y) * 0.5;
+                controlPoint1.x     = lineCenterPoint.x;
+                controlPoint1.y     = lineBeginPoint.y;
+                controlPoint2.x     = lineEndPoint.x;
+                controlPoint2.y     = lineCenterPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+            }
+            
+            [line setLineWidth:self.leadingLineWidth];
+            if (self.leadingLineFillStyle == KKGuideViewLineFillStyleDotted) {
+                CGFloat lengths[] = {self.leadingLineWidth * 3,self.leadingLineWidth};
+                [line setLineDash:lengths count:2 phase:0];
+            }
+            [line stroke];
+            
+            // 箭头
+            if (self.leadingLineCurveStyle == KKGuideViewLineCurveStyleCasual) {
+                [self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPoint] arrowCenter:lineEndPoint];
+            } else {
+                [self drawArrowWithAngle:M_PI_2 * 3 arrowCenter:lineEndPoint];
+            }
+            
+            break;
+        }
+        default: {
+            // KKRectAlignmentTop
+            // KKRectAlignmentCenter
+            lineBeginPoint.x    = CGRectGetMidX(tipsViewFrame);
+            lineBeginPoint.y    = self.isFlipped ? CGRectGetMinY(tipsViewFrame) - spacing: CGRectGetMaxY(tipsViewFrame) + spacing;
+            
+            lineEndPoint.x      = CGRectGetMidX(self.targetViewFrame);
+            lineEndPoint.y      =
+            self.isFlipped ?
+            CGRectGetMaxY(self.targetViewFrame) + spacing + padding.bottom :
+            CGRectGetMinY(self.targetViewFrame) - spacing - padding.bottom;
+            
+            diameter            = [self diagonalDistanceWithPoint:lineBeginPoint otherPoint:lineEndPoint] * 0.3;
+            CGFloat distanceY   = fabs(lineEndPoint.y - lineBeginPoint.y);
+            CGFloat offsetY     = distanceY * 0.25;
+            
+            NSBezierPath *line  = [NSBezierPath bezierPath];
+            [line moveToPoint:lineBeginPoint];
+            
+            if (self.leadingLineCurveStyle == KKGuideViewLineCurveStyleCasual) {
+                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPoint.x) * 0.5 - diameter;
+                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPoint.y) * 0.5;
+                controlPoint1.x     = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y - offsetY : lineCenterPoint.y + offsetY;
+                controlPoint2.x     = lineCenterPoint.x;
+                controlPoint2.y     = controlPoint1.y;
+                [line curveToPoint:lineCenterPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+                
+                controlPoint1.x     = lineCenterPoint.x;
+                controlPoint1.y     = self.isFlipped ? lineCenterPoint.y + offsetY : lineCenterPoint.y - offsetY;
+                controlPoint2.x     = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+                controlPoint2.y     = controlPoint1.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineCenterPoint endPoint:controlPoint1 color:NSColor.yellowColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.greenColor];
+                }
+            } else {
+                lineCenterPoint.x   = (lineBeginPoint.x + lineEndPoint.x) * 0.5;
+                lineCenterPoint.y   = (lineBeginPoint.y + lineEndPoint.y) * 0.5;
+                controlPoint1.x     = lineCenterPoint.x;
+                controlPoint1.y     = lineBeginPoint.y;
+                controlPoint2.x     = lineEndPoint.x;
+                controlPoint2.y     = lineCenterPoint.y;
+                [line curveToPoint:lineEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+                
+                if (KKGUIDE_VIEW_DEBUG) {
+                    [self drawDebugLine:lineBeginPoint endPoint:controlPoint1 color:NSColor.redColor];
+                    [self drawDebugLine:lineEndPoint endPoint:controlPoint2 color:NSColor.orangeColor];
+                }
+            }
+            
+            [line setLineWidth:self.leadingLineWidth];
+            if (self.leadingLineFillStyle == KKGuideViewLineFillStyleDotted) {
+                CGFloat lengths[] = {self.leadingLineWidth * 3,self.leadingLineWidth};
+                [line setLineDash:lengths count:2 phase:0];
+            }
+            [line stroke];
+            
+            // 箭头
+            if (self.leadingLineCurveStyle == KKGuideViewLineCurveStyleCasual) {
+                [self drawArrowWithAngle:[self angleWithCenter:lineBeginPoint point:lineEndPoint] arrowCenter:lineEndPoint];
+            } else {
+                [self drawArrowWithAngle:M_PI_2 arrowCenter:lineEndPoint];
+            }
+            
+            break;
+        }
+    }
+}
+
+- (void)drawDebugLine:(CGPoint)point endPoint:(CGPoint)endPoint color:(NSColor *)color
+{
+    CGContextRef context = [NSGraphicsContext currentContext].CGContext;
+    CGContextSaveGState(context);
+    [color setStroke];
+    NSBezierPath *path = [NSBezierPath bezierPath];
+    [path moveToPoint:point];
+    [path lineToPoint:endPoint];
+    [path setLineWidth:1];
+    [path stroke];
+    CGContextRestoreGState(context);
 }
 
 - (NSBezierPath *)shapePathWithStyle:(KKGuideViewShapeStyle)style rect:(CGRect)rect cornerRadius:(CGFloat)cornerRadius
@@ -706,7 +940,7 @@
     controlPoint2           = arrowEndPoint;
     [arrow curveToPoint:arrowEndPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
     [arrow setLineJoinStyle:NSLineJoinStyleRound];
-    [arrow setLineWidth:self.lineWidth];
+    [arrow setLineWidth:self.leadingLineWidth];
     [arrow stroke];
 }
 

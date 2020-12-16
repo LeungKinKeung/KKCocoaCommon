@@ -46,7 +46,16 @@
     //point.x         = point.x + self.bounds.size.width * 0.5 - self.menu.size.width * 0.5;
     point.y         = point.y - 6;
     
-    NSEvent *popupEvent = [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown location:point modifierFlags:0 timestamp:0 windowNumber:self.window.windowNumber context:self.window.graphicsContext eventNumber:0 clickCount:1 pressure:1];
+    NSEvent *popupEvent =
+    [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown
+                       location:point
+                  modifierFlags:0
+                      timestamp:0
+                   windowNumber:self.window.windowNumber
+                        context:self.window.graphicsContext
+                    eventNumber:0
+                     clickCount:1
+                       pressure:1];
     
     [NSMenu popUpContextMenu:menu withEvent:popupEvent forView:self];
 }
@@ -55,8 +64,10 @@
 {
     BOOL isFlipped      = view.isFlipped;
     NSRect frame        = [view convertRect:self.bounds fromView:self];
-    NSPoint selfCenter  = CGPointMake(frame.origin.x + frame.size.width * 0.5, frame.origin.y - (isFlipped ? frame.size.height * 0.5 : -frame.size.height * 0.5));
-    NSPoint viewCenter  = CGPointMake(view.frame.origin.x + view.frame.size.width * 0.5, view.frame.origin.y + view.frame.size.height * 0.5);
+    NSPoint selfCenter  = CGPointMake(frame.origin.x + frame.size.width * 0.5,
+                                      frame.origin.y - (isFlipped ? frame.size.height * 0.5 : -frame.size.height * 0.5));
+    NSPoint viewCenter  = CGPointMake(view.frame.origin.x + view.frame.size.width * 0.5,
+                                      view.frame.origin.y + view.frame.size.height * 0.5);
     
     KKRectAlignment alignment   = KKRectAlignmentCenter;
     if (selfCenter.x == viewCenter.x) {
@@ -93,8 +104,10 @@
 {
     BOOL isFlipped      = view.isFlipped;
     NSRect frame        = [view convertRect:self.bounds fromView:self];
-    NSPoint selfCenter  = CGPointMake(frame.origin.x + frame.size.width * 0.5, frame.origin.y - (isFlipped ? frame.size.height * 0.5 : -frame.size.height * 0.5));
-    NSPoint viewCenter  = CGPointMake(view.frame.origin.x + view.frame.size.width * 0.5, view.frame.origin.y + view.frame.size.height * 0.5);
+    NSPoint selfCenter  = CGPointMake(frame.origin.x + frame.size.width * 0.5,
+                                      frame.origin.y - (isFlipped ? frame.size.height * 0.5 : -frame.size.height * 0.5));
+    NSPoint viewCenter  = CGPointMake(view.frame.origin.x + view.frame.size.width * 0.5,
+                                      view.frame.origin.y + view.frame.size.height * 0.5);
     
     CGFloat minX        = CGRectGetMinX(frame);
     CGFloat minY        = isFlipped ? CGRectGetMinY(frame) : CGRectGetMaxY(frame);
