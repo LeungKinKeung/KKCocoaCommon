@@ -32,6 +32,7 @@ typedef NS_ENUM(NSInteger, KKTextFieldState) {
 - (BOOL)textFieldShouldReturn:(KKTextField *)textField;
 
 @end
+
 @interface KKTextField : NSView
 
 /// 文本
@@ -62,8 +63,8 @@ typedef NS_ENUM(NSInteger, KKTextFieldState) {
 @property (nonatomic, strong) NSView *leftView;
 /// 右视图
 @property (nonatomic, strong) NSView *rightView;
-/// 边距（仅左右有效）
-@property (nonatomic, assign) NSEdgeInsets edgeInsets;
+/// 内边距（仅左右有效）
+@property (nonatomic, assign) NSEdgeInsets padding;
 /// 代理
 @property (nonatomic, weak) id<KKTextFieldDelegate> delegate;
 /// 允许编辑，默认：YES

@@ -262,6 +262,7 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
     _font = font;
     self.textField.font =
     self.secureTextField.font = font;
+    [self setNeedsLayout:YES];
 }
 
 - (void)setTextAlignment:(NSTextAlignment)textAlignment
@@ -293,7 +294,7 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
 - (void)updatePlaceholder
 {
     if (self.placeholder == nil || self.placeholderColor == nil) {
-        if (@available(macOS 10.0, *)) {
+        if (@available(macOS 10.10, *)) {
             self.textField.placeholderString =
             self.secureTextField.placeholderString = self.placeholder;
         } else {
@@ -311,7 +312,7 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
 - (void)setAttributedPlaceholder:(NSAttributedString *)attributedPlaceholder
 {
     _attributedPlaceholder = attributedPlaceholder;
-    if (@available(macOS 10.0, *)) {
+    if (@available(macOS 10.10, *)) {
         self.textField.placeholderAttributedString =
         self.secureTextField.placeholderAttributedString = attributedPlaceholder;
     } else {
@@ -372,9 +373,9 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
     [self setNeedsLayout:YES];
 }
 
-- (void)setEdgeInsets:(NSEdgeInsets)edgeInsets
+- (void)setPadding:(NSEdgeInsets)padding
 {
-    _edgeInsets = edgeInsets;
+    _padding = padding;
     [self setNeedsLayout:YES];
 }
 
@@ -434,13 +435,13 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
             size            = [self.leftView intrinsicContentSize];
         }
         self.leftView.frame =
-        CGRectMake(self.edgeInsets.left,
+        CGRectMake(self.padding.left,
                    (self.frame.size.height - size.height) * 0.5,
                    size.width,
                    size.height);
         leftSpacing     = CGRectGetMaxX(self.leftView.frame);
     } else {
-        leftSpacing     = self.edgeInsets.left;
+        leftSpacing     = self.padding.left;
     }
     if (self.rightView) {
         
@@ -451,13 +452,13 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
             size            = [self.rightView intrinsicContentSize];
         }
         self.rightView.frame =
-        CGRectMake(self.frame.size.width - self.edgeInsets.right - size.width,
+        CGRectMake(self.frame.size.width - self.padding.right - size.width,
                    (self.frame.size.height - size.height) * 0.5,
                    size.width,
                    size.height);
-        rightSpacing    = self.rightView.frame.size.width + self.edgeInsets.right;
+        rightSpacing    = self.rightView.frame.size.width + self.padding.right;
     } else {
-        rightSpacing    = self.edgeInsets.right;
+        rightSpacing    = self.padding.right;
     }
     CGFloat textFieldHeight     = self.textField.intrinsicContentSize.height;
     self.textField.frame        =
