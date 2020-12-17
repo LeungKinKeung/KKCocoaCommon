@@ -2,7 +2,7 @@
 //  KKGuideViewController.m
 //  KKCocoaCommon_Example
 //
-//  Created by v_ljqliang on 2020/12/15.
+//  Created by LeungKinKeung on 2020/12/15.
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 
@@ -12,12 +12,14 @@
 @interface KKGuideViewController ()
 
 @property (weak) IBOutlet NSSegmentedControl *highlightShapeStyleSegmentedControl;
+@property (weak) IBOutlet NSSegmentedControl *highlightBorderLineFileStyleSegmentedControl;
 @property (weak) IBOutlet NSSegmentedControl *tipsBorderShapeStyleSegmentedControl;
 @property (weak) IBOutlet NSSegmentedControl *tipsBorderLineFillStyleSegmentedControl;
 @property (weak) IBOutlet NSSegmentedControl *leadingLineFillStyleSegmentedControl;
 @property (weak) IBOutlet NSSegmentedControl *leadingLineCurveStyleSegmentedControl;
 
 @property (weak) IBOutlet NSTextField *highlightPaddingTextField;
+@property (weak) IBOutlet NSTextField *highlightMarginTextField;
 @property (weak) IBOutlet NSTextField *highlightCornerRadiusTextField;
 @property (weak) IBOutlet NSTextField *tipsBorderPaddingTextField;
 @property (weak) IBOutlet NSTextField *tipsBorderCornerRadiusTextField;
@@ -50,7 +52,6 @@
 
 - (void)textDidChange:(NSNotification *)notification
 {
-    /*
     NSText *textField = notification.object;
     if (textField == [self.highlightPaddingTextField currentEditor]) {
         CGFloat value = textField.string.doubleValue;
@@ -64,19 +65,24 @@
         self.guideView.tipsBorderCornerRadius = textField.string.doubleValue;
     } else if (textField == [self.centerOffsetXTextField currentEditor] ||
                textField == [self.centerOffsetYTextField currentEditor]) {
-        self.guideView.lineOffset =
+        self.guideView.tipsViewCenterOffset =
         CGPointMake(self.centerOffsetXTextField.stringValue.doubleValue,
                     self.centerOffsetYTextField.stringValue.doubleValue);
     } else if (textField == [self.leadingLineWidthTextField currentEditor]) {
         self.guideView.leadingLineWidth = textField.string.doubleValue;
     } else if (textField == [self.borderLineWidthTextField currentEditor]) {
         self.guideView.borderLineWidth = textField.string.doubleValue;
+    } else if (textField == [self.highlightMarginTextField currentEditor]) {
+        self.guideView.highlightMargin = textField.string.doubleValue;
     }
-    */
 }
 
 - (IBAction)highlightShapeStyleDidChange:(NSSegmentedControl *)sender {
     self.guideView.highlightShapeStyle = sender.selectedSegment;
+}
+
+- (IBAction)highlightBorderLineFileStyleDidChange:(NSSegmentedControl *)sender {
+    self.guideView.highlightBorderLineFillStyle = sender.selectedSegment;
 }
 
 - (IBAction)tipsBorderShapeStyleDidChange:(NSSegmentedControl *)sender {
@@ -130,26 +136,29 @@
     }];
     self.guideView.tipsLabel.font   = [NSFont fontWithName:@"HannotateSC-W5" size:18];
     
-    CGFloat highlightPadding = self.highlightPaddingTextField.stringValue.doubleValue;
-    self.guideView.highlightPadding = NSEdgeInsetsMake(highlightPadding, highlightPadding, highlightPadding, highlightPadding);
-    self.guideView.highlightCornerRadius = self.highlightCornerRadiusTextField.stringValue.doubleValue;
-    CGFloat tipsBorderPadding = self.tipsBorderPaddingTextField.stringValue.doubleValue;
-    self.guideView.tipsBorderPadding = NSEdgeInsetsMake(tipsBorderPadding, tipsBorderPadding, tipsBorderPadding, tipsBorderPadding);
-    self.guideView.tipsBorderCornerRadius = self.tipsBorderCornerRadiusTextField.stringValue.doubleValue;
+    CGFloat highlightPadding                = self.highlightPaddingTextField.stringValue.doubleValue;
+    self.guideView.highlightPadding         = NSEdgeInsetsMake(highlightPadding, highlightPadding, highlightPadding, highlightPadding);
+    self.guideView.highlightMargin          = self.highlightMarginTextField.stringValue.doubleValue;
+    self.guideView.highlightCornerRadius    = self.highlightCornerRadiusTextField.stringValue.doubleValue;
+    CGFloat tipsBorderPadding               = self.tipsBorderPaddingTextField.stringValue.doubleValue;
+    self.guideView.tipsBorderPadding        = NSEdgeInsetsMake(tipsBorderPadding, tipsBorderPadding, tipsBorderPadding, tipsBorderPadding);
+    self.guideView.tipsBorderCornerRadius   = self.tipsBorderCornerRadiusTextField.stringValue.doubleValue;
     if (self.customLineOffsetButton.isOnState) {
         self.guideView.tipsViewCenterOffset =
         CGPointMake(self.centerOffsetXTextField.stringValue.doubleValue,
                     self.centerOffsetYTextField.stringValue.doubleValue);
     }
-    self.guideView.leadingLineWidth     = self.leadingLineWidthTextField.stringValue.doubleValue;
-    self.guideView.borderLineWidth      = self.borderLineWidthTextField.stringValue.doubleValue;
-    self.guideView.tintColor            = self.tintColorWell.color;
-    self.guideView.backgroundColor      = self.backgroundColorWell.color;
-    self.guideView.leadingLineFillStyle = self.leadingLineFillStyleSegmentedControl.selectedSegment;
-    self.guideView.tipsBorderShapeStyle = self.tipsBorderShapeStyleSegmentedControl.selectedSegment;
+    self.guideView.leadingLineWidth         = self.leadingLineWidthTextField.stringValue.doubleValue;
+    self.guideView.borderLineWidth          = self.borderLineWidthTextField.stringValue.doubleValue;
+    self.guideView.tintColor                = self.tintColorWell.color;
+    self.guideView.backgroundColor          = self.backgroundColorWell.color;
+    self.guideView.leadingLineFillStyle     = self.leadingLineFillStyleSegmentedControl.selectedSegment;
+    self.guideView.tipsBorderShapeStyle     = self.tipsBorderShapeStyleSegmentedControl.selectedSegment;
     self.guideView.leadingLineCurveStyle    = self.leadingLineCurveStyleSegmentedControl.selectedSegment;
     self.guideView.tipsBorderLineFillStyle  = self.tipsBorderLineFillStyleSegmentedControl.selectedSegment;
     self.guideView.tipsBorderCornerRadius   = self.tipsBorderCornerRadiusTextField.stringValue.doubleValue;
+    self.guideView.highlightShapeStyle      = self.highlightShapeStyleSegmentedControl.selectedSegment;
+    self.guideView.highlightBorderLineFillStyle = self.highlightBorderLineFileStyleSegmentedControl.selectedSegment;
 }
 
 @end

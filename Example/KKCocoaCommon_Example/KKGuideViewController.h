@@ -2,7 +2,7 @@
 //  KKGuideViewController.h
 //  KKCocoaCommon_Example
 //
-//  Created by v_ljqliang on 2020/12/15.
+//  Created by LeungKinKeung on 2020/12/15.
 //  Copyright © 2020 LeungKinKeung. All rights reserved.
 //
 

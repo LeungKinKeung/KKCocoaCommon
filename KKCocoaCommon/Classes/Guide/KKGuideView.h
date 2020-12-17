@@ -42,8 +42,12 @@ typedef void(^KKGuideViewCompletionBlock)(KKGuideView *guideView);
 @property (nonatomic, strong) NSView *customTipsView;
 /// 高亮区域的样式
 @property (nonatomic, assign) KKGuideViewShapeStyle highlightShapeStyle;
+/// 高亮区域边框线填充样式
+@property (nonatomic, assign) KKGuideViewLineFillStyle highlightBorderLineFillStyle;
 /// 高亮区域内边距
 @property (nonatomic, assign) NSEdgeInsets highlightPadding;
+/// 高亮区域边框线边距
+@property (nonatomic, assign) CGFloat highlightMargin;
 /// 高亮区域圆角
 @property (nonatomic, assign) CGFloat highlightCornerRadius;
 /// 提示视图的边框形状样式
@@ -72,9 +76,30 @@ typedef void(^KKGuideViewCompletionBlock)(KKGuideView *guideView);
 @property (nonatomic, strong) NSColor *backgroundColor;
 /// 点击时移除此视图
 @property (nonatomic, assign) BOOL removeFromSuperviewOnClick;
-/// 完成
+/// 点击了此视图，假如completionBlock == nil且removeFromSuperviewOnClick == NO，将不进行任何操作
 @property (nonatomic, copy) KKGuideViewCompletionBlock completionBlock;
 /// 刷新
 - (void)refresh;
+
+@end
+
+typedef NS_ENUM(NSUInteger, KKViewPosition) {
+    KKViewPositionOverlaps,
+    KKViewPositionCenter = KKViewPositionOverlaps,
+    KKViewPositionLeft,
+    KKViewPositionTopLeft,
+    KKViewPositionAbove,
+    KKViewPositionTop = KKViewPositionAbove,
+    KKViewPositionTopRigth,
+    KKViewPositionRigth,
+    KKViewPositionBottomRigth,
+    KKViewPositionBelow,
+    KKViewPositionBottom = KKViewPositionBelow,
+    KKViewPositionBottomLeft,
+};
+
+@interface NSView (KKPosition)
+
++ (KKViewPosition)positionForView:(NSView *)view relativeToView:(NSView *)relativeView;
 
 @end

@@ -8,18 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-typedef NS_ENUM(NSInteger, KKRectAlignment) {
-    KKRectAlignmentCenter,
-    KKRectAlignmentTop,
-    KKRectAlignmentTopLeft,
-    KKRectAlignmentLeft,
-    KKRectAlignmentBottomLeft,
-    KKRectAlignmentBottom,
-    KKRectAlignmentBottomRigth,
-    KKRectAlignmentRigth,
-    KKRectAlignmentTopRigth,
-};
-
 @interface NSView (KK)
 
 /// 设置背景色
@@ -32,13 +20,5 @@ typedef NS_ENUM(NSInteger, KKRectAlignment) {
 /// 弹出菜单
 /// @param menu 菜单
 - (void)popUpMenu:(NSMenu *)menu;
-
-/// 自身在视图的哪个位置
-/// @param view 相对的视图（父视图）
-- (KKRectAlignment)alignmentAtView:(NSView *)view;
-
-/// 自身中心在视图的哪个位置
-/// @param view 相对的视图（父视图）
-- (KKRectAlignment)centerAlignmentAtView:(NSView *)view;
 
 @end
