@@ -354,7 +354,6 @@
             break;
         }
     }
-    NSCellImagePosition x =0;
     return CGSizeMake(navigationControllerView.frame.size.width, navigationBarHeight);
 }
 
