@@ -61,13 +61,13 @@
 
 @implementation KKSidebarOutlineView
 
-- (__kindof NSView *)makeViewWithIdentifier:(NSUserInterfaceItemIdentifier)identifier owner:(id)owner
-{
-    if ([identifier isEqualTo:NSOutlineViewDisclosureButtonKey]) {
-        return nil;
-    }
-    return [super makeViewWithIdentifier:identifier owner:owner];
-}
+//- (__kindof NSView *)makeViewWithIdentifier:(NSUserInterfaceItemIdentifier)identifier owner:(id)owner
+//{
+//    if ([identifier isEqualTo:NSOutlineViewDisclosureButtonKey]) {
+//        return nil;
+//    }
+//    return [super makeViewWithIdentifier:identifier owner:owner];
+//}
 
 @end
 
@@ -142,14 +142,13 @@
     {
         NSScrollView *scrollView            = [[NSScrollView alloc] initWithFrame:self.sidebarViewController.view.bounds];
         self.scrollView                     = scrollView;
-        self.scrollView                     = scrollView;
         scrollView.hasVerticalScroller      = NO;
         scrollView.hasHorizontalScroller    = NO;
         scrollView.autohidesScrollers       = YES;
         scrollView.scrollerStyle            = NSScrollerStyleOverlay; // 滚动条盖在视图上
         scrollView.verticalScrollElasticity = YES;
         scrollView.automaticallyAdjustsContentInsets = NO;  // 假如不为NO，在NSScrollView重新布局时contentInsets会被清空
-        scrollView.contentInsets            = NSEdgeInsetsMake(38, 0, 0, 0); // 需要在outlineView初始化之前设置否则无法立马生效，暂无更优解
+        //scrollView.contentInsets            = NSEdgeInsetsMake(38, 0, 0, 0); // 需要在outlineView初始化之前设置否则无法立马生效，暂无更优解
         scrollView.drawsBackground          = NO;
         [self.sidebarViewController.view addSubview:scrollView];
         scrollView.autoresizingMask         = NSViewWidthSizable | NSViewHeightSizable;
@@ -157,34 +156,25 @@
     {
         NSOutlineView *outlineView  = [[KKSidebarOutlineView alloc] initWithFrame:self.view.bounds];
         self.outlineView            = outlineView;
-        NSTableColumn *columen      = [[NSTableColumn alloc] initWithIdentifier:[self className]];
-        columen.resizingMask        = NSTableColumnAutoresizingMask; // 自动拉伸到最大宽度
-        [outlineView addTableColumn:columen];
-        columen.width               = self.view.bounds.size.width;
+        NSTableColumn *column       = [[NSTableColumn alloc] initWithIdentifier:[self className]];
+        column.resizingMask         = NSTableColumnAutoresizingMask; // 自动拉伸到最大宽度
+        [outlineView addTableColumn:column];
         outlineView.headerView      = nil;
-        outlineView.floatsGroupRows = NO;
-        outlineView.gridStyleMask   = NSTableViewGridNone;
-        outlineView.intercellSpacing        = NSMakeSize(-20, 10);// 增加左边距和行高
         outlineView.allowsEmptySelection    = NO;
-        outlineView.allowsMultipleSelection = NO;
         outlineView.focusRingType           = NSFocusRingTypeNone;// 不要高亮边框
-        //outlineView.indentationMarkerFollowsCell    = NO;
         if (@available(macOS 10.11, *)) {
             outlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleRegular;
+            outlineView.intercellSpacing        = NSMakeSize(-15, 10);// 增加左边距和行高
+            outlineView.backgroundColor         = NSColor.clearColor;
         } else {
             outlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
         }
-        outlineView.allowsMultipleSelection = NO;
-        outlineView.allowsEmptySelection    = NO;
         outlineView.delegate                = self;
         outlineView.dataSource              = self;
-        outlineView.backgroundColor         = [NSColor clearColor];
         self.scrollView.documentView        = outlineView;
         
         // 展开所有行
-        for (NSInteger i = 0; i < outlineView.numberOfRows; i++) {
-            [outlineView expandItem:[outlineView itemAtRow:i]];
-        }
+        [outlineView expandItem:nil expandChildren:YES];
         
         // 选中第一个
         [outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
@@ -277,7 +267,12 @@
         rowView.identifier  = identifier;
     }
     return rowView;
-} 
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowOutlineCellForItem:(id)item
+{
+    return NO;// 不需要三角形展开收起按钮或Show/Hide按钮
+}
 
 - (void)viewDidAppear
 {

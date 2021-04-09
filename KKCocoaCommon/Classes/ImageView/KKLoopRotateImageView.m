@@ -54,12 +54,17 @@
     return [self initWithImage:image];
 }
 
-- (void)viewWillDraw
+- (void)resizeWithOldSuperviewSize:(NSSize)oldSize
 {
-    [super viewWillDraw];
-    static NSString *key = @"LoopRotate";
-    [self.imageView removeCAAnimationForKey:key];
-    [self.imageView addLoopRotateAnimationForKey:key];
+    [super resizeWithOldSuperviewSize:oldSize];
+    [self.layer removeAnimationForKey:[self className]];
+}
+
+- (void)updateTrackingAreas
+{
+    [super updateTrackingAreas];
+    [self.imageView removeCAAnimationForKey:[self className]];
+    [self.imageView addLoopRotateAnimationForKey:[self className]];
 }
 
 - (void)layout

@@ -480,9 +480,9 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
         tableView.privateDelegate   = self;
         tableView.frame             = self.bounds;
         self.contentView.documentView   = tableView;
-        NSTableColumn *columen      = [[NSTableColumn alloc] initWithIdentifier:[self className]];
-        columen.resizingMask        = NSTableColumnAutoresizingMask;
-        [tableView addTableColumn:columen];
+        NSTableColumn *column       = [[NSTableColumn alloc] initWithIdentifier:[self className]];
+        column.resizingMask         = NSTableColumnAutoresizingMask;
+        [tableView addTableColumn:column];
         tableView.headerView        = nil;
         tableView.delegate          = self;
         tableView.dataSource        = self;

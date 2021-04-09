@@ -590,7 +590,7 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
 
 - (void)textFieldDidEndEditing:(NSTextField *)textField
 {
-    self.state = self.isMouseInside ? KKTextFieldStateMouseInside : KKTextFieldStateNormal;
+    self.state = self.isMouseInside ? KKTextFieldStateHover : KKTextFieldStateNormal;
     if ([self.delegate respondsToSelector:@selector(textFieldDidEndEditing:)]) {
         [self.delegate textFieldDidEndEditing:self];
     }
@@ -653,7 +653,7 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
     self.state =
     self.isEditing ?
     KKTextFieldStateEditing :
-    KKTextFieldStateMouseInside;
+    KKTextFieldStateHover;
 }
 
 - (void)mouseExited:(NSEvent *)event

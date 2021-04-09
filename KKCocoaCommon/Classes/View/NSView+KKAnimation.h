@@ -74,7 +74,7 @@ typedef void (^KKAnimationCompletionBlock)(BOOL animationFinished);
 /// 添加渐变动画
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key completionBlock:(KKAnimationCompletionBlock)completionBlock;
 
-/// 添加旋转动画（viewDidAppear、viewWillDraw后才能使用，否则会以左下角为锚点旋转）
+/// 添加旋转动画（viewDidAppear、updateTrackingAreas后才能使用，否则会以左下角为锚点旋转）
 /// @param duration 时长
 /// @param startAngle 顺时针：M_PI*2，逆时针：0
 /// @param endAngle 顺时针：0，逆时针：M_PI*2
@@ -82,13 +82,13 @@ typedef void (^KKAnimationCompletionBlock)(BOOL animationFinished);
 /// @param key 键
 - (CAAnimation *)addRotateAnimationWithDuration:(NSTimeInterval)duration startAngle:(CGFloat)startAngle  endAngle:(CGFloat)endAngle repeat:(BOOL)repeat forKey:(NSString *)key;
 
-/// 添加循环旋转动画（viewDidAppear、viewWillDraw后才能使用，否则会以左下角为锚点旋转）
+/// 添加循环旋转动画（viewDidAppear、updateTrackingAreas后才能使用，否则会以左下角为锚点旋转）
 - (CAAnimation *)addLoopRotateAnimationForKey:(NSString *)key;
 
-/// 缩放动画（弹簧效果，viewDidAppear、viewWillDraw后才能使用，否则会以左下角为锚点旋转）
+/// 缩放动画（弹簧效果，viewDidAppear、updateTrackingAreas后才能使用，否则会以左下角为锚点旋转）
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration fromScale:(CGFloat)fromScale toScale:(CGFloat)toScale forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock;
 
-/// 缩放动画（弹簧效果，viewDidAppear、viewWillDraw后才能使用，否则会以左下角为锚点旋转）
+/// 缩放动画（弹簧效果，viewDidAppear、updateTrackingAreas后才能使用，否则会以左下角为锚点旋转）
 - (CAAnimation *)addCAAnimationWithDuration:(NSTimeInterval)duration  fromScale:(CGFloat)fromScale toScale:(CGFloat)toScale fromOpacity:(CGFloat)fromOpacity toOpacity:(CGFloat)toOpacity forKey:(NSString *)key removedOnCompletion:(BOOL)removedOnCompletion completionBlock:(KKAnimationCompletionBlock)completionBlock;
 
 /// 移除所有动画

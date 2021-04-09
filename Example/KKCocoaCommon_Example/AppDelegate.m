@@ -42,7 +42,6 @@
     [NSStoryboard storyboardWithName:mainStoryboardFileName bundle:[NSBundle mainBundle]];
     NSWindowController *windowController    = [mainStoryboard instantiateControllerWithIdentifier:@"MainWindowController"];
     self.mainWindowController               = windowController;
-    [windowController.window makeKeyWindow];
     [windowController showWindow:nil];
     
     // 工具栏
@@ -71,15 +70,19 @@
 - (nullable NSMenu *)applicationDockMenu:(NSApplication *)sender
 {
     // Dock菜单
-    NSMenu *subMenu         = [[NSMenu alloc] initWithTitle:@""];
-    NSMenuItem *bottomItem  = [subMenu insertItemWithTitle:@"Test Menu Bottom Item" action:@selector(testMenuItemClicked:) keyEquivalent:@"" atIndex:0];
-    bottomItem.enabled      = YES;
-    bottomItem.target       = self;
+    NSMenu *menu            = [[NSMenu alloc] initWithTitle:@""];
+    NSMenuItem *firstItem   = [menu addItemWithTitle:@"First Dock Menu Item"
+                                              action:@selector(testMenuItemClicked:)
+                                       keyEquivalent:@""];
+    firstItem.enabled       = YES;
+    firstItem.target        = self;
     
-    NSMenuItem *topItem    = [subMenu insertItemWithTitle:@"Test Menu Top Item" action:@selector(testMenuItemClicked:) keyEquivalent:@"" atIndex:0];
-    topItem.enabled        = YES;
-    topItem.target         = self;
-    return subMenu;
+    NSMenuItem *secondItem  = [menu addItemWithTitle:@"Second Dock Menu Item"
+                                              action:@selector(testMenuItemClicked:)
+                                       keyEquivalent:@""];
+    secondItem.enabled      = YES;
+    secondItem.target       = self;
+    return menu;
 }
 
 - (void)testMenuItemClicked:(NSMenuItem *)sender

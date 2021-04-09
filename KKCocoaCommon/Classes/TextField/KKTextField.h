@@ -10,9 +10,9 @@
 @class KKTextField;
 
 typedef NS_ENUM(NSInteger, KKTextFieldState) {
-    KKTextFieldStateNormal,        // 默认
-    KKTextFieldStateMouseInside,   // 鼠标在输入框里
-    KKTextFieldStateEditing,       // 编辑中
+    KKTextFieldStateNormal,     // 默认
+    KKTextFieldStateHover,      // 鼠标在输入框里
+    KKTextFieldStateEditing,    // 编辑中
 };
 
 @protocol KKTextFieldDelegate <NSObject>
