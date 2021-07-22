@@ -594,7 +594,10 @@ void KKTFSetValue(NSMutableDictionary *map, id value, KKTextFieldState state)
     if ([self.delegate respondsToSelector:@selector(textFieldDidEndEditing:)]) {
         [self.delegate textFieldDidEndEditing:self];
     }
+    // -endEditing:会导致alignment属性变成默认的NSTextAlignmentLeft，不知道为何
+    NSTextAlignment alignment   = textField.alignment;
     [textField endEditing:textField.currentEditor];
+    textField.alignment         = alignment;
 }
 
 - (void)textFieldTextDidChange:(NSTextField *)textField
