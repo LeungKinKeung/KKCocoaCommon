@@ -42,22 +42,7 @@
 
 - (void)popUpMenu:(NSMenu *)menu
 {
-    CGPoint point   = [self convertRect:self.bounds toView:self.window.contentView].origin;
-    //point.x         = point.x + self.bounds.size.width * 0.5 - self.menu.size.width * 0.5;
-    point.y         = point.y - 6;
-    
-    NSEvent *popupEvent =
-    [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown
-                       location:point
-                  modifierFlags:0
-                      timestamp:0
-                   windowNumber:self.window.windowNumber
-                        context:self.window.graphicsContext
-                    eventNumber:0
-                     clickCount:1
-                       pressure:1];
-    
-    [NSMenu popUpContextMenu:menu withEvent:popupEvent forView:self];
+    [menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(0, self.bounds.size.height + 6) inView:self];
 }
 
 @end

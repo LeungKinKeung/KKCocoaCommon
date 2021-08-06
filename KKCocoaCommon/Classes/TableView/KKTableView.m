@@ -494,6 +494,9 @@ static NSPasteboardType const KKTableViewDragAndDropDataType = @"KKTableViewDrag
         tableView.intercellSpacing  = NSMakeSize(0, 0);
         tableView.allowsEmptySelection      = YES;
         tableView.selectionHighlightStyle   = NSTableViewSelectionHighlightStyleRegular;
+        if (@available(macOS 11.0, *)) {
+            tableView.style         = NSTableViewStyleFullWidth;
+        }
         
         self.hasVerticalScroller    = YES;
         self.hasHorizontalScroller  = NO;
