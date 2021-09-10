@@ -37,6 +37,7 @@ FOUNDATION_EXPORT const unsigned char PacketProcessorVersionString[];
 
 #import "KKNavigationController.h"
 #import "KKLoopRotateImageView.h"
+#import "KKLoopRotateView.h"
 #import "KKProgressHUD.h"
 #import "KKViewController.h"
 #import "KKCornerCollectionViewCell.h"

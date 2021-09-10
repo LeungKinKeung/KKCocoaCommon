@@ -10,19 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface KKLoopRotateImageView : NSControl
-
-- (instancetype)initWithImage:(NSImage *)image;
-
-- (instancetype)initWithImageNamed:(NSImageName)name;
-
-- (instancetype)initWithTemplateImageNamed:(NSImageName)name;
-
-- (instancetype)initWithTemplateImage:(NSImage *)image;
-
-@property (nonatomic, readonly) NSImageView *imageView;
-
-@property (nonatomic, readwrite) NSImageScaling imageScaling;
+@interface KKLoopRotateImageView : NSImageView
 
 @end
 

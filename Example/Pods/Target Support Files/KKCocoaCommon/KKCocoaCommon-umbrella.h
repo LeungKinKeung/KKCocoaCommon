@@ -27,6 +27,7 @@
 #import "KKGuideView.h"
 #import "KKProgressHUD.h"
 #import "KKLoopRotateImageView.h"
+#import "KKLoopRotateView.h"
 #import "KKCocoaCommon.h"
 #import "KKUserNotificationCenter.h"
 #import "KKClipView.h"
