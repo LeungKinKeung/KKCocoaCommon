@@ -10,79 +10,120 @@
 #import <QuartzCore/CoreAnimation.h>
 #import <objc/runtime.h>
 
+@implementation KKNavigationContentView
+
+- (void)scrollWheel:(NSEvent *)event {
+    [[self nextResponder] scrollWheel:event];
+}
+
+@end
+
 @interface KKNavigationController ()
 
+/// 初始化视图的frame
+@property (nonatomic, assign) CGRect initialViewFrame;
+/// 滑动的距离
+@property (nonatomic, assign) CGPoint scrollingOffset;
+/// 视图的位置开始变动
+@property (nonatomic, assign) BOOL isScrolling;
+/// 两个手指放在触摸板上
+@property (nonatomic, assign) NSTimeInterval scrollingMayBeginTime;
+/// 开始滑动
+@property (nonatomic, assign) NSTimeInterval scrollingBeginTime;
+/// 导航栏类
 @property (nonatomic) Class navigationBarClass;
+/// 动画进行中
 @property (nonatomic, assign, getter=isAnimationPlaying) BOOL animationPlaying;
+
 @end
 
 @implementation KKNavigationController
 
 - (instancetype)initWithNavigationBarClass:(Class)navigationBarClass
 {
-    self = [super init];
-    if (self) {
-        self.navigationBarClass = navigationBarClass;
-    }
-    return self;
+    return [self initWithRootViewController:nil
+                         navigationBarClass:navigationBarClass
+                                  viewFrame:CGRectZero];
 }
 
 - (instancetype)initWithRootViewController:(NSViewController *)rootViewController
 {
-    self = [super init];
+    return [self initWithRootViewController:rootViewController
+                         navigationBarClass:nil
+                                  viewFrame:CGRectZero];
+}
+
+- (instancetype)initWithRootViewController:(NSViewController *)rootViewController
+                        navigationBarClass:(Class)navigationBarClass
+                                 viewFrame:(CGRect)viewFrame {
+    self = [self init];
     if (self) {
+        self.initialViewFrame = viewFrame;
+        self.navigationBarClass = navigationBarClass;
         self.rootViewController = rootViewController;
     }
     return self;
 }
 
-- (NSView *)view
-{
-    if (self.isViewLoaded || self.nibName || [[NSBundle mainBundle] pathForResource:[self className] ofType:@"nib"]) {
-        // 已加载、storyboard、nib
-        return [super view];
+- (void)loadView {
+    // 如果是从storyboard初始化，则nibName有值
+    // 如果是从nib初始化，则[[NSBundle mainBundle] pathForResource:[self className] ofType:@"nib"]有值
+    if (self.isViewLoaded ||
+        self.nibName ||
+        [[NSBundle mainBundle] pathForResource:[self className] ofType:@"nib"]) {
+        [super loadView];
+        return;
     }
-    NSView *view = [NSView new];
-    [super setView:view];
-    [self viewDidLoad];
-    return view;
+    NSView *view = [[KKNavigationContentView alloc] initWithFrame:self.initialViewFrame];
+    [view setWantsLayer:YES];
+    [self setView:view];
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.animationDuration = 0.35;
+    self.appearBeginOpacityWhenPush     = 1;
+    self.disappearEndOpacityWhenPush    = 1;
+    self.appearBeginOpacityWhenPop      = 1;
+    self.disappearEndOpacityWhenPop     = 1;
+    self.disappearDistance  = 0.3;
+    self.animationDuration  = 0.3;
+    self.timingFunction     =
+    [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+    //[CAMediaTimingFunction functionWithControlPoints:0 :0 :0 :1]; // EaseOut
 }
 
 - (void)setRootViewController:(NSViewController *)rootViewController
 {
-    NSInteger count = self.childViewControllers.count;
-    for (NSInteger i = 0; i < count; i++) {
-        [self removeChildViewControllerAtIndex:0];
+    NSArray *childViewControllers = self.childViewControllers.copy;
+    for (NSViewController *viewController in childViewControllers) {
+        [viewController.view removeFromSuperview];
+        [viewController.navigationBar removeFromSuperview];
+        [viewController removeFromParentViewController];
     }
-    [self addChildViewController:rootViewController];
+    [self addChildViewController:rootViewController isRoot:YES];
+}
+
+- (void)addChildViewController:(NSViewController *)viewController isRoot:(BOOL)isRoot {
+    [self addChildViewController:viewController];
     
-    KKNavigationBar *navigationBar  = rootViewController.navigationBar;
+    KKNavigationBar *navigationBar = viewController.navigationBar;
     if (navigationBar) {
-        navigationBar.backButton.hidden     = YES;
-        navigationBar.separator.hidden      = YES;
+        if (isRoot) {
+            navigationBar.backButton.hidden     = YES;
+            navigationBar.separator.hidden      = YES;
+        } else {
+            navigationBar.backButton.target = self;
+            navigationBar.backButton.action = @selector(backButtonClicked:);
+        }
         [self layoutNavigationBar:navigationBar];
-        [self noteNavigationBarDidLoad:rootViewController];
+        [self noteNavigationBarDidLoad:viewController];
     }
     
-    if (rootViewController.isViewLoaded ||
-        rootViewController.nibName ||
-        [[NSBundle mainBundle] pathForResource:[rootViewController className] ofType:@"nib"]) {
-        rootViewController.view.frame = [self contentViewFrame];
-        [self.view addSubview:rootViewController.view];
-        [self.view addSubview:navigationBar];
-    } else {
-        NSView *view = [[NSView alloc] initWithFrame:[self contentViewFrame]];
-        [rootViewController setView:view];
-        [rootViewController viewDidLoad];
-        [self.view addSubview:view];
-        [self.view addSubview:navigationBar];
-    }
+    NSView *childView   = viewController.view;
+    childView.frame     = [self contentViewFrame];
+    [self.view addSubview:childView];
+    [self.view addSubview:navigationBar];
 }
 
 - (NSViewController *)rootViewController
@@ -92,81 +133,61 @@
 
 - (void)pushViewController:(NSViewController *)viewController animated:(BOOL)animated
 {
-    NSViewController *previous      = self.childViewControllers.lastObject;
-    NSView *previousView            = previous.view;
-    KKNavigationBar *previousBar    = previous.navigationBar;
-    [self addChildViewController:viewController];
-    
-    KKNavigationBar *pushingBar     = viewController.navigationBar;
-    if (pushingBar) {
-        pushingBar.backButton.target = self;
-        pushingBar.backButton.action = @selector(backButtonClicked:);
-        [self layoutNavigationBar:pushingBar];
-        [self noteNavigationBarDidLoad:viewController];
-    }
-    
-    NSView *pushingView     = nil;
-    if (viewController.isViewLoaded ||
-        viewController.nibName ||
-        [[NSBundle mainBundle] pathForResource:[viewController className] ofType:@"nib"]) {
-        pushingView         = viewController.view;
-        pushingView.frame   = [self contentViewFrame];
-        [self.view addSubview:pushingView];
-        [self.view addSubview:pushingBar];
-    } else {
-        pushingView         = [[NSView alloc] initWithFrame:[self contentViewFrame]];
-        [viewController setView:pushingView];
-        [viewController viewDidLoad];
-        [self.view addSubview:pushingView];
-        [self.view addSubview:pushingBar];
-    }
+    NSViewController *willDisappearController   = self.childViewControllers.lastObject;
+    NSView *willDisappearView                   = willDisappearController.view;
+    KKNavigationBar *willDisappearBar           = willDisappearController.navigationBar;
+    [self addChildViewController:viewController isRoot:NO];
+    KKNavigationBar *willAppearBar              = viewController.navigationBar;
+    NSView *willAppearView                      = viewController.view;
     
     if (animated) {
         
         self.animationPlaying           = YES;
         // 自右向左进入动画
-        CGRect pushingViewToFrame       = [self contentViewFrame];
-        CGRect pushingViewFromFrame     = pushingViewToFrame;
-        pushingViewFromFrame.origin.x   = self.view.bounds.size.width;
+        CGRect willAppearViewToFrame        = [self contentViewFrame];
+        CGRect willAppearViewFromFrame      = willAppearViewToFrame;
+        willAppearViewFromFrame.origin.x    = self.view.bounds.size.width;
         
-        CGRect pushingBarToFrame        = [self frameForNavigationBar:pushingBar];
-        CGRect pushingBarFromFrame      = pushingBarToFrame;
-        pushingBarFromFrame.origin.x    = pushingViewFromFrame.origin.x;
+        CGRect willAppearBarToFrame         = [self frameForNavigationBar:willAppearBar];
+        CGRect willAppearBarFromFrame       = willAppearBarToFrame;
+        willAppearBarFromFrame.origin.x     = willAppearViewFromFrame.origin.x;
         
         // 自右向左渐变消失动画
-        CGRect previousViewFromFrame    = [self contentViewFrame];
-        CGRect previousViewToFrame      = previousViewFromFrame;
-        previousViewToFrame.origin.x    = -(self.view.bounds.size.width * 0.3);
+        CGRect willDisappearViewFromFrame   = [self contentViewFrame];
+        CGRect willDisappearViewToFrame     = willDisappearViewFromFrame;
+        willDisappearViewToFrame.origin.x   = -(self.view.bounds.size.width * self.disappearDistance);
         
-        CGRect previousBarFromFrame     = [self frameForNavigationBar:previousBar];
-        CGRect previousBarToFrame       = previousBarFromFrame;
-        previousBarToFrame.origin.x     = previousViewToFrame.origin.x;
+        CGRect willDisappearBarFromFrame    = [self frameForNavigationBar:willDisappearBar];
+        CGRect willDisappearBarToFrame      = willDisappearBarFromFrame;
+        willDisappearBarToFrame.origin.x    = willDisappearViewToFrame.origin.x;
         
-        pushingView.frame               = pushingViewFromFrame;
-        pushingBar.frame                = pushingBarFromFrame;
-        previousView.alphaValue         = 1;
-        previousBar.alphaValue          = 1;
-        previousView.frame              = previousViewFromFrame;
-        previousBar.frame               = previousBarFromFrame;
+        willAppearView.frame                = willAppearViewFromFrame;
+        willAppearBar.frame                 = willAppearBarFromFrame;
+        willAppearView.alphaValue           = self.appearBeginOpacityWhenPush;
+        willAppearBar.alphaValue            = self.appearBeginOpacityWhenPush;
+        willDisappearView.alphaValue        = 1;
+        willDisappearBar.alphaValue         = 1;
+        willDisappearView.frame             = willDisappearViewFromFrame;
+        willDisappearBar.frame              = willDisappearBarFromFrame;
         
         [NSAnimationContext beginGrouping];
 
-        NSAnimationContext *context = [NSAnimationContext currentContext];
-        context.duration            = self.animationDuration;
-        context.timingFunction      =
-        //[CAMediaTimingFunction functionWithControlPoints:0 :0 :0 :1]; // EaseOut
-        [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+        NSAnimationContext *context     = [NSAnimationContext currentContext];
+        context.duration                = self.animationDuration;
+        context.timingFunction          = self.timingFunction;
 
-        pushingView.animator.frame  = pushingViewToFrame;
-        pushingBar.animator.frame   = pushingBarToFrame;
+        willAppearView.animator.frame   = willAppearViewToFrame;
+        willAppearBar.animator.frame    = willAppearBarToFrame;
+        willAppearView.animator.alphaValue  = 1;
+        willAppearBar.animator.alphaValue   = 1;
         
-        previousView.animator.frame = previousViewToFrame;
-        previousBar.animator.frame  = previousBarToFrame;
-        previousView.animator.alphaValue    = 0;
-        previousBar.animator.alphaValue     = 0;
+        willDisappearView.animator.frame = willDisappearViewToFrame;
+        willDisappearBar.animator.frame  = willDisappearBarToFrame;
+        willDisappearView.animator.alphaValue    = self.disappearEndOpacityWhenPush;
+        willDisappearBar.animator.alphaValue     = self.disappearEndOpacityWhenPush;
         
-        __weak typeof(previousView) weakPreviousView    = previousView;
-        __weak typeof(previousBar) weakPreviousBar      = previousBar;
+        __weak typeof(willDisappearView) weakPreviousView    = willDisappearView;
+        __weak typeof(willDisappearBar) weakPreviousBar      = willDisappearBar;
         __weak typeof(self) weakSelf                    = self;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.animationDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             weakPreviousView.hidden     = YES;
@@ -177,8 +198,8 @@
         [NSAnimationContext endGrouping];
         
     } else {
-        previousView.hidden         = YES;
-        previousBar.hidden          = YES;
+        willDisappearView.hidden         = YES;
+        willDisappearBar.hidden          = YES;
     }
 }
 
@@ -196,68 +217,65 @@
         [removeControllers addObject:[self.childViewControllers objectAtIndex:i]];
     }
     
-    NSViewController *topViewControler  = removeControllers.lastObject;
-    NSView *topView                     = topViewControler.view;
-    KKNavigationBar *topBar             = topViewControler.navigationBar;
+    NSViewController *willDisappearController   = removeControllers.lastObject;
+    NSView *willDisappearView                   = willDisappearController.view;
+    KKNavigationBar *willDisappearBar           = willDisappearController.navigationBar;
     
-    NSView *toViewControlerView         = viewController.view;
-    KKNavigationBar *toViewControlerBar = viewController.navigationBar;
-    toViewControlerView.hidden          = NO;
-    toViewControlerBar.hidden           = NO;
+    NSView *willAppearView          = viewController.view;
+    KKNavigationBar *willAppearBar  = viewController.navigationBar;
+    willAppearView.hidden           = NO;
+    willAppearBar.hidden            = NO;
     
     if (animated) {
         
         self.animationPlaying           = YES;
         // 自左向右消失动画
-        CGRect topViewFromFrame         = topView.frame;
-        CGRect topViewToFrame           = topViewFromFrame;
-        topViewToFrame.origin.x         = self.view.bounds.size.width;
+        CGRect willHideViewFromFrame        = willDisappearView.frame;
+        CGRect willHideViewToFrame          = willHideViewFromFrame;
+        willHideViewToFrame.origin.x        = self.view.bounds.size.width;
         
-        CGRect topBarFromFrame          = topBar.frame;
-        CGRect topBarToFrame            = topBarFromFrame;
-        topBarToFrame.origin.x          = topViewToFrame.origin.x;
+        CGRect willHideBarFromFrame         = willDisappearBar.frame;
+        CGRect willHideBarToFrame           = willHideBarFromFrame;
+        willHideBarToFrame.origin.x         = willHideViewToFrame.origin.x;
         
-        CGRect toViewControlerViewToFrame     = [self contentViewFrame];
-        CGRect toViewControlerViewFromFrame   = toViewControlerViewToFrame;
-        toViewControlerViewFromFrame.origin.x = -(self.view.bounds.size.width * 0.3);
+        CGRect willDisplayViewToFrame       = [self contentViewFrame];
+        CGRect willDisplayViewFromFrame     = willDisplayViewToFrame;
+        willDisplayViewFromFrame.origin.x   = -(self.view.bounds.size.width * self.disappearDistance);
         
-        CGRect toViewControlerBarToFrame      = [self frameForNavigationBar:toViewControlerBar];
-        CGRect toViewControlerBarFromFrame    = toViewControlerBarToFrame;
-        toViewControlerBarFromFrame.origin.x  = toViewControlerViewFromFrame.origin.x;
+        CGRect willDisplayBarToFrame        = [self frameForNavigationBar:willAppearBar];
+        CGRect willDisplayBarFromFrame      = willDisplayBarToFrame;
+        willDisplayBarFromFrame.origin.x    = willDisplayViewFromFrame.origin.x;
         
-        topView.frame   = topViewFromFrame;
-        topBar.frame    = topBarFromFrame;
+        willDisappearView.frame     = willHideViewFromFrame;
+        willDisappearBar.frame      = willHideBarFromFrame;
         
-        toViewControlerView.frame       = toViewControlerViewFromFrame;
-        toViewControlerBar.frame        = toViewControlerBarFromFrame;
-        toViewControlerView.alphaValue  = 0;
-        toViewControlerBar.alphaValue   = 0;
+        willAppearView.frame        = willDisplayViewFromFrame;
+        willAppearBar.frame         = willDisplayBarFromFrame;
+        willAppearView.alphaValue   = self.appearBeginOpacityWhenPop;
+        willAppearBar.alphaValue    = self.appearBeginOpacityWhenPop;
         
         [NSAnimationContext beginGrouping];
 
         NSAnimationContext *context = [NSAnimationContext currentContext];
         context.duration            = self.animationDuration;
-        context.timingFunction      =
-        //[CAMediaTimingFunction functionWithControlPoints:0 :0 :0 :1]; // EaseOut
-        [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+        context.timingFunction      = self.timingFunction;
         
-        topView.animator.frame      = topViewToFrame;
-        topBar.animator.frame       = topBarToFrame;
-        topView.animator.alphaValue = 0;
-        topBar.animator.alphaValue  = 0;
+        willDisappearView.animator.frame        = willHideViewToFrame;
+        willDisappearBar.animator.frame         = willHideBarToFrame;
+        willDisappearView.animator.alphaValue   = self.disappearEndOpacityWhenPop;
+        willDisappearBar.animator.alphaValue    = self.disappearEndOpacityWhenPop;
         
-        toViewControlerView.animator.frame      = toViewControlerViewToFrame;
-        toViewControlerBar.animator.frame       = toViewControlerBarToFrame;
-        toViewControlerView.animator.alphaValue = 1;
-        toViewControlerBar.animator.alphaValue  = 1;
+        willAppearView.animator.frame           = willDisplayViewToFrame;
+        willAppearBar.animator.frame            = willDisplayBarToFrame;
+        willAppearView.animator.alphaValue      = 1;
+        willAppearBar.animator.alphaValue       = 1;
         
         __weak typeof(self) weakSelf = self;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.animationDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             for (NSViewController *viewController in removeControllers) {
                 [viewController.view removeFromSuperview];
                 [viewController.navigationBar removeFromSuperview];
-                NSInteger index = [weakSelf.childViewControllers indexOfObject:viewController];
-                [weakSelf removeChildViewControllerAtIndex:index];
+                [viewController removeFromParentViewController];
             }
             weakSelf.animationPlaying   = NO;
         });
@@ -267,11 +285,66 @@
         for (NSViewController *viewController in removeControllers) {
             [viewController.view removeFromSuperview];
             [viewController.navigationBar removeFromSuperview];
-            NSInteger index = [self.childViewControllers indexOfObject:viewController];
-            [self removeChildViewControllerAtIndex:index];
+            [viewController removeFromParentViewController];
         }
     }
     return removeControllers;
+}
+
+- (void)updateSubviewsWithTopViewFrameX:(CGFloat)x {
+    CGRect contentViewFrame = [self contentViewFrame];
+    if (contentViewFrame.size.width == 0) {
+        return;
+    }
+    if (x > self.view.frame.size.width) {
+        x = self.view.frame.size.width;
+    }
+    if (x < 0) {
+        x = 0;
+    }
+    {
+        NSView *view    = self.topViewController.view;
+        CGRect frame    = contentViewFrame;
+        frame.origin.x  = x;
+        view.frame      = frame;
+        //view.alphaValue = 1.0 - frame.origin.x / frame.size.width;
+    }
+    {
+        KKNavigationBar *view = self.topViewController.navigationBar;
+        CGRect frame    = [self frameForNavigationBar:view];
+        frame.origin.x  = x;
+        view.frame      = frame;
+        //view.alphaValue = 1.0 - frame.origin.x / frame.size.width;
+    }
+    NSInteger willAppearIndex = self.viewControllers.count - 2;
+    if (willAppearIndex >= 0) {
+        NSView *view    = [self.viewControllers objectAtIndex:willAppearIndex].view;
+        CGRect frame    = contentViewFrame;
+        frame.origin.x  = (x - frame.size.width) * self.disappearDistance;
+        view.frame      = frame;
+        //view.alphaValue = 1 - fabs(frame.origin.x) / (frame.size.width * self.hiddenDistance);
+        if (x <= 0 && view.isHidden == NO) {
+            view.hidden     = YES;
+            view.alphaValue = 0;
+        } else if (x > 0 && view.isHidden) {
+            view.hidden     = NO;
+            view.alphaValue = 1;
+        }
+    }
+    if (willAppearIndex >= 0) {
+        KKNavigationBar *view = [self.viewControllers objectAtIndex:willAppearIndex].navigationBar;
+        CGRect frame    = [self frameForNavigationBar:view];
+        frame.origin.x  = (x - frame.size.width) * self.disappearDistance;
+        view.frame      = frame;
+        //view.alphaValue = 1 - fabs(frame.origin.x) / (frame.size.width * self.hiddenDistance);
+        if (x <= 0 && view.isHidden == NO) {
+            view.hidden     = YES;
+            view.alphaValue = 0;
+        } else if (x > 0 && view.isHidden) {
+            view.hidden     = NO;
+            view.alphaValue = 1;
+        }
+    }
 }
 
 - (NSViewController *)popViewControllerAnimated:(BOOL)animated
@@ -306,7 +379,7 @@
 {
     [super viewDidLayout];
     
-    if (self.isAnimationPlaying) {
+    if (self.isAnimationPlaying || self.isScrolling) {
         return;
     }
     NSViewController *visibleViewController = self.childViewControllers.lastObject;
@@ -337,6 +410,103 @@
         return;
     }
     navigationBar.frame = [self frameForNavigationBar:navigationBar];
+}
+
+- (void)scrollWheel:(NSEvent *)event {
+    [super scrollWheel:event];
+    
+    if (self.viewControllers.count <= 1) {
+        return;
+    }
+    
+    CGFloat viewMaxX    = self.view.bounds.size.width;
+    
+    // scrollingDeltaX：向右滑动为正，向左滑动为负
+    // scrollingDeltaY：向上滑动为负，向下滑动为正
+    switch (event.phase) {
+        case NSEventPhaseMayBegin: {
+            self.scrollingMayBeginTime  = [[NSDate date] timeIntervalSince1970];
+            self.scrollingBeginTime     = 0;
+            self.isScrolling            = NO;
+            self.scrollingOffset        = CGPointZero;
+            break;
+        }
+        case NSEventPhaseBegan: {
+            self.scrollingBeginTime     = [[NSDate date] timeIntervalSince1970];
+            break;
+        }
+        case NSEventPhaseChanged: {
+            CGPoint point = self.scrollingOffset;
+            point.x += event.scrollingDeltaX;
+            point.y += event.scrollingDeltaY;
+            self.scrollingOffset = point;
+            
+            do {
+                if (self.isScrolling) {
+                    break;
+                }
+                if (fabs(self.scrollingOffset.y) > 5 &&
+                    fabs(self.scrollingOffset.y) > self.scrollingOffset.x * 0.2) {
+                    break;
+                }
+                if (self.scrollingOffset.x <= 0) {
+                    break;
+                }
+                if (self.scrollingOffset.x > 30) {
+                    self.isScrolling = YES;
+                    break;
+                }
+                // 长按了
+                if ([[NSDate date] timeIntervalSince1970] - self.scrollingMayBeginTime > 1) {
+                    if (self.scrollingOffset.x >= 5) {
+                        self.isScrolling = YES;
+                        break;
+                    }
+                }
+            } while (NO);
+            
+            if (self.isScrolling) {
+                [self updateSubviewsWithTopViewFrameX:self.scrollingOffset.x];
+            }
+            break;
+        }
+        case NSEventPhaseEnded: {
+            CGPoint point = self.scrollingOffset;
+            point.x += event.scrollingDeltaX;
+            point.y += event.scrollingDeltaY;
+            self.scrollingOffset = point;
+            
+            if (self.isScrolling) {
+                NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+                NSTimeInterval begin = self.scrollingBeginTime;
+                if (now - begin < 0.3 && self.scrollingOffset.x > 60) {
+                    // 轻扫
+                    [self popViewControllerAnimated:YES];
+                } else if (self.scrollingOffset.x > viewMaxX * 0.45) {
+                    // 滑过去
+                    [self popViewControllerAnimated:YES];
+                } else {
+                    // 恢复（不做动画了）
+                    [self updateSubviewsWithTopViewFrameX:0];
+                }
+            }
+            self.scrollingMayBeginTime  = 0;
+            self.scrollingBeginTime     = 0;
+            self.scrollingOffset        = CGPointZero;
+            self.isScrolling            = NO;
+            break;
+        }
+        case NSEventPhaseCancelled: {
+            self.scrollingMayBeginTime  = 0;
+            self.scrollingBeginTime     = 0;
+            self.scrollingOffset        = CGPointZero;
+            self.isScrolling            = NO;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 }
 
 - (NSViewController *)topViewController

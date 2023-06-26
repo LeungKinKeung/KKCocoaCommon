@@ -14,13 +14,12 @@
 
 @implementation KKNavigationBarBackButton
 
-- (NSSize)intrinsicContentSize
-{
-    NSSize size = [super intrinsicContentSize];
-    if (self.bezelStyle == NSBezelStyleTexturedRounded && self.isBordered && size.height > size.width) {
-        size.width = size.height;
+- (NSSize)sizeThatFits:(NSSize)size {
+    CGSize newSize = CGSizeMake(MIN(32, size.width), MIN(28, size.height));
+    if (self.bezelStyle == NSBezelStyleTexturedRounded && self.isBordered && newSize.height > newSize.width) {
+        newSize.width = newSize.height;
     }
-    return size;
+    return newSize;
 }
 
 @end
@@ -395,7 +394,7 @@
         windowButton = [self.window standardWindowButton:NSWindowCloseButton];
     }
     CGRect windowButtonFrame    = [windowButton convertRect:windowButton.bounds toView:nil];
-    CGRect navigationBarFrame   = [self convertRect:self.bounds toView:nil];
+    CGRect navigationBarFrame   = [self.superview convertRect:self.bounds toView:nil];
     BOOL directionLeftToRight   = YES;
     if (@available(macOS 10.12, *)) {
         directionLeftToRight    = [self.window windowTitlebarLayoutDirection] == NSUserInterfaceLayoutDirectionLeftToRight;
@@ -445,7 +444,12 @@
         if (button.isHidden || button.superview != self.containerView) {
             continue;;
         }
-        CGSize size     = [button intrinsicContentSize];
+        CGSize size = CGSizeZero;
+        if ([button isKindOfClass:[NSControl class]]) {
+            size = [button sizeThatFits:self.frame.size];
+        } else {
+            size = [button intrinsicContentSize];
+        }
         if (CGSizeEqualToSize(size, CGSizeZero)) {
             size        = CGSizeMake(containerSize.height, containerSize.height);
         }
@@ -472,7 +476,8 @@
     CGSize titleViewSize    = titleView.frame.size;
     if ([titleView isKindOfClass:[NSTextField class]]) {
         // 不准确
-        titleViewSize = [titleView sizeThatFits:CGSizeMake(FLT_MAX, FLT_MAX)];
+        titleViewSize       = [titleView sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+        titleViewSize.width = ceil(titleViewSize.width);
     } else {
         titleViewSize       = [titleView intrinsicContentSize];
     }

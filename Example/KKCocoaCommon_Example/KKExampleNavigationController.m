@@ -24,9 +24,12 @@
 
 @end
 
+/// 测试视图控制器
 @interface KKExampleViewController : KKViewController
 
-@property (nonatomic, strong) NSScrollView *scrollView;
+@property (nonatomic, strong) NSTextField *textLabel;
+
+@property (nonatomic, strong) NSButton *pushButton;
 
 @end
 
@@ -36,21 +39,56 @@
     [super viewDidLoad];
     
     KKNavigationBar *navigationBar  = self.navigationBar;
-    navigationBar.titleLabel.text   = @"Second View Controller";
+    navigationBar.titleLabel.text   = @"Other View Controller";
     navigationBar.barStyle          = KKNavigationBarStyleBlur;
     
+    self.view.layerBackgroundColor = [NSColor colorWithRed:arc4random_uniform(100) * 0.01 green:arc4random_uniform(100) * 0.01 blue:arc4random_uniform(100) * 0.01 alpha:1];
+    
+    self.textLabel = [NSTextField label];
+    self.textLabel.layerBackgroundColor = [NSColor colorWithWhite:1 alpha:0.5];
+    [self.view addSubview:self.textLabel];
+    self.pushButton = [NSButton standardButtonWithTitle:@"Push New View Controller"
+                                                 target:self
+                                                 action:@selector(pushButtonClicked:)];
+    [self.pushButton setBackgroundImageWithColor:NSColor.whiteColor cornerRadius:5];
+    [self.view addSubview:self.pushButton];
+    [self layoutSubviews];
+}
+
+- (void)viewDidAppear {
+    [super viewDidAppear];
+    self.textLabel.stringValue = [NSString stringWithFormat:@"Current View Controller index: %ld",self.navigationController.viewControllers.count - 1];
+    [self layoutSubviews];
+}
+
+- (void)viewDidLayout {
+    [super viewDidLayout];
+    [self layoutSubviews];
+}
+
+- (void)layoutSubviews {
+    [self.textLabel sizeToFit];
     {
-        NSScrollView *view      = [[NSScrollView alloc] initWithFrame:self.view.bounds];
-        view.focusRingType      = NSFocusRingTypeNone;
-        view.borderType         = NSNoBorder;
-        view.backgroundColor    = NSColor.clearColor;
-        view.drawsBackground    = NO;
-        view.scrollerStyle      = NSScrollerStyleOverlay;
-        view.autohidesScrollers = YES;
-        self.scrollView         = view;
-        [self.view addSubview:view];
-        view.autoresizingMask   = NSViewWidthSizable | NSViewHeightSizable;
+        CGRect frame    = CGRectZero;
+        frame.size      = [self.textLabel sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+        frame.origin.x  = (self.view.frame.size.width - frame.size.width) * 0.5;
+        frame.origin.y  = self.view.frame.size.height * 0.5;
+        self.textLabel.frame = frame;
     }
+    {
+        CGRect frame    = CGRectZero;
+        frame.size      = [self.pushButton sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+        frame.size.width  = frame.size.width + 10;
+        frame.size.height = 30;
+        frame.origin.x  = (self.view.frame.size.width - frame.size.width) * 0.5;
+        frame.origin.y  = self.view.frame.size.height * (self.view.isFlipped ? 0.9 : 0.1);
+        self.pushButton.frame = frame;
+    }
+}
+
+- (void)pushButtonClicked:(NSButton *)sender
+{
+    [self.navigationController pushViewController:[KKExampleViewController new] animated:YES];
 }
 
 - (BOOL)hasNavigationBar

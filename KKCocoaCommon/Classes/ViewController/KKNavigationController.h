@@ -19,6 +19,18 @@
 @property (nonatomic, readonly) NSArray <__kindof NSViewController *> *viewControllers;
 /// 动画时长，默认：0.4
 @property (nonatomic, assign) CGFloat animationDuration;
+/// Push时上一个视图向左移动多少距离消失，值为0~1.0，为0则不动，默认0.3
+@property (nonatomic, assign) CGFloat disappearDistance;
+/// Push时，上一个视图消失时的透明度，值为0~1.0，默认1
+@property (nonatomic, assign) CGFloat disappearEndOpacityWhenPush;
+/// Push的视图刚出现时的透明度，值为0~1.0，默认1
+@property (nonatomic, assign) CGFloat appearBeginOpacityWhenPush;
+/// Pop时，最上层的视图消失时的透明度，值为0~1.0，默认1
+@property (nonatomic, assign) CGFloat disappearEndOpacityWhenPop;
+/// Pop时，将要出现的视图刚出现时的透明度，值为0~1.0，默认1
+@property (nonatomic, assign) CGFloat appearBeginOpacityWhenPop;
+/// 动画效果
+@property (nonatomic, strong) CAMediaTimingFunction *timingFunction;
 
 /// 推入视图控制器
 - (void)pushViewController:(NSViewController *)viewController animated:(BOOL)animated;
@@ -33,6 +45,16 @@
 - (instancetype)initWithNavigationBarClass:(Class)navigationBarClass;
 /// 初始化并设置根视图
 - (instancetype)initWithRootViewController:(NSViewController *)rootViewController;
+/// 初始化
+- (instancetype)initWithRootViewController:(NSViewController *)rootViewController
+                        navigationBarClass:(Class)navigationBarClass
+                                 viewFrame:(CGRect)viewFrame;
+
+@end
+
+/// 使KKNavigationController具有滑动返回的功能，nib或storyboard需要自行设置
+/// 重写-scrollWheel执行[[self nextResponder] scrollWheel:event]也可达到此类的效果
+@interface KKNavigationContentView : NSView
 
 @end
 

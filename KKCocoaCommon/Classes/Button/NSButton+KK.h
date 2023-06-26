@@ -20,6 +20,9 @@
 /// @param bordered 边框
 + (instancetype)buttonWithType:(NSButtonType)type bezelStyle:(NSBezelStyle)bezelStyle bordered:(BOOL)bordered;
 
+/// 创建按钮(type=NSButtonTypeMomentaryPushIn，bezelStyle=NSBezelStyleRegularSquare，bordered=NO)
++ (instancetype)standardButtonWithTitle:(NSString *)title target:(id)target action:(SEL)action;
+
 /// 创建无背景的图像按钮
 + (instancetype)imageButtonWithImage:(NSImage *)image target:(id)target action:(SEL)action;
 
@@ -39,6 +42,15 @@
 
 /// 更新富文本标题（取第一个字符属性）
 - (void)updateAttributedTitle:(NSString *)title;
+
+/// 设置背景色（使用图片形式，按下有变色效果）
+/// - Parameter color: 背景色
+- (void)setBackgroundImageWithColor:(NSColor *)color;
+
+/// 设置背景色（使用图片形式，按下有变色效果）
+/// @param color 背景色
+/// @param cornerRadius 圆角（masksToBounds=YES）
+- (void)setBackgroundImageWithColor:(NSColor *)color cornerRadius:(CGFloat)cornerRadius;
 
 /// 设置背景色
 /// @param backgroundColor 背景色

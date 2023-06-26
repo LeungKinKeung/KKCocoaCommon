@@ -26,4 +26,7 @@
 /// 图片和标题的间隔，默认：7
 @property (nonatomic, assign) CGFloat interitemSpacing;
 
+/// 图片与标题的间隔
+@property (nonatomic, readwrite) CGFloat spacingBetweenImageAndTitle;
+
 @end

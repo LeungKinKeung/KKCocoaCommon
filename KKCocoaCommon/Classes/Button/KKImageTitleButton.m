@@ -38,6 +38,14 @@
     return (KKButtonCell *)self.cell;
 }
 
+- (void)setSpacingBetweenImageAndTitle:(CGFloat)spacingBetweenImageAndTitle {
+    [self setInteritemSpacing:spacingBetweenImageAndTitle];
+}
+
+- (CGFloat)spacingBetweenImageAndTitle {
+    return [self interitemSpacing];
+}
+
 - (void)setInteritemSpacing:(CGFloat)interitemSpacing
 {
     _interitemSpacing = interitemSpacing;

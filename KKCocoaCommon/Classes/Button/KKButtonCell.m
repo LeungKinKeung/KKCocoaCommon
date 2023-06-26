@@ -175,5 +175,12 @@
     return CGRectMake(rectX, rectY, imageSize.width, imageSize.height);
 }
 
+- (void)setSpacingBetweenImageAndTitle:(CGFloat)spacingBetweenImageAndTitle {
+    [self setInteritemSpacing:spacingBetweenImageAndTitle];
+}
+
+- (CGFloat)spacingBetweenImageAndTitle {
+    return [self interitemSpacing];
+}
 
 @end

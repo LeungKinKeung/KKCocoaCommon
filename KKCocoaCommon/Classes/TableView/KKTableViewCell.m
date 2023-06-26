@@ -392,8 +392,15 @@
         imageViewFrame.origin.x = padding.left;
         padding.left            = padding.left + imageViewFrame.size.width + interitemSpacing;
     }
-    if (self.accessoryView) {
-        accessoryViewFrame.size = [self.accessoryView intrinsicContentSize];
+    NSView *accessoryView = self.accessoryView;
+    if (accessoryView) {
+        if ([accessoryView isKindOfClass:[NSImageView class]]) {
+            // 使用-sizeThatFits和-intrinsicContentSize计算都不准确
+            NSImage *image = ((NSImageView *)accessoryView).image;
+            accessoryViewFrame.size = image.size;
+        } else if ([accessoryView isKindOfClass:[NSView class]]) {
+            accessoryViewFrame.size = [accessoryView intrinsicContentSize];
+        }
         accessoryViewFrame.origin.x = selfSize.width - accessoryViewFrame.size.width - padding.right;
         padding.right           = padding.right + accessoryViewFrame.size.width + interitemSpacing;
     }
@@ -567,6 +574,7 @@
             break;
         }
     }
+    [self setNeedsLayout:YES];
 }
 
 - (void)setPadding:(NSEdgeInsets)padding

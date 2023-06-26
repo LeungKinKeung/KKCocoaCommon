@@ -10,20 +10,32 @@
 
 @interface KKViewController ()
 
+@property (nonatomic, assign) CGRect initialViewFrame;
+
 @end
 
 @implementation KKViewController
 
-- (NSView *)view
-{
-    if (self.isViewLoaded || self.nibName || [[NSBundle mainBundle] pathForResource:[self className] ofType:@"nib"]) {
-        // 已加载、storyboard、nib
-        return [super view];
+- (instancetype)initWithViewFrame:(CGRect)viewFrame {
+    self = [self init];
+    if (self) {
+        self.initialViewFrame = viewFrame;
     }
-    NSView *view = [NSView new];
-    [super setView:view];
-    [self viewDidLoad];
-    return view;
+    return self;
+}
+
+- (void)loadView {
+    // 如果是从storyboard初始化，则nibName有值
+    // 如果是从nib初始化，则[[NSBundle mainBundle] pathForResource:[self className] ofType:@"nib"]有值
+    if (self.isViewLoaded ||
+        self.nibName ||
+        [[NSBundle mainBundle] pathForResource:[self className] ofType:@"nib"]) {
+        [super loadView];
+        return;
+    }
+    NSView *view = [[NSView alloc] initWithFrame:self.initialViewFrame];
+    [view setWantsLayer:YES];
+    [self setView:view];
 }
 
 - (CAGradientLayer *)gradientLayer

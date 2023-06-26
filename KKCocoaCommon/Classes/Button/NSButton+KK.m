@@ -28,6 +28,14 @@
     return button;
 }
 
++ (instancetype)standardButtonWithTitle:(NSString *)title target:(id)target action:(SEL)action {
+    NSButton *button    = [self buttonWithType:NSButtonTypeMomentaryPushIn];
+    button.title        = title;
+    button.target       = target;
+    button.action       = action;
+    return button;
+}
+
 + (instancetype)imageButtonWithImage:(NSImage *)image target:(id)target action:(SEL)action
 {
     NSButton *button        = [self buttonWithType:NSButtonTypeMomentaryPushIn];
@@ -67,6 +75,24 @@
     }
     NSDictionary *attrs     = [self.attributedTitle attributesAtIndex:0 effectiveRange:nil];
     self.attributedTitle    = [[NSAttributedString alloc] initWithString:title attributes:attrs];
+}
+
+- (void)setBackgroundImageWithColor:(NSColor *)color {
+    NSImage *image =
+    [NSImage imageWithSize:CGSizeMake(1, 1) flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
+        CGContextRef ctx = [NSGraphicsContext currentContext].CGContext;
+        CGContextSetFillColorWithColor(ctx, color.CGColor);
+        CGContextFillRect(ctx, dstRect);
+        return YES;
+    }];
+    [self setBackgroundImage:image scaling:NSImageScaleAxesIndependently];
+}
+
+- (void)setBackgroundImageWithColor:(NSColor *)color cornerRadius:(CGFloat)cornerRadius {
+    [self setBackgroundImageWithColor:color];
+    self.wantsLayer             = YES;
+    self.layer.cornerRadius     = cornerRadius;
+    self.layer.masksToBounds    = YES;
 }
 
 - (void)setBackgroundColor:(NSColor *)backgroundColor cornerRadius:(CGFloat)cornerRadius

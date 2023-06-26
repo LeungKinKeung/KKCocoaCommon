@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSEdgeInsets padding;
 /// 间隔
 @property (nonatomic, assign) CGFloat interitemSpacing;
+/// 图片和标题的间隔
+@property (nonatomic, readwrite) CGFloat spacingBetweenImageAndTitle;
 
 @end
 
